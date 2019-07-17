@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+  <title>NULS Wallet</title>
+</head>
+<body>
+<div id="app">
+  <div style="margin: 10rem auto 0;width: 15rem;">
+    <img src="http://beta.nulscan.io/dist/img/logo-beta.0c542f7e.svg" width="300" id="loading" class="loading">
+  </div>
+</div>
+<!-- built files will be auto injected -->
+</body>
+</html>
+
+<script>
+  function load() {
+    setTimeout(() => {
+      document.getElementById("loading").style.visibility = 'hidden'
+    }, 50000);
+  }
+</script>
+
