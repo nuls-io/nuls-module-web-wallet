@@ -196,17 +196,18 @@ export function getArgs(parameterList) {
           allParameter = true;
           newArgs.push(itme.value)
         }else{
-          allParameter = false;
+          return {allParameter: false, args: newArgs};
         }
       }else{
-        newArgs.push(itme.value)
+        allParameter = true;
+        if(!itme.value){
+          newArgs.push('')
+        }else {
+          newArgs.push(itme.value)
+        }
       }
     }
-    if (allParameter) {
-      return {allParameter: allParameter, args: newArgs};
-    } else {
-      return {allParameter: allParameter, args: newArgs};
-    }
+    return {allParameter: allParameter, args: newArgs};
   } else {
     return {allParameter: true, args: newArgs};
   }

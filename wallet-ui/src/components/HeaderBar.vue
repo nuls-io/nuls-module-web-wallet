@@ -19,17 +19,21 @@
           <el-submenu index="address" class="user" :disabled="addressList.length === 0">
             <template slot="title"><i class="iconfont iconzhanghu"></i></template>
             <el-menu-item v-for="item of addressList" :key="item.address" :index="item.address">
-              <i class="iconfont iconwo" :class="item.selection ? '' : 'transparent' "></i>
-              <font v-show="!item.alias"> {{item.addresss}} | </font><span
-                    v-show="item.alias">{{item.alias}} | </span><span>{{item.balance}}</span>
+              <span :class="item.selection ? 'fCN' : '' ">
+                 <i class="iconfont iconwo ico" :class="item.selection ? 'fCN' : 'transparent' "></i>
+                <font v-show="!item.alias" class="w100"> {{item.addresss}}</font>
+                <span v-show="item.alias" class="w100">{{item.alias}}</span> |
+                <span>{{item.balance}}</span>
+              </span>
+
             </el-menu-item>
           </el-submenu>
           <el-submenu index="set">
             <template slot="title">{{$t('nav.set')}}</template>
             <el-menu-item index="address">{{$t('nav.addressList')}}</el-menu-item>
             <el-menu-item index="nodeService">{{$t('nav.nodeList')}}</el-menu-item>
+            <el-menu-item index="contact">{{$t('public.bookList')}}</el-menu-item>
             <el-menu-item index="seting">{{$t('public.about')}}</el-menu-item>
-            <el-menu-item index="address" v-show="false">通讯录</el-menu-item>
           </el-submenu>
           <el-submenu index="lang">
             <template slot="title">{{this.lang ==="en" ? "Eng":"中文"}}</template>
@@ -182,10 +186,27 @@
       .user {
         .el-submenu__title {
           .el-icon-arrow-down {
-            margin: 35px 0 0 -16px
+            margin: 35px 0 0 -16px;
+
           }
         }
       }
+    }
+  }
+
+  .el-menu--horizontal {
+    .ico {
+      float: left;
+      display: block;
+      width: 25px;
+    }
+    .fCN{
+      color: @Ncolour;
+    }
+    .w100 {
+      display: block;
+      float: left;
+      width: 175px;
     }
   }
 </style>

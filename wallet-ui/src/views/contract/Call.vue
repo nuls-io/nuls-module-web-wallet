@@ -3,8 +3,8 @@
     <el-form :model="callForm" :rules="callRules" ref="callForm" class="call-form">
       <el-form-item label="" prop="region" class="search-model">
         <el-select v-model="callForm.modelValue" :placeholder="$t('call.call1')" @change="changeModel">
-          <el-option v-for="item in callForm.modelData" :key="item.name" :label="item.name"
-                     :value="item.name">
+          <el-option v-for="item in callForm.modelData" :key="item.keys" :label="item.name"
+                     :value="item.keys">
           </el-option>
         </el-select>
       </el-form-item>
@@ -21,7 +21,8 @@
         </el-form-item>
         <div class="senior-div" v-if="callForm.senior">
           <el-form-item label="Gas Limit" prop="gas">
-            <el-input v-model="callForm.gas"></el-input>
+            <el-input v-model="callForm.gas" @change="changeGas"></el-input>
+            <div class="font12 yellow" v-show="gasTips">{{$t('call.call10')}}</div>
           </el-form-item>
           <el-form-item label="Price" prop="price">
             <el-input v-model="callForm.price"></el-input>
@@ -96,7 +97,7 @@
           parameterList: [],
           senior: false,
           gas: 0,
-          price: 0,
+          price: 25,
           values: 0,
         },
         callRules: {
@@ -110,10 +111,13 @@
             {validator: validateValues, trigger: 'blur'}
           ]
         },
+        gasNumber: 0,//消耗的gas
+        oldGasNumber: 0,//默认的gas
+        gasTips: false,//gas 太小提示信息
         //选中的方法
         selectionData: {
           view: true,
-          payable:false,
+          payable: false,
         },
         contractCallData: {},//调用合约data
         callResult: '',//调用合约结果
@@ -136,7 +140,6 @@
       this.getBalanceByAddress(chainID(), 1, this.addressInfo.address);
     },
     mounted() {
-
     },
     watch: {
       modelList(val) {
@@ -145,6 +148,13 @@
       addressInfo(val, old) {
         if (val.address !== old.address && old.address) {
           this.getBalanceByAddress(chainID(), 1, this.addressInfo.address);
+        }
+      },
+      gasNumber(val, old) {
+        if (old && this.oldGasNumber > val) {
+          this.gasTips = true
+        } else {
+          this.gasTips = false
         }
       }
     },
@@ -155,18 +165,34 @@
        **/
       changeModel(val) {
         this.callResult = '';
-        this.callForm.parameterList=[];
+        this.callForm.parameterList = [];
         for (let itme of this.callForm.modelData) {
-          if (itme.name === val) {
+          if (itme.keys === val) {
+            //console.log(itme);
             this.selectionData = itme;
-            this.callForm.parameterList = itme.params;
-            if(itme.params.length === 0){
-              this.chainMethodCall();
-            }
-            if (!itme.view) {
+            this.callForm.parameterList = [...itme.params];
+            if (!itme.view) { //上链方法
               this.callForm.gas = 0;
-              //this.callForm.price = 0;
               this.callForm.values = 0;
+            }
+          }
+        }
+        //清除已有的参数
+        for (let itme of this.callForm.parameterList) {
+          if (itme.value) {
+            itme.value = ''
+          }
+        }
+
+        let newArgs = [];
+        this.callForm.price = sdk.CONTRACT_MINIMUM_PRICE;
+        if (!this.selectionData.view) { //上链方法
+          if (this.selectionData.params.length === 0) { //没有参数
+            this.imputedContractCallGas(this.addressInfo.address, Number(Times(this.callForm.values, 100000000)), this.contractAddress, this.selectionData.name, this.selectionData.desc, newArgs)
+          } else { //有参数
+            newArgs = getArgs(this.callForm.parameterList);
+            if (newArgs.allParameter) {
+              this.imputedContractCallGas(this.addressInfo.address, Number(Times(this.callForm.values, 100000000)), this.contractAddress, this.selectionData.name, this.selectionData.desc, newArgs.args)
             }
           }
         }
@@ -176,7 +202,16 @@
        * 判断所有必填参数是否有值
        **/
       changeParameter() {
-        this.chainMethodCall();
+        if (!this.selectionData.view) {
+          this.chainMethodCall();
+        }
+      },
+
+      /**
+       * gas改变提示
+       * */
+      changeGas() {
+        this.gasNumber = Number(this.callForm.gas)
       },
 
       /**
@@ -184,11 +219,20 @@
        * @param formName
        **/
       submitForm(formName) {
-        this.$refs[formName].validate((valid) => {
-          if (valid) {
-            if (this.selectionData.view) {  //不上链方法
+        if (!this.selectionData.view) { //上链方法调用
+          this.getBalanceByAddress(chainID(), 1, this.addressInfo.address);
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
+              this.$refs.password.showPassword(true);
+            } else {
+              return false;
+            }
+          });
+        } else { //不上链方法，直接调用
+          this.$refs[formName].validate((valid) => {
+            if (valid) {
               let newArgs = [];
-              if (this.selectionData.params.length > 0) { //有参数
+              if (this.selectionData.params.length !== 0) { //有参数
                 newArgs = getArgs(this.callForm.parameterList, this.decimals);
                 if (newArgs.allParameter) {
                   this.methodCall(this.contractAddress, this.selectionData.name, this.selectionData.desc, newArgs.args)
@@ -196,14 +240,11 @@
               } else { //没参数
                 this.methodCall(this.contractAddress, this.selectionData.name, this.selectionData.desc, newArgs)
               }
-            } else { //上链方法
-              this.chainMethodCall();
-              this.$refs.password.showPassword(true);
+            } else {
+              return false;
             }
-          } else {
-            return false;
-          }
-        });
+          })
+        }
       },
 
       /**
@@ -220,7 +261,11 @@
             if (response.hasOwnProperty("result")) {
               this.callResult = response.result.result;
             } else {
-              this.$message({message: this.$t('call.call8') + response.error, type: 'error', duration: 1000});
+              if (response.error.code === 'err_0014') {
+                this.$message({message: this.$t('call.call8') + response.error.data, type: 'error', duration: 1000});
+              } else {
+                this.$message({message: this.$t('call.call8') + response.error.message, type: 'error', duration: 1000});
+              }
             }
           })
           .catch((error) => {
@@ -234,8 +279,9 @@
       chainMethodCall() {
         let newArgs = [];
         this.callForm.price = sdk.CONTRACT_MINIMUM_PRICE;
-        if (this.selectionData.params.length > 0) { //有参数
+        if (this.selectionData.params.length !== 0) { //有参数
           newArgs = getArgs(this.callForm.parameterList, this.decimals);
+          //console.log(newArgs);
           if (newArgs.allParameter) {
             this.validateContractCall(this.addressInfo.address, Number(Times(this.callForm.values, 100000000)), sdk.CONTRACT_MAX_GASLIMIT, sdk.CONTRACT_MINIMUM_PRICE, this.contractAddress, this.selectionData.name, this.selectionData.desc, newArgs.args);
           }
@@ -259,15 +305,15 @@
         return await this.$post('/', 'validateContractCall', [sender, value, gasLimit, price, contractAddress, methodName, methodDesc, args])
           .then((response) => {
             //console.log(response);
-            if (response.hasOwnProperty("result")) {
+            if (response.result.success) {
               //return {success: true, data: response.result};
               this.imputedContractCallGas(sender, value, contractAddress, methodName, methodDesc, args)
             } else {
-              this.$message({message: this.$t('call.call6') + response, type: 'error', duration: 1000});
+              this.$message({message: this.$t('call.call6') + response.result.msg, type: 'error', duration: 2000});
             }
           })
           .catch((error) => {
-            this.$message({message: this.$t('call.call7') + error, type: 'error', duration: 1000});
+            this.$message({message: this.$t('call.call7') + error, type: 'error', duration: 2000});
           });
       },
 
@@ -283,7 +329,10 @@
       async imputedContractCallGas(sender, value, contractAddress, methodName, methodDesc, args) {
         return await this.$post('/', 'imputedContractCallGas', [sender, value, contractAddress, methodName, methodDesc, args])
           .then((response) => {
+            //console.log(response.result);
             if (response.hasOwnProperty("result")) {
+              this.gasNumber = response.result.gasLimit;
+              this.oldGasNumber = response.result.gasLimit;
               this.callForm.gas = response.result.gasLimit;
               let contractConstructorArgsTypes = this.getContractMethodArgsTypes(contractAddress, methodName);
               let newArgs = utils.twoDimensionalArray(args, contractConstructorArgsTypes);
@@ -368,7 +417,7 @@
           if (this.callForm.values > 0) {
             transferInfo.toAddress = this.contractAddress;
             transferInfo.value = Number(Times(this.callForm.values, 100000000));
-            transferInfo.amount = Number(Plus(transferInfo.value,amount))
+            transferInfo.amount = Number(Plus(transferInfo.value, amount))
           }
           let remark = '';
           let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
@@ -476,6 +525,23 @@
       margin: 0 auto;
       border-top: 0 solid #ffffff;
       padding: 20px;
+      overflow: auto;
+      &::-webkit-scrollbar-track {
+        -webkit-box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.1);
+        background-color: #ffffff;
+        border-radius: 2px;
+      }
+
+      &::-webkit-scrollbar {
+        width: 2px;
+        background-color: #dfe4ed;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        border-radius: 10px;
+        width: 2px;
+        background-image: -webkit-gradient(linear, 20% 0%, 20% 0%, from(#d1dbe5), to(#d1dbe5), color-stop(.2, #ffffff))
+      }
     }
   }
 

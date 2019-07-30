@@ -111,9 +111,11 @@
           callback(new Error(this.$t('nodeService.nodeService14')));
         } else if (!patrn.exec(value)) {
           callback(new Error(this.$t('nodeService.nodeService15')));
-        }else if(this.nodeServiceData.find((v) => {return v.urls === value;})) {
+        } else if (this.nodeServiceData.find((v) => {
+            return v.urls === value;
+          })) {
           callback(new Error(this.$t('nodeService.nodeService151')));
-        }else {
+        } else {
           callback();
         }
       };
@@ -147,16 +149,20 @@
     },
 
     created() {
-      /* if (localStorage.hasOwnProperty('customUrlsData')) {*/
-      if (localStorage.hasOwnProperty('urlsData')) {
-        this.nodeServiceData = [...JSON.parse(localStorage.getItem('urlsData'))];
-      } else {
-        this.nodeServiceData = [...defaultData]
-      }
+      this.loading = true;
+      setTimeout(() => {
+        if (localStorage.hasOwnProperty('urlsData')) {
+          this.nodeServiceData = [...JSON.parse(localStorage.getItem('urlsData'))];
+        } else {
+          this.nodeServiceData = [...defaultData]
+        }
+      }, 500);
+
     },
     mounted() {
-      this.getDelay();
-      //this.getChains();
+      setTimeout(() => {
+        this.getDelay();
+      }, 500);
     },
     methods: {
 
@@ -241,9 +247,16 @@
               localStorage.setItem("urls", JSON.stringify(newData[minIndex]));
             }
           }
+        } else {
+          for (let item of newData) {
+            if (item.urls !== JSON.parse(localStorage.getItem('urls')).urls) {
+              item.selection = false;
+            }
+          }
         }
         this.nodeServiceData = newData;
         this.nodeServiceLoading = false;
+        this.loading = false;
         localStorage.setItem("urlsData", JSON.stringify(this.nodeServiceData));
       },
 

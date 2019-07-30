@@ -20,7 +20,8 @@
           <li>
             {{$t('consensus.consensus1')}}
             <label>
-              <u class="click" @click="toUrl('consensusList')">{{addressInfo.consensusLock}}</u>
+              <u class="click"
+                 @click="toUrl('consensusList',addressInfo.consensusLock)">{{addressInfo.consensusLock}}</u>
               <span class="fCN">{{agentAsset.agentAsset.symbol}}</span>
             </label>
           </li>
@@ -66,7 +67,7 @@
               <i class="iconfont"
                  :class="item.status ===0 ? 'icondaigongshi fred' : 'icongongshizhong fCN'"></i>
               <i class="follow clicks" :class="item.isCollect ? 'el-icon-star-on fCN':'el-icon-star-off'"
-                 @click="collect(item.agentId)" v-show="false"></i>
+                 @click="collect(item)"></i>
             </h4>
             <ul class="bg-white click" @click="toUrl('consensusInfo',item.txHash)">
               <li>{{$t('public.alias')}}<span>{{item.agentAlias}}</span></li>
@@ -88,7 +89,8 @@
               <span class="uppercase">{{item.agentId}}</span>&nbsp;
               <i class="iconfont"
                  :class="item.status ===0 ? 'icondaigongshi fred' : 'icongongshizhong fCN'"></i>
-              <i class="follow el-icon-star-off" v-show="false"></i>
+              <i class="follow clicks" :class="item.isCollect ? 'el-icon-star-on fCN':'el-icon-star-off'"
+                 @click="collect(item)"></i>
             </h4>
             <ul class="bg-white click" @click="toUrl('consensusInfo',item.txHash)">
               <li>{{$t('public.alias')}}<span>{{item.agentAlias}}</span></li>
@@ -140,7 +142,7 @@
         searchValue: '',//搜索框
         allNodeData: [],//所有节点信息
         addressInfo: [], //账户信息
-        agentAsset:JSON.parse(sessionStorage.getItem('info')),//pocm合约单位等信息
+        agentAsset: JSON.parse(sessionStorage.getItem('info')),//pocm合约单位等信息
         isRed: false,//地址是否有红牌
         isNew: false,//账户是否已经创建了节点
         pageIndex: 1, //页码
@@ -163,12 +165,9 @@
     },
     mounted() {
       this.getConsensusNodes(this.pageIndex, this.pageSize, this.nodeTypeRegion);
-      this.getConsensusInfoByAddress(this.pageIndex, this.pageSize, this.addressInfo.address);
+      //this.getConsensusInfoByAddress(this.pageIndex, this.pageSize, this.addressInfo.address);
       this.getAddressInfoByNode(this.addressInfo);
       this.getPunishByAddress(this.addressInfo.address);
-      /*this.setInterval = setInterval(() => {
-        //this.getAddressInfoByNode(this.addressInfo)
-      }, 10000)*/
     },
     destroyed() {
       clearInterval(this.setInterval);
@@ -337,29 +336,45 @@
 
       /**
        * 收藏功能
-       * @param agentId
+       * @param nodeInfo
        **/
-      collect(agentId) {
-        if (!this.addressInfo.collectList) {
-          this.addressInfo.collectList = [];
+      collect(nodeInfo) {
+        //console.log(nodeInfo);
+        if (!this.addressInfo.hasOwnProperty('collectList')) {
+          this.addressInfo.collectList = []
+        }
+        if (this.addressInfo.collectList.includes(nodeInfo.agentId)) {
+          //移除已收藏
+          this.addressInfo.collectList.splice(this.addressInfo.collectList.findIndex(v => v === nodeInfo.agentId), 1);
         } else {
-          if (this.addressInfo.collectList.includes(agentId)) {
-            //移除已收藏
-            this.addressInfo.collectList.splice(this.addressInfo.collectList.findIndex(v => v === agentId), 1);
-          } else {
-            this.addressInfo.collectList.push(agentId);
-          }
+          this.addressInfo.collectList.push(nodeInfo.agentId);
+        }
+
+        if ( this.consensusActive === 'consensusFirst') {
           //循环是否收藏
-          for (let itme of this.allNodeData) {
-            if (this.addressInfo.collectList.includes(itme.agentId)) {
-              itme.isCollect = true;
+          for (let item of this.allNodeData) {
+            if (this.addressInfo.collectList.includes(item.agentId)) {
+              item.isCollect = true;
             } else {
-              itme.isCollect = false;
+              item.isCollect = false;
+            }
+          }
+        }else{ //循环是否收藏
+          for (let item of this.myNodeData) {
+            if (this.addressInfo.collectList.includes(item.agentId)) {
+              item.isCollect = true;
+            } else {
+              item.isCollect = false;
             }
           }
         }
-        sessionStorage.setItem(this.addressInfo.address, JSON.stringify(this.addressInfo));
-        localStorage.setItem(this.addressInfo.address, JSON.stringify(this.addressInfo));
+        let newAddressList = addressInfo(0);
+        for (let item of newAddressList) {
+          if (item.address === this.addressInfo.address) {
+            item.collectList = this.addressInfo.collectList
+          }
+        }
+        localStorage.setItem(chainIdNumber(), JSON.stringify(newAddressList));
       },
 
       /**
@@ -374,7 +389,17 @@
             //console.log(response);
             if (response.hasOwnProperty("result")) {
               //循环获取节点列表判断是否有地址创建列表
+              let newAgentIdList = [];
               for (let item of response.result.list) {
+                if (!this.addressInfo.collectList) {
+                  this.addressInfo.collectList = [];
+                }
+                if (this.addressInfo.collectList.includes(item.agentId)) {
+                  item.isCollect = true;
+                } else {
+                  item.isCollect = false;
+                }
+                newAgentIdList.push(item.agentId);
                 item.deposit = timesDecimals(item.deposit);
                 item.totalDeposit = timesDecimals(item.totalDeposit);
                 item.totalReward = timesDecimals(item.totalReward);
@@ -386,7 +411,15 @@
                   this.isNew = false;
                 }
               }
-              this.myNodeData = response.result.list;
+              let setnNewAgentIdList = new Set(newAgentIdList);
+              let setCollectList = new Set(this.addressInfo.collectList);
+              // 差集
+              let difference = new Set([...setCollectList].filter(x => !setnNewAgentIdList.has(x)));
+              let newCollectList = [];
+              for (let items of difference) {
+                newCollectList.push(this.allNodeData.filter(item => item.agentId === items)[0])
+              }
+              this.myNodeData = [...response.result.list,...newCollectList];
             }
           })
           .catch((error) => {
@@ -463,7 +496,7 @@
         if (name === 'consensusInfo') {
           newQuery = {hash: params}
         } else {
-          newQuery = {}
+          newQuery = {consensusLock: params}
         }
         this.$router.push({
           name: name,

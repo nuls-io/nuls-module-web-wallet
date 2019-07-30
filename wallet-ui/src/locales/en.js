@@ -2,7 +2,7 @@ import enLocale from 'element-ui/lib/locale/lang/en'
 
 const en = {
   "nav": {
-    "wallet": "Wallet",
+    "wallet": "Assets",
     "transfer": "Transfer",
     "consensus": "Consensus",
     "contracts": "Contracts",
@@ -16,8 +16,8 @@ const en = {
   "public": {
     "copySuccess": "Copied to clipboard",
     "operation": "Operation",
-    "display": "display",
-    "total": "total",
+    "display": "Display",
+    "total": "Total",
     "hideReward": "Hidden Consensus Award",
     "usableBalance": "Usable balance",
     "fee": "Fee",
@@ -50,20 +50,24 @@ const en = {
     "contractName": "Contract Name",
     "cancelCollection": "Cancel Collection",
     "contractInfo": "Contract Info",
-    "input ": "Input",
+    "input": "Input",
     "output": "Output",
     "fromAddresss": "Sender",
     "toAddresss": "Recipient",
     "balance": "Balance",
     "allToke": "All Toke",
     "about": "About",
-    "logInfo": "Log Info",
+    "logInfo": "Log",
     "see": "See",
     "version": "Version",
     "checkUpdates": "Check Updates",
     "operatingSystem": "System",
     "into":"Into",
     "re-import":"Re-import",
+    "item":"Item",
+    "bookList":"Book list",
+    "choice":"Choice",
+    "downloadUrl":"Url",
     "": "",
 
     "err": "Verify and broadcast transaction failure:",
@@ -387,6 +391,7 @@ const en = {
     "tab8": "Cause freezing",
     "tab9": "Balance",
     "tab10": "State",
+    "tab11": "Address",
   },
 
   "type": {
@@ -526,6 +531,10 @@ const en = {
     "transfer15": "Tip: The address you fill in is a cross-chain address. This transaction will be a cross-chain transaction. You can only choose basic assets.",
     "transfer16": "The NULS of payment address is insufficient. Please switch accounts.",
     "transfer17": "Cross-Chain Transaction Chain is insufficient, please switch accounts",
+    "transfer18": "This contract cannot be transferred to this contract address without the _payable method",
+    "transfer19": "There is no way to transfer money to this contract address",
+    "transfer20": "The main assets of the account chain are insufficient to pay handling fees.",
+    "transfer21": " the NRC-20 contract for assets has been cancelled. Please choose other assets!" ,
     "transfer": "transfer",
   },
 

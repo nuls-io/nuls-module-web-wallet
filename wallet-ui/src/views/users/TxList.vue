@@ -58,8 +58,8 @@
         </el-table>
         <div class="pages">
           <div class="page-total">
-            {{$t('public.display')}} {{pageIndex-1 === 0 ? 1 : (pageIndex-1) * pageSize}}-{{pageIndex * pageSize}}
-            {{$t('public.total')}} {{pageTotal}}
+            {{pageIndex-1 === 0 ? 1 : (pageIndex-1) * pageSize}}-{{pageIndex * pageSize}}
+            of {{pageTotal}}
           </div>
           <el-pagination v-show="pageTotal > pageSize" @current-change="txListPages" class="fr"
                          :current-page="pageIndex"

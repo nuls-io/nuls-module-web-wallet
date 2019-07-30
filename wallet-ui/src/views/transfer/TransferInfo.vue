@@ -128,6 +128,32 @@
 
     <div class="cb"></div>
 
+    <div class="card_long mzt_20 w1200 inorouput" v-if="nulsTransfersData.length !==0">
+      <h5 class="card-title font18">NULS {{$t('nav.transfer')}}</h5>
+      <div class="inorou-info bg-white">
+        <div class="card-info left fl">
+          <ul>
+            <li v-for="item of nulsTransfersData" :key="item.address">
+              <font class="click td" @click="toUrl('address',item.from)">{{item.from}}</font>
+              <label>{{item.value}}<span class="fCN">NULS</span></label>
+            </li>
+          </ul>
+        </div>
+        <div class="card-info right fr">
+          <ul>
+            <li v-for="item of nulsTransfersData" :key="item.to">
+              <p v-for="k of item.outputs" :key="k.to">
+                <font class="click td" @click="toUrl('address',k.to)">{{k.to}}</font>
+                <label>{{k.value}}<span class="fCN">NULS</span></label>
+              </p>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="cb"></div>
+
     <div class="card_long mzt_20 w1200 inorouput">
       <h5 class="card-title font18">{{$t('public.input')}} & {{$t('public.output')}}</h5>
       <div class="inorou-info bg-white">
@@ -180,6 +206,7 @@
         inputData: [],//输入
         outputData: [],//输出
         tokenTransfersData: [],//代币转账data
+        nulsTransfersData: [],//nuls转账data
         dataDialog: false,//data 弹框
         symbol: 'NULS',
       };
@@ -225,6 +252,18 @@
 
               if (response.result.type === 16 && response.result.txData.methodName === 'transfer') {
                 this.tokenTransfersData = response.result.txData.resultInfo.tokenTransfers
+              }
+
+              if (response.result.type === 16 && response.result.txData.resultInfo.nulsTransfers.length !== 0) {
+                for (let item of response.result.txData.resultInfo.nulsTransfers) {
+                  console.log(item);
+                  item.value = timesDecimals(item.value);
+                  for (let k of item.outputs) {
+                    k.value = timesDecimals(k.value);
+                  }
+                  //TODO 循环待完成
+                }
+                this.nulsTransfersData = response.result.txData.resultInfo.nulsTransfers;
               }
 
               this.txInfo = response.result;
@@ -291,7 +330,7 @@
       }
       .inorou-info {
         border: 1px solid #dfe4ef;
-        min-height: 200px;
+        min-height: 100px;
         .card-info {
           width: 50%;
           ul {

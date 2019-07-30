@@ -66,8 +66,8 @@
           </el-table>
           <div class="pages">
             <div class="page-total">
-              {{$t('public.display')}} {{pageIndex-1 === 0 ? 1 : (pageIndex-1) *pageSize}}-{{pageIndex*pageSize}}
-              {{$t('public.total')}} {{pageTotal}}
+              {{pageIndex-1 === 0 ? 1 : (pageIndex-1) *pageSize}}-{{pageIndex*pageSize}}
+              of {{pageTotal}}
             </div>
             <el-pagination v-show="pageTotal > pageSize" @current-change="contractTxPages" class="fr"
                            :current-page="pageIndex"
@@ -186,8 +186,8 @@
     },
     methods: {
 
-      handleClick(tab, event) {
-        console.log(tab, event);
+      handleClick() {
+        //console.log(tab, event);
       },
 
       /**
@@ -202,6 +202,9 @@
               response.result.createTxHashs = superLong(response.result.createTxHash, 5);
               response.result.balance = timesDecimals(response.result.balance);
               this.contractInfo = response.result;
+              for(let item in response.result.methods){
+                response.result.methods[item].keys = item;
+              }
               this.modelData = response.result.methods;
               this.decimals = response.result.decimals;
               this.modeList = response.result.methods;

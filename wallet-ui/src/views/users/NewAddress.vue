@@ -76,8 +76,8 @@
         <div class="btn mb_20">
           <el-button type="success" @click="backKeystore" v-show="RUN_PATTERN">{{$t('newAddress.newAddress16')}}
           </el-button>
-          <el-button type="text" @click="backKey">{{$t('newAddress.newAddress17')}}</el-button>
-          <el-button type="info" @click="goWallet" v-show="false">{{$t('newAddress.newAddress18')}}</el-button>
+          <el-button type="success" @click="backKey">{{$t('newAddress.newAddress17')}}</el-button>
+          <el-button @click="goWallet" class="mt_20" v-show="!isBackups">{{$t('newAddress.newAddress18')}}</el-button>
         </div>
       </div>
 
@@ -353,9 +353,15 @@
           margin: 40px auto;
         }
         .btn {
-          .el-button--info {
-            margin: 50px 0 20px 0 !important;
+          .el-button{
+            display: block;
+            margin: 0 auto 30px !important;
+            width: 400px;
           }
+          .mt_20{
+            margin: 100px auto 30px !important;
+          }
+
         }
       }
     }

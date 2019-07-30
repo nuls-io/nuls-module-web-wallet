@@ -3,6 +3,7 @@ import {app, protocol, BrowserWindow, ipcMain, Menu, MenuItem} from 'electron'
 import {createProtocol, installVueDevtools} from 'vue-cli-plugin-electron-builder/lib'
 import {autoUpdater} from 'electron-updater'
 
+
 const isDevelopment = process.env.NODE_ENV !== 'production';
 let win;
 protocol.registerStandardSchemes(['app'], {secure: true});
@@ -103,6 +104,7 @@ if (isDevelopment) {
     updateNotAva: {type: 4, info: '现在使用的就是最新版本，不用更新'},
   };
   const uploadUrl = "http://file.wallet.nuls.io/download/"; // 下载地址，不加后面的**.exe http://192.168.1.119:8000/
+  //const uploadUrl = "http://192.168.1.119:8000/download/";
   autoUpdater.setFeedURL(uploadUrl);
   autoUpdater.on('error', function (error) {
     console.log(error);

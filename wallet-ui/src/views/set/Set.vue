@@ -13,10 +13,11 @@
         <!--<p class="font16">{{$t('public.logInfo')}}: <span class="click" @click="seeLog">{{$t('public.see')}}</span></p>-->
         <ul>
           <li v-show="RUN_PATTERN"><span>{{$t('public.operatingSystem')}}:</span>{{system}}</li>
-          <li v-show="RUN_PATTERN"><span>{{$t('public.logInfo')}}:</span>{{logUrl}}</li>
           <li><span>{{$t('public.version')}}:</span>Beta-{{version}}</li>
+          <li v-show="RUN_PATTERN && system !== 'Darwin'"><span>{{$t('public.logInfo')}}:</span>{{logUrl}}</li>
+          <li v-show="system === 'Darwin'"><span>{{$t('public.downloadUrl')}}:</span>http://file.wallet.nuls.io/download/NULS-Wallet-{{version}}.dmg</li>
         </ul>
-        <el-button type="success" @click="checkUpdate" v-show="RUN_PATTERN">{{$t('public.checkUpdates')}}</el-button>
+        <el-button type="success" @click="checkUpdate" v-show="RUN_PATTERN && system !== 'Darwin'">{{$t('public.checkUpdates')}}</el-button>
       </div>
     </div>
     <el-dialog :title="$t('bottom.updateWallet')" width="35rem"

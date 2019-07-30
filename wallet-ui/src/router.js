@@ -105,6 +105,11 @@ export default new Router({
       path: '/set',
       name: 'seting',
       component: resolve => require(['@/views/set/Set.vue'], resolve)
+    },
+    {
+      path: '/contact',
+      name: 'contact',
+      component: resolve => require(['@/views/set/Contact.vue'], resolve)
     }
 
 

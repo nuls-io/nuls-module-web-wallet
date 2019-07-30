@@ -217,6 +217,7 @@
        **/
       changeParameter() {
         let newArgs = getArgs(this.deployForm.parameterList);
+        console.log(newArgs);
         if (newArgs.allParameter) {
           this.validateContractCreate(this.createAddress, sdk.CONTRACT_MAX_GASLIMIT, sdk.CONTRACT_MINIMUM_PRICE, this.deployForm.hex, newArgs.args);
           this.deployForm.price = sdk.CONTRACT_MINIMUM_PRICE;

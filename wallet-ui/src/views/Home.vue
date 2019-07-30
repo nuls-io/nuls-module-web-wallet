@@ -39,8 +39,8 @@
         </el-table>
         <div class="pages">
           <div class="page-total">
-            {{$t('public.display')}} {{pageNumber-1 === 0 ? 1 : (pageNumber-1) *pageSize}}-{{pageNumber*pageSize}}
-            {{$t('public.total')}} {{addressAssetsData.length}}
+            {{pageNumber-1 === 0 ? 1 : (pageNumber-1) *pageSize}}-{{pageNumber*pageSize}}
+            of {{addressAssetsData.length}}
           </div>
           <el-pagination v-show="addressAssetsData.length > pageSize" class="fr" background
                          @current-change="addressAssetsListPages"
@@ -77,8 +77,8 @@
         </el-table>
         <div class="pages">
           <div class="page-total">
-            {{$t('public.display')}} {{pageNumber-1 === 0 ? 1 : (pageNumber-1) *pageSize}}-{{pageNumber*pageSize}}
-            {{$t('public.total')}} {{crossLinkData.length}}
+            {{pageNumber-1 === 0 ? 1 : (pageNumber-1) *pageSize}}-{{pageNumber*pageSize}}
+            of {{crossLinkData.length}}
           </div>
           <el-pagination v-show="addressAssetsData.length > pageSize" class="fr" background
                          @current-change="addressAssetsListPages"
@@ -328,13 +328,13 @@
             name: name,
             query: newParms
           })
-        }else if(name === 'frozenList'){
-          newParms = {accountInfo:parms};
+        } else if (name === 'frozenList') {
+          newParms = {accountInfo: parms};
           this.$router.push({
             name: name,
-            query:newParms
+            query: newParms
           })
-        }else {
+        } else {
           if (parms.type === 2) {
             this.$router.push({
               name: 'tokenTxList'
