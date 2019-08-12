@@ -749,7 +749,7 @@
                   this.toUrl("txList");
                 } else {
                   this.$message({
-                    message: this.$t('public.err4') + 'code:' + error.message + ' ' + error.message,
+                    message: this.$t('public.err4') + 'code:' + response.error.message + ' ' + response.error.message,
                     type: 'error',
                     duration: 3000
                   });
