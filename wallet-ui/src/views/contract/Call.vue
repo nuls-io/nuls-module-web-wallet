@@ -50,7 +50,7 @@
   import nuls from 'nuls-sdk-js'
   import sdk from 'nuls-sdk-js/lib/api/sdk'
   import utils from 'nuls-sdk-js/lib/utils/utils'
-  import {getNulsBalance, countFee, inputsOrOutputs, validateAndBroadcast} from '@/api/requestData'
+  import {getNulsBalance, countFee, inputsOrOutputs, validateAndBroadcast,getPrefixByChainId} from '@/api/requestData'
   import Password from '@/components/PasswordBar'
   import {getArgs, Times, Plus, addressInfo, chainID} from '@/api/util'
 
@@ -121,6 +121,7 @@
         },
         contractCallData: {},//调用合约data
         callResult: '',//调用合约结果
+        prefix: '',//地址前缀
       };
     },
     props: {
@@ -132,7 +133,14 @@
       Password,
     },
     created() {
-      this.callForm.modelData = this.modelList;
+      getPrefixByChainId(chainID()).then((response) => {
+        //console.log(response);
+        this.prefix = response
+      }).catch((err) => {
+        console.log(err);
+        this.prefix = '';
+      });
+      this.callForm.modelData = this.modelList.filter(obj=> !obj.event);
       this.addressInfo = addressInfo(1);
       setInterval(() => {
         this.addressInfo = addressInfo(1);
@@ -400,7 +408,7 @@
        * @param password
        **/
       async passSubmit(password) {
-        const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password);
+        const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password,this.prefix);
         const newAddressInfo = nuls.importByKey(2, pri, password);
         if (newAddressInfo.address === this.addressInfo.address) {
           //console.log(this.contractCallData);

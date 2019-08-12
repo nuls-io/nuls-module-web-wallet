@@ -17,7 +17,8 @@
       </h5>
       <ul>
         <li>{{$t('public.createAddress')}} <label>{{nodeInfo.agentAddress}}</label></li>
-        <li>{{$t('public.deposit')}} <label>{{nodeInfo.deposits}}<span class="fCN">{{agentAsset.agentAsset.symbol}}</span></label>
+        <li>{{$t('public.deposit')}} <label>{{nodeInfo.deposits}}<span
+                class="fCN">{{agentAsset.agentAsset.symbol}}</span></label>
         </li>
         <li>{{$t('public.rewardAddress')}} <label>{{nodeInfo.rewardAddress}}</label></li>
         <li>{{$t('public.totalStake')}} <label>{{nodeInfo.totalDeposit}}<span class="fCN">{{agentAsset.agentAsset.symbol}}</span></label>
@@ -39,7 +40,8 @@
             </el-tooltip>
           </label>
         </li>
-        <li>{{$t('consensusInfo.consensusInfo10')}} <label><u class="click td" @click="toUrl('consensusInfo',nodeInfo.txHash)">{{nodeInfo.yellowCardCount}}{{$t('consensusInfo.consensusInfo11')}}</u></label>
+        <li>{{$t('consensusInfo.consensusInfo10')}} <label><u class="click td"
+                                                              @click="toUrl('consensusInfo',nodeInfo.txHash)">{{nodeInfo.yellowCardCount}}{{$t('consensusInfo.consensusInfo11')}}</u></label>
         </li>
         <li>{{$t('public.credit')}} <label>{{nodeInfo.creditValue}}</label></li>
         <p class="cb"></p>
@@ -51,7 +53,8 @@
       <div class="entrust w1200 bg-white" v-show="jionNode">
         <div class="entrust_add w630">
           <el-form :model="jionNodeForm" status-icon :rules="jionNodeRules" ref="jionNodeForm" @submit.native.prevent>
-            <el-form-item :label="$t('consensusInfo.consensusInfo1') + '('+agentAsset.agentAsset.symbol+')'" prop="amount">
+            <el-form-item :label="$t('consensusInfo.consensusInfo1') + '('+agentAsset.agentAsset.symbol+')'"
+                          prop="amount">
               <span class="balance font12 fr">{{$t('consensus.consensus2')}}：{{balanceInfo.balance/100000000}}</span>
               <el-input v-model="jionNodeForm.amount">
               </el-input>
@@ -68,7 +71,8 @@
       </div>
       <div class="entrust_list w1200" v-show="!jionNode">
         <div class="top_total font14">
-          {{$t('public.totalStake')}}：{{nodeInfo.totalDeposit}} <span class="fCN">{{agentAsset.agentAsset.symbol}}</span>
+          {{$t('public.totalStake')}}：{{nodeInfo.totalDeposit}} <span
+                class="fCN">{{agentAsset.agentAsset.symbol}}</span>
         </div>
 
         <div class="top_ico">
@@ -79,7 +83,8 @@
           </el-table-column>
           <el-table-column prop="createTime" :label="$t('consensusList.consensusList1')" align="center">
           </el-table-column>
-          <el-table-column prop="amount" :label="$t('public.amount') + '('+agentAsset.agentAsset.symbol+')'" align="center">
+          <el-table-column prop="amount" :label="$t('public.amount') + '('+agentAsset.agentAsset.symbol+')'"
+                           align="center">
           </el-table-column>
           <el-table-column :label="$t('public.operation')" align="center">
             <template slot-scope="scope">
@@ -110,16 +115,16 @@
 <script>
   import moment from 'moment'
   import nuls from 'nuls-sdk-js'
-  import {getNulsBalance, countFee, inputsOrOutputs, validateAndBroadcast, agentDeposistList} from '@/api/requestData'
-  import {timesDecimals, getLocalTime, Minus, Times, addressInfo,connectToExplorer} from '@/api/util'
+  import {getNulsBalance, countFee, inputsOrOutputs, validateAndBroadcast, agentDeposistList, getPrefixByChainId} from '@/api/requestData'
+  import {timesDecimals, getLocalTime, Minus, Times, addressInfo, connectToExplorer,chainID} from '@/api/util'
   import Password from '@/components/PasswordBar'
   import BackBar from '@/components/BackBar'
 
   export default {
     data() {
       let checkAmount = (rule, value, callback) => {
-        let usable = 500000 - Number(this.nodeInfo.totalDeposit);
-        let balance = this.balanceInfo.balance - value * 100000000;
+        let usable = Number(Minus(500000,Number(this.nodeInfo.totalDeposit)));
+        let balance =  Number(Minus(this.balanceInfo.balance, Number(Times(value,100000000))));
         let re = /^\d+(?=\.{0,1}\d+$|$)/;
         let res = /^\d{1,8}(\.\d{1,8})?$/;
         if (!value) {
@@ -129,7 +134,7 @@
         } else if (value < 2000 || value > usable) {
           return callback(new Error(this.$t('consensusInfo.consensusInfo4')));
         } else if (balance < 0.001) {
-          return callback(new Error(this.$t('newConsensus.newConsensus7')));
+          return callback(new Error(this.$t('transfer.transfer131')+ Number(Minus(Number(timesDecimals(this.balanceInfo.balance)), 0.001))));
         } else {
           callback()
         }
@@ -137,8 +142,8 @@
 
       return {
         addressInfo: {},//账户信息
-       balanceInfo:{},//余额信息
-        agentAsset:JSON.parse(sessionStorage.getItem('info')),//pocm合约单位等信息
+        balanceInfo: {},//余额信息
+        agentAsset: JSON.parse(sessionStorage.getItem('info')),//pocm合约单位等信息
         nodeInfo: {},//节点详情
         fee: 0.001,//手续费
         outInfo: '',//退出信息
@@ -157,9 +162,18 @@
             {validator: checkAmount, trigger: ['blur', 'change']}
           ]
         },
+        prefix: '',//地址前缀
       };
     },
     created() {
+      getPrefixByChainId(chainID()).then((response) => {
+        //console.log(response);
+        this.prefix = response
+      }).catch((err) => {
+        console.log(err);
+        this.prefix = '';
+      });
+
       this.addressInfo = addressInfo(1);
       setInterval(() => {
         this.addressInfo = addressInfo(1);
@@ -289,7 +303,8 @@
        **/
       cancelDeposit(outInfo) {
         this.outInfo = outInfo;
-        getNulsBalance(this.agentAsset.agentAsset.chainId,this.agentAsset.agentAsset.assetId, this.addressInfo.address).then((response) => {
+        getNulsBalance(this.agentAsset.agentAsset.chainId, this.agentAsset.agentAsset.assetId, this.addressInfo.address).then((response) => {
+          //console.log(response);
           if (response.success) {
             this.balanceInfo = response.data;
             this.$refs.password.showPassword(true);
@@ -306,7 +321,7 @@
        *  注销节点
        **/
       stopNode() {
-        getNulsBalance(this.agentAsset.agentAsset.chainId,this.agentAsset.agentAsset.assetId, this.addressInfo.address).then((response) => {
+        getNulsBalance(this.agentAsset.agentAsset.chainId, this.agentAsset.agentAsset.assetId, this.addressInfo.address).then((response) => {
           //console.log(response);
           if (response.success) {
             this.balanceInfo = response.data;
@@ -326,7 +341,7 @@
        **/
       async passSubmit(password) {
         const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password);
-        const newAddressInfo = nuls.importByKey(this.addressInfo.chainId, pri, password);
+        const newAddressInfo = nuls.importByKey(this.addressInfo.chainId, pri, password,this.prefix);
         if (newAddressInfo.address === this.addressInfo.address) {
           let transferInfo = {
             fromAddress: this.addressInfo.address,
@@ -368,6 +383,7 @@
             transferInfo.amount = this.nodeInfo.deposit;
             transferInfo.depositHash = this.$route.query.hash;
             inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 9);
+            //console.log(inOrOutputs);
             if (inOrOutputs.success) {
               let newInputs = inOrOutputs.data.inputs;
               let outputs = [];
@@ -427,7 +443,7 @@
 
           //console.log(txhex);
           await validateAndBroadcast(txhex).then((response) => {
-            console.log(response);
+            //console.log(response);
             if (response.success) {
               this.$router.push({
                 name: "txList"
@@ -458,7 +474,7 @@
           if (val.address !== old.address && old.address) {
             this.nodeDepositLoading = true;
             this.jionNodeForm.amount = '';
-            this.getBalanceByAddress(this.agentAsset.agentAsset.chainId, this.agentAsset.agentAsset.assetId,this.addressInfo.address);
+            this.getBalanceByAddress(this.agentAsset.agentAsset.chainId, this.agentAsset.agentAsset.assetId, this.addressInfo.address);
             this.getNodeDepositByHash(this.pageIndex, this.pageSize, this.addressInfo.address, this.$route.query.hash)
           }
         }

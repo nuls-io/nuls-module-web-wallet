@@ -106,6 +106,7 @@
   import BackBar from '@/components/BackBar'
   import {copys, chainID, chainIdNumber, defaultAddressInfo, localStorageByAddressInfo} from '@/api/util'
   import {RUN_PATTERN} from '@/config.js'
+  import {getPrefixByChainId} from '@/api/requestData'
 
   export default {
     data() {
@@ -133,6 +134,7 @@
       };
       return {
         isFirst: true,//第一步
+        prefix: '',//地址前缀
         isBackups: false,//备份账户
         keyDialog: false, //key弹框
         ifAddressInfo: localStorage.hasOwnProperty(chainIdNumber),//判断是否账户地址
@@ -158,6 +160,14 @@
       };
     },
     created() {
+      getPrefixByChainId(chainID()).then((response) => {
+        //console.log(response);
+        this.prefix = response
+      }).catch((err) => {
+        console.log(err);
+        this.prefix = '';
+      });
+
       let backAddressInfo = this.$route.query.backAddressInfo;
       if (backAddressInfo) {
         this.isFirst = false;
@@ -181,7 +191,8 @@
       submitPasswordForm(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            this.newAddressInfo = nuls.newAddress(chainID(), this.passwordForm.pass);
+            //console.log(this.prefix);
+            this.newAddressInfo = nuls.newAddress(chainID(), this.passwordForm.pass, this.prefix);
             let newAddressInfo = defaultAddressInfo;
             newAddressInfo.address = this.newAddressInfo.address;
             newAddressInfo.aesPri = this.newAddressInfo.aesPri;
@@ -218,7 +229,7 @@
         let that = this;
         const pri = nuls.decrypteOfAES(this.newAddressInfo.aesPri, password);
         let chainid = this.$route.query.backAddressInfo ? this.$route.query.backAddressInfo.chainId : chainID();
-        const newAddressInfo = nuls.importByKey(chainid, pri, password);
+        const newAddressInfo = nuls.importByKey(chainid, pri, password, this.prefix);
         if (newAddressInfo.address === this.newAddressInfo.address) {
           if (this.backType === 0) {
             const {dialog} = require('electron').remote;
@@ -303,6 +314,7 @@
   .new_address {
     .new {
       border: @BD1;
+      margin-bottom: 100px;
       .step {
         height: 50px;
         margin: 100px 140px 0 140px;
@@ -353,12 +365,12 @@
           margin: 40px auto;
         }
         .btn {
-          .el-button{
+          .el-button {
             display: block;
             margin: 0 auto 30px !important;
             width: 400px;
           }
-          .mt_20{
+          .mt_20 {
             margin: 100px auto 30px !important;
           }
 

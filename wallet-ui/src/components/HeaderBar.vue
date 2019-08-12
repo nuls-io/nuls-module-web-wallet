@@ -200,7 +200,7 @@
       display: block;
       width: 25px;
     }
-    .fCN{
+    .fCN {
       color: @Ncolour;
     }
     .w100 {

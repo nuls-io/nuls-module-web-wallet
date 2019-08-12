@@ -83,6 +83,7 @@
     getContractConstructor,
     validateTx,
     broadcastTx,
+    getPrefixByChainId
   } from '@/api/requestData'
   import Password from '@/components/PasswordBar'
   import {getArgs, chainID} from '@/api/util'
@@ -133,6 +134,7 @@
         isTestSubmit: false,//测试合约
         fileName: '',//jar文件名
         deployLoading: false,//获取参数加载动画
+        prefix: '',//地址前缀
       };
     },
     props: {
@@ -142,6 +144,13 @@
       Password,
     },
     created() {
+      getPrefixByChainId(chainID()).then((response) => {
+        //console.log(response);
+        this.prefix = response
+      }).catch((err) => {
+        console.log(err);
+        this.prefix = '';
+      });
       this.createAddress = this.addressInfo.address;
       this.getBalanceByAddress(this.addressInfo.chainId, 1, this.createAddress);
     },
@@ -217,7 +226,7 @@
        **/
       changeParameter() {
         let newArgs = getArgs(this.deployForm.parameterList);
-        console.log(newArgs);
+        //console.log(newArgs);
         if (newArgs.allParameter) {
           this.validateContractCreate(this.createAddress, sdk.CONTRACT_MAX_GASLIMIT, sdk.CONTRACT_MINIMUM_PRICE, this.deployForm.hex, newArgs.args);
           this.deployForm.price = sdk.CONTRACT_MINIMUM_PRICE;
@@ -391,7 +400,7 @@
        **/
       async passSubmit(password) {
         const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password);
-        const newAddressInfo = nuls.importByKey(this.addressInfo.chainId, pri, password);
+        const newAddressInfo = nuls.importByKey(this.addressInfo.chainId, pri, password,this.prefix);
         let amount = this.contractCreateTxData.gasLimit * this.contractCreateTxData.price;
         if (newAddressInfo.address === this.addressInfo.address) {
           let transferInfo = {
@@ -404,6 +413,9 @@
           let pub = this.addressInfo.pub;
           let remark = this.deployForm.addtion;
           let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 15);
+          if(!inOrOutputs.success){
+            this.$message({message: inOrOutputs.data, type: 'error', duration: 1000});
+          }
           let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 15, this.contractCreateTxData);
           let txhex = '';
           //获取手续费
@@ -460,6 +472,7 @@
             //获取文件流
             let reader = new FileReader();
             reader.readAsDataURL(file);
+            _this.deployLoading=true;
             reader.onload = (() => {
               _this.$post('/', 'uploadContractJar', [reader.result])
                 .then((response) => {
@@ -468,10 +481,10 @@
                     _this.deployForm.hex = response.result.code;
                     _this.getParameter();
                   } else {
-                    this.$message({message: this.$t('deploy.deploy17'), type: 'error', duration: 1000});
+                    _this.$message({message: _this.$t('deploy.deploy17'), type: 'error', duration: 1000});
                   }
                 }).catch((err) => {
-                this.$message({message: this.$t('deploy.deploy18') + err, type: 'error', duration: 1000});
+                _this.$message({message: _this.$t('deploy.deploy18') + err, type: 'error', duration: 1000});
               })
             });
           }

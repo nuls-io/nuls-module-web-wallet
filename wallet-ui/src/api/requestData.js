@@ -44,11 +44,6 @@ export async function inputsOrOutputs(transferInfo, balanceInfo, type) {
   let newNonce = balanceInfo.nonce;
   let newoutputAmount = transferInfo.amount;
   let newLockTime = 0;
-  if (type !== 6 || type !== 2) {
-    if (balanceInfo.balance < newAmount) {
-      return {success: false, data: "Your balance is not enough."}
-    }
-  }
   if (type === 4) {
     newLockTime = -1;
   } else if (type === 5) {
@@ -239,4 +234,45 @@ export async function getContractConstructor(contractCodeHex) {
     .catch((error) => {
       return {success: false, data: error};
     });
+}
+
+/**
+ * 获取链ID对应的前缀
+ * @returns {Promise<any>}
+ */
+export async function getAllAddressPrefix() {
+  let newData = [
+    {chainId: 1, addressPrefix: 'NULS'},
+    {chainId: 2, addressPrefix: 'tNULS'},
+  ];
+  await post('/', 'getAllAddressPrefix', [])
+    .then((response) => {
+      //console.log(response);
+      if (response.hasOwnProperty("result")) {
+        if (sessionStorage.hasOwnProperty('prefixData')) {
+          sessionStorage.removeItem('prefixData')
+        }
+        sessionStorage.setItem('prefixData', JSON.stringify(response.result));
+      } else {
+        sessionStorage.setItem('prefixData', JSON.stringify(newData));
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      sessionStorage.setItem('prefixData', JSON.stringify(newData));
+    });
+}
+
+//根据链ID获取前缀
+export async function getPrefixByChainId(chainId) {
+  await getAllAddressPrefix();
+  let prefixData = JSON.parse(sessionStorage.getItem('prefixData'));
+  if (prefixData) {
+    let newInfo = prefixData.find((v) => {
+      return v.chainId === chainId;
+    });
+    return newInfo.addressPrefix;
+  } else {
+    return '';
+  }
 }

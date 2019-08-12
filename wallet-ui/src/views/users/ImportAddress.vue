@@ -52,6 +52,7 @@
   import Password from '@/components/PasswordBar'
   import {chainID, defaultAddressInfo, localStorageByAddressInfo} from '@/api/util'
   import {RUN_PATTERN} from '@/config.js'
+  import {getPrefixByChainId} from '@/api/requestData'
 
   export default {
     data() {
@@ -85,8 +86,9 @@
         }
       };
       return {
-        importRadio: this.$route.query.address ? 'importKey' : 'importKeystore',
-        keystoreInfo: {},
+        prefix: '',//地址前缀
+        importRadio: this.$route.query.address ? 'importKey' : 'importKeystore', //选择导入方式
+        keystoreInfo: {},//keystore内容
         importKeyForm: {
           key: '',
           pass: '',
@@ -107,6 +109,14 @@
       };
     },
     created() {
+      getPrefixByChainId(chainID()).then((response) => {
+        //console.log(response);
+        this.prefix = response
+      }).catch((err) => {
+        console.log(err);
+        this.prefix = '';
+      });
+
       if (!RUN_PATTERN) {
         this.importRadio = 'importKey';
       }
@@ -145,7 +155,7 @@
                   return console.error(err);
                 } else {
                   that.keystoreInfo = JSON.parse(data.toString());
-                  console.log(that.keystoreInfo);
+                  //console.log(that.keystoreInfo);
                   that.$refs.password.showPassword(true)
                 }
               });
@@ -164,8 +174,8 @@
        **/
       passSubmit(password) {
         const pri = nuls.decrypteOfAES(this.keystoreInfo.encryptedPrivateKey, password);
-        const newAddressInfo = nuls.importByKey(chainID(), pri, password);
-        if (newAddressInfo.address === this.keystoreInfo.address) {
+        const newAddressInfo = nuls.importByKey(chainID(), pri, password, this.prefix);
+        if (this.keystoreInfo.address === newAddressInfo.address || nuls.addressEquals(this.keystoreInfo.address, newAddressInfo.address)) {
           let newImportAddressInfo = defaultAddressInfo;
           newImportAddressInfo.address = newAddressInfo.address;
           newImportAddressInfo.aesPri = newAddressInfo.aesPri;
@@ -195,7 +205,7 @@
        * 导入私钥方法
        */
       importWallet() {
-        const importAddressInfo = nuls.importByKey(chainID(), this.importKeyForm.key, this.importKeyForm.pass);
+        const importAddressInfo = nuls.importByKey(chainID(), this.importKeyForm.key, this.importKeyForm.pass, this.prefix);
         let newImportAddressInfo = defaultAddressInfo;
         newImportAddressInfo.address = importAddressInfo.address;
         newImportAddressInfo.aesPri = importAddressInfo.aesPri;

@@ -37,7 +37,7 @@
 
 <script>
   import nuls from 'nuls-sdk-js'
-  import {inputsOrOutputs, validateAndBroadcast} from '@/api/requestData'
+  import {inputsOrOutputs, validateAndBroadcast,getPrefixByChainId} from '@/api/requestData'
   import Password from '@/components/PasswordBar'
   import BackBar from '@/components/BackBar'
   import * as config from '@/config.js'
@@ -66,9 +66,18 @@
         },
         addressInfo: '', //默认账户信息
         balanceInfo: '',//账户余额信息
+        prefix: '',//地址前缀
       };
     },
     created() {
+      getPrefixByChainId(chainID()).then((response) => {
+        //console.log(response);
+        this.prefix = response
+      }).catch((err) => {
+        console.log(err);
+        this.prefix = '';
+      });
+
       for (let item of addressInfo(0)) {
         if (item.address === this.$route.query.address) {
           this.addressInfo = item
@@ -136,10 +145,10 @@
       async passSubmit(password) {
 
         const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password);
-        const newAddressInfo = nuls.importByKey(chainID(), pri, password);
+        const newAddressInfo = nuls.importByKey(chainID(), pri, password,this.prefix);
         if (newAddressInfo.address === this.addressInfo.address) {
           //根据公钥获取地址
-          let burningAddress = nuls.getAddressByPub(chainID(), 1, config.API_BURNING_ADDRESS_PUB);
+          let burningAddress = nuls.getAddressByPub(chainID(), 1, config.API_BURNING_ADDRESS_PUB,this.prefix);
           //console.log(burningAddress);
           let transferInfo = {
             fromAddress: this.addressInfo.address,

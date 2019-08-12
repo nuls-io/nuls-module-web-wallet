@@ -9,7 +9,11 @@
           </p>
         </div>
         <div class="right fr">
-          {{$t('bottom.nodeHeight')}}: {{heightInfo.networkHeight}}/{{heightInfo.localHeight}}
+          {{$t('bottom.nodeHeight')}}:
+          <i v-show="heightInfo.networkHeight ===0 && heightInfo.localHeight===0 " class="el-icon-loading"></i>
+          <span v-show="heightInfo.networkHeight !==0 && heightInfo.localHeight !==0 ">
+            {{heightInfo.networkHeight}}/{{heightInfo.localHeight}}
+          </span>
         </div>
       </div>
     </div>
@@ -27,6 +31,7 @@
     data() {
       return {
         heightInfo: [],//高度信息
+        failedNu: 0,//失败请次数
       }
     },
     created() {
@@ -66,6 +71,7 @@
       this.getHeaderInfo();
       setInterval(() => {
         this.serviceUrls = JSON.parse(localStorage.getItem("urls"));
+        //console.log(this.serviceUrls.urls)
       }, 500);
     },
     mounted() {
@@ -74,7 +80,29 @@
         this.getAddressInfo();
       }, 10000);
     },
-    watch: {},
+    watch: {
+      heightInfo(val) {
+        if (val.localHeight === 0 && val.networkHeight === 0) {
+          this.failedNu = this.failedNu + 1
+        } else {
+          this.failedNu = 0
+        }
+        if (this.failedNu === 5) {
+          this.$confirm(this.$t('bottom.err0'), {
+            confirmButtonText: this.$t('bottom.err1'),
+            cancelButtonText: '',
+            type: 'error',
+            showClose: false,
+            showCancelButton: false,
+            closeOnClickModal: false,
+            closeOnPressEscape: false,
+          }).then(() => {
+            this.toUrl('nodeService');
+          }).catch(() => {
+          });
+        }
+      }
+    },
     methods: {
 
       /**
@@ -82,7 +110,12 @@
        */
       getHeaderInfo() {
         const url = localStorage.hasOwnProperty('urls') ? JSON.parse(localStorage.getItem('urls')).urls : 'http://192.168.1.40:18003/';
-        const params = {"jsonrpc": "2.0", "method": "getInfo", "params": [chainID()], "id": 5898};
+        const params = {
+          "jsonrpc": "2.0",
+          "method": "getInfo",
+          "params": [chainID()],
+          "id": Math.floor(Math.random() * 1000)
+        };
         axios.post(url, params)
           .then((response) => {
             //console.log(response.data);

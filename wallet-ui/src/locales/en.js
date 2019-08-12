@@ -75,6 +75,7 @@ const en = {
     "err1": "Input and outputs assembly errors:",
     "err2": "Failed to obtain account balance:",
     "err3": "Obtain account balance exceptions:",
+    "err4": "Cross-Chain Trading Failure: ",
 
   },
 
@@ -413,6 +414,12 @@ const en = {
     "17": "Delete contract",
     "18": "Contract transfer",
     "19": "Contract return",
+    "20": "Contract creation node",
+    "21": "Contract Stake",
+    "22": "Consensus contract consensus",
+    "23": "Contract cancellation node",
+    "24": "Verifier Change",
+    "25": "Verifier initialization",
   },
 
   "budgetType": {
@@ -527,6 +534,7 @@ const en = {
     "transfer11": "Please enter the amount",
     "transfer12": "The amount must be a number.",
     "transfer13": "The amount must be greater than 0.001",
+    "transfer131": "The maximum transfer amount is: ",
     "transfer14": "The amount should not be greater than the available balance.",
     "transfer15": "Tip: The address you fill in is a cross-chain address. This transaction will be a cross-chain transaction. You can only choose basic assets.",
     "transfer16": "The NULS of payment address is insufficient. Please switch accounts.",
@@ -801,7 +809,8 @@ const en = {
     "contractInfo2": "Number Trades",
     "contractInfo3": "Creator",
     "contractInfo4": "Token",
-    "contractInfo5": "Transaction Type",
+    "contractInfo5": "Transaction type",
+    "contractInfo51":"Call method",
     "contractInfo6": "Contract method",
     "contractInfo7": "Parameter",
     "contractInfo8": "Return type",
@@ -821,6 +830,9 @@ const en = {
     "updateWallet": "Update wallet",
     "Tips": "Tips",
     "Backstage": "Background operation",
+    "err0": "The wallet is unable to connect to the current node service, and the transaction-related functions will not work properly. Please go to the node service list and switch to the available node','Node service connection failed'.",
+    "err1": "To Node Service List",
+    "": ""
   },
 
   "TipsType": {

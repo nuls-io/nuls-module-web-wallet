@@ -35,7 +35,8 @@
 <script>
   import nuls from 'nuls-sdk-js'
   import BackBar from '@/components/BackBar'
-  import {addressInfo, chainIdNumber} from '@/api/util'
+  import {addressInfo, chainIdNumber,chainID} from '@/api/util'
+  import {getPrefixByChainId} from '@/api/requestData'
 
   export default {
     data() {
@@ -95,9 +96,17 @@
           ]
         },
         editAddressInfo: '',//新建的地址信息
+        prefix: '',//地址前缀
       };
     },
     created() {
+      getPrefixByChainId(chainID()).then((response) => {
+        //console.log(response);
+        this.prefix = response
+      }).catch((err) => {
+        console.log(err);
+        this.prefix = '';
+      });
     },
     mounted() {
     },
@@ -121,9 +130,9 @@
         this.$refs[formName].validate((valid) => {
           if (valid) {
             const pri = nuls.decrypteOfAES(oldAddressInfo.aesPri, this.passwordForm.oldPass);
-            const newAddressInfo = nuls.importByKey(2, pri, this.passwordForm.oldPass);
+            const newAddressInfo = nuls.importByKey(chainID(), pri, this.passwordForm.oldPass,this.prefix);
             if (newAddressInfo.address === address) {
-              const importAddressInfo = nuls.importByKey(2, pri, this.passwordForm.newPass);
+              const importAddressInfo = nuls.importByKey(chainID(), pri, this.passwordForm.newPass,this.prefix);
               oldAddressInfo.aesPri = importAddressInfo.aesPri;
               oldAddressInfo.pub = importAddressInfo.pub;
               let addressList = addressInfo(0);

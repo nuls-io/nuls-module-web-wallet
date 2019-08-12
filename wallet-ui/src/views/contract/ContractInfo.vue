@@ -23,7 +23,7 @@
           <li>
             {{$t('contractInfo.contractInfo3')}}
             <label>
-              <u class="click td" @click="toUrl('contractsInfo',contractInfo.creater,1)">
+              <u class="click td" @click="toUrl('address',contractInfo.creater,1)">
                 {{contractInfo.creater}}
               </u>
               at TxID
@@ -43,13 +43,15 @@
           <el-table :data="contractTxData" stripe border style="width: 100%;margin-top: 14px">
             <el-table-column label="" width="30">
             </el-table-column>
-            <el-table-column prop="height" :label="$t('public.height')" width="180" align="left">
+            <el-table-column prop="height" :label="$t('public.height')" width="80" align="left">
               <template slot-scope="scope">
                 <span class="cursor-p click">{{ scope.row.blockHeight }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="height" :label="$t('contractInfo.contractInfo5')" width="180" align="left">
+            <el-table-column :label="$t('contractInfo.contractInfo5')" width="180" align="left">
               <template slot-scope="scope"><span>{{ $t('type.'+scope.row.type) }}</span></template>
+            </el-table-column>
+            <el-table-column prop="contractMethod" :label="$t('contractInfo.contractInfo51')" width="150" align="left">
             </el-table-column>
             <el-table-column label="TXID" min-width="280" align="left">
               <template slot-scope="scope">
@@ -191,7 +193,7 @@
       },
 
       /**
-       * 合约详情根据合约地址
+       * 获取合约详情根据合约地址
        * @param address
        **/
       async contractInfoByAddress(address) {
@@ -203,6 +205,7 @@
               response.result.balance = timesDecimals(response.result.balance);
               this.contractInfo = response.result;
               for(let item in response.result.methods){
+                //console.log(response.result.methods[item].event);
                 response.result.methods[item].keys = item;
               }
               this.modelData = response.result.methods;
@@ -276,6 +279,7 @@
        **/
       getBalanceByAddress(assetChainId, assetId, address) {
         getNulsBalance(assetChainId, assetId, address).then((response) => {
+          //console.log(response);
           if (response.success) {
             this.balanceInfo = response.data;
           } else {
