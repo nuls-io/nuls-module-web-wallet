@@ -400,6 +400,7 @@ const en = {
     "tab16": "Notes cannot be empty",
     "tab17": "Address cannot be empty",
     "tab18": "The address already exists",
+    "tab19": "Address code",
   },
 
   "type": {

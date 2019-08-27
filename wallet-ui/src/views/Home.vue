@@ -90,8 +90,8 @@
       </el-tab-pane>
     </el-tabs>
 
-    <el-dialog title="地址二维码" :visible.sync="qrcodeDialog" width="20rem" center>
-      <div class="tc" style="width: 150px;margin: 0 auto">
+    <el-dialog :title="$t('tab.tab19')" :visible.sync="qrcodeDialog" width="20rem" center>
+      <div class="tc" style="width: 150px;margin: 0 auto;height: 180px">
         <div id="qrcode" class="qrcode"></div>
       </div>
     </el-dialog>
