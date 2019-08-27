@@ -1,22 +1,22 @@
 <template>
   <div class="contact bg-gray">
-    <h3 class="title">联系人</h3>
+    <h3 class="title">{{$t('tab.tab12')}}</h3>
     <div class="w1200 mt_20">
       <div class="top_ico">
         <i class="el-icon-plus click" @click="addOrEditContact()"></i>
       </div>
       <el-table :data="contactList" stripe border>
-        <el-table-column prop="name" label="名称" align="center" >
+        <el-table-column prop="name" :label="$t('transfer.transfer4')" align="center">
         </el-table-column>
-        <el-table-column prop="address" label="地址" align="center" min-width="200">
+        <el-table-column prop="address" :label="$t('tab.tab11')" align="center" min-width="200">
         </el-table-column>
         <el-table-column prop="alias" :label="$t('address.address3')" align="center">
         </el-table-column>
         <el-table-column :label="$t('address.address5')" align="center" width="350">
           <template slot-scope="scope">
-            <label class="click tab_bn" @click="addOrEditContact(scope.row)">编辑</label>
+            <label class="click tab_bn" @click="addOrEditContact(scope.row)">{{ $t('tab.tab13')}}</label>
             <span class="tab_line">|</span>
-            <label class="click tab_bn" @click="deleteContact(scope.row)">删除</label>
+            <label class="click tab_bn" @click="deleteContact(scope.row)">{{ $t('tab.tab14')}}</label>
           </template>
         </el-table-column>
       </el-table>
@@ -25,22 +25,22 @@
       </div>
     </div>
 
-    <el-dialog title="添加联系人" width="35rem" :visible.sync="contactDialog" class="contact-dialog"
+    <el-dialog :title="$t('tab.tab15')" width="35rem" :visible.sync="contactDialog" class="contact-dialog"
                :close-on-click-modal="false"
                :close-on-press-escape="false">
       <el-form :model="contacForm" status-icon :rules="contacRules" ref="contacForm" class="contac-form bg-white">
-        <el-form-item label="名称" prop="name">
+        <el-form-item :label="$t('transfer.transfer4')" prop="name">
           <el-input v-model="contacForm.name" maxlength="20" show-word-limit>
           </el-input>
         </el-form-item>
-        <el-form-item label="地址" prop="address">
+        <el-form-item :label="$t('tab.tab11')" prop="address">
           <el-input v-model="contacForm.address">
           </el-input>
         </el-form-item>
-        <div v-show="contacForm.alias">别名: {{contacForm.alias}}</div>
+        <div v-show="contacForm.alias">{{$t('address.address3')}}: {{contacForm.alias}}</div>
         <el-form-item class="btn-next">
-          <el-button @click="resetForm('contacForm')">取 消</el-button>
-          <el-button type="success" @click="submitForm('contacForm')">确 定</el-button>
+          <el-button @click="resetForm('contacForm')">{{$t('address.address10')}}</el-button>
+          <el-button type="success" @click="submitForm('contacForm')">{{$t('address.address11')}}</el-button>
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -55,16 +55,16 @@
     data() {
       let validateName = (rule, value, callback) => {
         if (!value) {
-          return callback(new Error('名称不能为空'));
+          return callback(new Error(this.$t('tab.tab16')));
         } else {
           callback();
         }
       };
       let validateAddress = (rule, value, callback) => {
         if (!value) {
-          return callback(new Error('地址不能为空'));
+          return callback(new Error(this.$t('tab.tab17')));
         } else if (this.isAdd === 0 && this.isAddressExist(value)) {
-          return callback(new Error('地址已经存在了'));
+          return callback(new Error(this.$t('tab.tab18')));
         } else {
           this.getAddressInfo(value);
           callback();
@@ -185,8 +185,6 @@
 
       /**
        * 添加或编辑方法
-       * @param contacInfo
-       * @param type 0:添加 1：编辑
        **/
       addOrEditMethod() {
         let newArr = [];
@@ -238,10 +236,13 @@
       padding: 30px 20px 50px 20px;
       .contac-form {
         margin: 0 auto 0;
-        .el-input__suffix{
+        .el-input__suffix {
           height: 30px;
           line-height: 20px;
           top: 5px;
+          .el-input__icon{
+            line-height: 20px;
+          }
         }
         .btn-next {
           margin: 40px auto 0;

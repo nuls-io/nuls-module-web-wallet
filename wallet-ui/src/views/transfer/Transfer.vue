@@ -13,7 +13,7 @@
           </el-input>
         </el-form-item>
         <el-form-item :label="$t('transfer.transfer2')">
-          <el-select v-model="transferForm.type" @change="changeType" :disabled="contractInfo.success">
+          <el-select v-model="transferForm.type" @change="changeType">
             <el-option
                     v-for="item in assetsList"
                     :key="item.type === 1 ? item.chainId : item.contractAddress"
@@ -100,7 +100,7 @@
 
     <el-dialog :title="$t('public.bookList')" :visible.sync="bookDialog" width="50rem" class="book-dialog">
       <el-table :data="bookData">
-        <el-table-column property="name" :label="$t('nodeService.nodeService2')" width="100" align="center">
+        <el-table-column property="name" :label="$t('transfer.transfer4')" width="100" align="center">
         </el-table-column>
         <el-table-column property="address" :label="$t('tab.tab11')" min-width="300" align="center">
         </el-table-column>
@@ -161,11 +161,11 @@
         }
       };
       let validateAmount = (rule, value, callback) => {
-        let patrn = /^([1-9][\d]{0,72}|0)(\.[\d]{1,72})?$/;
+        let patrn = new RegExp ("^([1-9][\\d]{0,"+this.changeAssets.decimals+"}|0)(\\.[\\d]{1,"+this.changeAssets.decimals+"})?$");
         if (value === '') {
           callback(new Error(this.$t('transfer.transfer11')))
         } else if (!patrn.exec(value)) {
-          callback(new Error(this.$t('transfer.transfer12')))
+          callback(new Error(this.$t('transfer.transfer12') +": "+ this.changeAssets.decimals))
         } else if (Number(value) < 0.001) {
           callback(new Error(this.$t('transfer.transfer13')))
         } else if (Number(value) > Number(Minus(this.changeAssets.balance, 0.001))) {
@@ -334,7 +334,8 @@
                   symbol: item.symbol,
                   chainId: item.chainId,
                   assetId: item.assetId,
-                  balance: timesDecimals(item.balance)
+                  balance: timesDecimals(item.balance),
+                  decimals:8,
                 });
                 chainId = item.chainId;
               }
@@ -383,7 +384,8 @@
                   symbol: item.symbol,
                   chainId: item.chainId,
                   assetId: item.assetId,
-                  balance: timesDecimals(item.balance)
+                  balance: timesDecimals(item.balance, item.decimals),
+                  decimals: item.decimals
                 })
               }
             }
@@ -741,6 +743,7 @@
           }
           //console.log(txhex);
           if (this.isCross) { //跨链交易
+            //console.log("跨链交易");
             await this.$post('/', 'sendCrossTx', [txhex])
               .then((response) => {
                 //console.log(response);
@@ -761,6 +764,7 @@
                 this.$message({message: this.$t('public.err4') + error, type: 'error', duration: 5000});
               });
           } else { //其他交易验证并广播交易
+            //console.log("其他交易");
             await validateAndBroadcast(txhex).then((response) => {
               //console.log(response);
               this.transferLoading = false;
@@ -896,9 +900,22 @@
         let newFee = 0;
         //console.log(isMainNet(chainId));
         if (isMainNet(chainId)) {
-          newFee = countCtxFee(tAssemble, 1)
+          await countCtxFee(tAssemble, 1).then((result) => {
+            newFee = result;
+          }).catch((err) => {
+            this.$message({message: this.$t('newConsensus.newConsensus7'), type: 'error', duration: 1000});
+            console.log(err);
+            return;
+
+          });
         } else {
-          newFee = countCtxFee(tAssemble, 2);
+          await countCtxFee(tAssemble, 2).then((result) => {
+            newFee = result;
+          }).catch((err) => {
+            this.$message({message: this.$t('newConsensus.newConsensus7'), type: 'error', duration: 1000});
+            console.log(err);
+            return;
+          });
           mainCtx.time = tAssemble.time;
           mainCtx.remark = tAssemble.remark;
           let mainNetInputs = [];
@@ -931,6 +948,7 @@
           }
           mainCtx.setCoinData(mainNetInputs, outputs);
         }
+        //console.log(transferInfo.fee !== newFee);
         //如果手续费发生改变，重新组装CoinData
         if (transferInfo.fee !== newFee) {
           if (chainId === transferInfo.assetsChainId && transferInfo.assetsId === 1) {

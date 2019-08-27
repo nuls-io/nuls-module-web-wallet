@@ -111,10 +111,6 @@
           callback(new Error(this.$t('nodeService.nodeService14')));
         } else if (!patrn.exec(value)) {
           callback(new Error(this.$t('nodeService.nodeService15')));
-        } else if (this.nodeServiceData.find((v) => {
-            return v.urls === value;
-          })) {
-          callback(new Error(this.$t('nodeService.nodeService151')));
         } else {
           callback();
         }

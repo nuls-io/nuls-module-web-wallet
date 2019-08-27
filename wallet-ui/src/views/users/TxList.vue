@@ -27,7 +27,7 @@
           </el-select>
           <el-switch v-model="isHide" active-text="" :inactive-text="$t('public.hideReward')" :width="35"
                      @change="changeHide"
-                     v-show="types===0">
+                     v-show="false">
           </el-switch>
         </div>
         <el-table :data="txListData" stripe border>
@@ -90,7 +90,7 @@
         assetsValue: "0",
         typeOptions: [
           {value: '0', label: '0'},
-          {value: '1', label: '1'},
+         /* {value: '1', label: '1'},*/
           {value: '2', label: '2'},
           {value: '3', label: '3'},
           {value: '4', label: '4'},

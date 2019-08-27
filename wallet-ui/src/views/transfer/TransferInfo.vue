@@ -155,7 +155,12 @@
     <div class="cb"></div>
 
     <div class="card_long mzt_20 w1200 inorouput mb_100">
-      <h5 class="card-title font18">{{$t('public.input')}} & {{$t('public.output')}}</h5>
+      <h5 class="card-title font18">
+        <span>{{$t('public.input')}}</span>
+        <span>{{$t('public.output')}}</span>
+        <!--{{$t('public.input')}} & {{$t('public.output')}}-->
+      </h5>
+      <div class="cb"></div>
       <div class="inorou-info bg-white">
         <div class="card-info left fl">
           <ul>
@@ -327,6 +332,14 @@
         border-bottom: 0;
         border-right: 1px solid #dfe4ef;
         border-left: 1px solid #dfe4ef;
+        padding: 0;
+        span {
+          display: block;
+          width: 46%;
+          line-height: 20px;
+          float: left;
+          padding-left: 40px;
+        }
       }
       .inorou-info {
         border: 1px solid #dfe4ef;

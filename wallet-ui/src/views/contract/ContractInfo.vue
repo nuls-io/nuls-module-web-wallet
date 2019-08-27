@@ -35,13 +35,13 @@
       </div>
       <div class="cb"></div>
       <el-tabs v-model="activeName" @tab-click="handleClick">
-        <el-tab-pane :label="$t('home.home2')" name="first">
+        <el-tab-pane :label="$t('home.home2')" name="first" class="mb_100">
           <SelectBar v-model="contractsTypeRegion" :typeOptions="contractsStatusOptions" typeName="type"
                      @change="changeType">
           </SelectBar>
 
           <el-table :data="contractTxData" stripe border style="width: 100%;margin-top: 14px">
-            <el-table-column label="" width="30">
+            <el-table-column label="" width="20">
             </el-table-column>
             <el-table-column prop="height" :label="$t('public.height')" width="80" align="left">
               <template slot-scope="scope">
@@ -51,7 +51,7 @@
             <el-table-column :label="$t('contractInfo.contractInfo5')" width="180" align="left">
               <template slot-scope="scope"><span>{{ $t('type.'+scope.row.type) }}</span></template>
             </el-table-column>
-            <el-table-column prop="contractMethod" :label="$t('contractInfo.contractInfo51')" width="150" align="left">
+            <el-table-column prop="contractMethod" :label="$t('contractInfo.contractInfo51')" width="180" align="left">
             </el-table-column>
             <el-table-column label="TXID" min-width="280" align="left">
               <template slot-scope="scope">
@@ -269,6 +269,7 @@
        **/
       contractTxPages(val) {
         this.pageIndex = val;
+        this.contractTxList(this.pageIndex, this.pageSize, 0, this.contractAddress);
       },
 
       /**

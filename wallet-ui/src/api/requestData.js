@@ -25,10 +25,24 @@ export function countFee(tx, signatrueCount) {
  * @param tx
  * @param signatrueCount 签名数量，默认为1
  **/
-export function countCtxFee(tx, signatrueCount) {
-  let txSize = tx.txSerialize().length;
-  txSize += signatrueCount * 110;
-  return 1000000 * Math.ceil(txSize / 1024);
+export async function countCtxFee(tx, signatrueCount) {
+  let resultValue = 0;
+  await post('/', 'getByzantineCount', [tx.txSerialize().toString('hex')])
+    .then((response) => {
+      //console.log(response);
+      if (response.hasOwnProperty("result")) {
+        let txSize = tx.txSerialize().length;
+        txSize += (signatrueCount + response.result.value) * 110;
+        resultValue = 1000000 * Math.ceil(txSize / 1024)
+      } else {
+        resultValue = -100
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      resultValue = -100
+    });
+  return resultValue;
 }
 
 /**

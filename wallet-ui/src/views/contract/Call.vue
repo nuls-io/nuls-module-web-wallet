@@ -3,12 +3,12 @@
     <el-form :model="callForm" :rules="callRules" ref="callForm" class="call-form">
       <el-form-item label="" prop="region" class="search-model">
         <el-select v-model="callForm.modelValue" :placeholder="$t('call.call1')" @change="changeModel">
-          <el-option v-for="item in callForm.modelData" :key="item.keys" :label="item.name"
-                     :value="item.keys">
+          <el-option v-for="(item,index) in callForm.modelData" :key="index" :label="item.name"
+                     :value="index">
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item v-for="(domain, index) in callForm.parameterList" :label="domain.name" :key="domain.name"
+      <el-form-item v-for="(domain, index) in callForm.parameterList" :label="domain.name" :key="index"
                     :prop="'parameterList.' + index + '.value'"
                     :rules="{required: domain.required,message:domain.name+$t('call.call2'), trigger: 'blur'}"
       >
@@ -21,11 +21,11 @@
         </el-form-item>
         <div class="senior-div" v-if="callForm.senior">
           <el-form-item label="Gas Limit" prop="gas">
-            <el-input v-model="callForm.gas" @change="changeGas"></el-input>
+            <el-input v-model="callForm.gas" @change="changeGas" disabled></el-input>
             <div class="font12 yellow" v-show="gasTips">{{$t('call.call10')}}</div>
           </el-form-item>
           <el-form-item label="Price" prop="price">
-            <el-input v-model="callForm.price"></el-input>
+            <el-input v-model="callForm.price" disabled></el-input>
           </el-form-item>
           <el-form-item label="Value" prop="values" v-show="selectionData.payable">
             <el-input v-model="callForm.values"></el-input>
@@ -50,13 +50,12 @@
   import nuls from 'nuls-sdk-js'
   import sdk from 'nuls-sdk-js/lib/api/sdk'
   import utils from 'nuls-sdk-js/lib/utils/utils'
-  import {getNulsBalance, countFee, inputsOrOutputs, validateAndBroadcast,getPrefixByChainId} from '@/api/requestData'
+  import {getNulsBalance, countFee, inputsOrOutputs, validateAndBroadcast, getPrefixByChainId} from '@/api/requestData'
   import Password from '@/components/PasswordBar'
   import {getArgs, Times, Plus, addressInfo, chainID} from '@/api/util'
 
   export default {
     data() {
-
       let validateGas = (rule, value, callback) => {
         if (!value) {
           callback(new Error(this.$t('deploy.deploy8')));
@@ -80,8 +79,11 @@
         }
       };
       let validateValues = (rule, value, callback) => {
-        if (value < 0) {
+        if (!value) {
+          callback(new Error(this.$t('deploy.deploy22')));
+        } else if (value < 0 || value === 0) {
           this.callForm.values = 0;
+          callback(new Error(this.$t('deploy.deploy22')));
         } else {
           callback();
         }
@@ -122,6 +124,7 @@
         contractCallData: {},//调用合约data
         callResult: '',//调用合约结果
         prefix: '',//地址前缀
+        newArgs: [],//合约参数
       };
     },
     props: {
@@ -140,7 +143,8 @@
         console.log(err);
         this.prefix = '';
       });
-      this.callForm.modelData = this.modelList.filter(obj=> !obj.event);
+      let newData = this.modelList.filter(obj => !obj.event);
+      this.callForm.modelData = newData.filter(obj => obj.name !== '<init>');
       this.addressInfo = addressInfo(1);
       setInterval(() => {
         this.addressInfo = addressInfo(1);
@@ -151,7 +155,9 @@
     },
     watch: {
       modelList(val) {
-        this.callForm.modelData = val;
+        //this.callForm.modelData = val;
+        let newData = val.filter(obj => !obj.event);
+        this.callForm.modelData = newData.filter(obj => obj.name !== '<init>');
       },
       addressInfo(val, old) {
         if (val.address !== old.address && old.address) {
@@ -170,20 +176,23 @@
 
       /**
        *  方法选择
+       * @param val
        **/
       changeModel(val) {
+        //console.log(val);
+        this.oldGasNumber = 0;
         this.callResult = '';
         this.callForm.parameterList = [];
-        for (let itme of this.callForm.modelData) {
-          if (itme.keys === val) {
-            //console.log(itme);
-            this.selectionData = itme;
-            this.callForm.parameterList = [...itme.params];
-            if (!itme.view) { //上链方法
-              this.callForm.gas = 0;
-              this.callForm.values = 0;
-            }
-          }
+        let newData = this.callForm.modelData[val];
+        //console.log(newData);
+        this.selectionData = newData;
+        this.callForm.parameterList = [...newData.params];
+        if (newData.payable) {
+          this.callForm.senior = true;
+        }
+        if (!newData.view) { //上链方法
+          this.callForm.gas = 1;
+          this.callForm.values = 0;
         }
         //清除已有的参数
         for (let itme of this.callForm.parameterList) {
@@ -191,16 +200,17 @@
             itme.value = ''
           }
         }
-
-        let newArgs = [];
+        this.newArgs = [];
         this.callForm.price = sdk.CONTRACT_MINIMUM_PRICE;
+        //console.log(this.selectionData);
         if (!this.selectionData.view) { //上链方法
           if (this.selectionData.params.length === 0) { //没有参数
-            this.imputedContractCallGas(this.addressInfo.address, Number(Times(this.callForm.values, 100000000)), this.contractAddress, this.selectionData.name, this.selectionData.desc, newArgs)
+            this.imputedContractCallGas(this.addressInfo.address, Number(Times(this.callForm.values, 100000000)), this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs)
           } else { //有参数
-            newArgs = getArgs(this.callForm.parameterList);
-            if (newArgs.allParameter) {
-              this.imputedContractCallGas(this.addressInfo.address, Number(Times(this.callForm.values, 100000000)), this.contractAddress, this.selectionData.name, this.selectionData.desc, newArgs.args)
+            this.newArgs = getArgs(this.callForm.parameterList);
+            //console.log(this.newArgs);
+            if (this.newArgs.allParameter) {
+              this.imputedContractCallGas(this.addressInfo.address, Number(Times(this.callForm.values, 100000000)), this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs.args)
             }
           }
         }
@@ -210,7 +220,8 @@
        * 判断所有必填参数是否有值
        **/
       changeParameter() {
-        if (!this.selectionData.view) {
+        //console.log(this.selectionData);
+        if (!this.selectionData.view && !this.selectionData.payable) {
           this.chainMethodCall();
         }
       },
@@ -227,18 +238,26 @@
        * @param formName
        **/
       submitForm(formName) {
-        if (!this.selectionData.view) { //上链方法调用
-          this.getBalanceByAddress(chainID(), 1, this.addressInfo.address);
-          this.$refs[formName].validate((valid) => {
-            if (valid) {
-              this.$refs.password.showPassword(true);
-            } else {
-              return false;
-            }
-          });
-        } else { //不上链方法，直接调用
-          this.$refs[formName].validate((valid) => {
-            if (valid) {
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            if (!this.selectionData.view) { //上链方法调用
+              if (this.selectionData.params.length !== 0) {
+                this.newArgs = getArgs(this.callForm.parameterList);
+                if (this.newArgs.allParameter) {
+                  this.imputedContractCallGas(this.addressInfo.address, Number(Times(this.callForm.values, 100000000)), this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs.args)
+                }
+              } else {
+                this.imputedContractCallGas(this.addressInfo.address, Number(Times(this.callForm.values, 100000000)), this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs);
+              }
+              this.getBalanceByAddress(chainID(), 1, this.addressInfo.address);
+              this.$refs[formName].validate((valid) => {
+                if (valid) {
+                  this.$refs.password.showPassword(true);
+                } else {
+                  return false;
+                }
+              });
+            } else { //不上链方法，直接调用
               let newArgs = [];
               if (this.selectionData.params.length !== 0) { //有参数
                 newArgs = getArgs(this.callForm.parameterList, this.decimals);
@@ -248,11 +267,12 @@
               } else { //没参数
                 this.methodCall(this.contractAddress, this.selectionData.name, this.selectionData.desc, newArgs)
               }
-            } else {
-              return false;
             }
-          })
-        }
+          } else {
+            return false;
+          }
+        });
+
       },
 
       /**
@@ -289,7 +309,6 @@
         this.callForm.price = sdk.CONTRACT_MINIMUM_PRICE;
         if (this.selectionData.params.length !== 0) { //有参数
           newArgs = getArgs(this.callForm.parameterList, this.decimals);
-          //console.log(newArgs);
           if (newArgs.allParameter) {
             this.validateContractCall(this.addressInfo.address, Number(Times(this.callForm.values, 100000000)), sdk.CONTRACT_MAX_GASLIMIT, sdk.CONTRACT_MINIMUM_PRICE, this.contractAddress, this.selectionData.name, this.selectionData.desc, newArgs.args);
           }
@@ -408,8 +427,8 @@
        * @param password
        **/
       async passSubmit(password) {
-        const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password,this.prefix);
-        const newAddressInfo = nuls.importByKey(2, pri, password);
+        const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password);
+        const newAddressInfo = nuls.importByKey(2, pri, password, this.prefix);
         if (newAddressInfo.address === this.addressInfo.address) {
           //console.log(this.contractCallData);
           let pub = this.addressInfo.pub;

@@ -11,7 +11,9 @@
           </el-menu-item>
           <el-menu-item index="consensus" :disabled="addressList.length === 0">{{$t('nav.consensus')}}
           </el-menu-item>
-          <el-menu-item index="contract" :disabled="addressList.length === 0">{{$t('nav.contracts')}}</el-menu-item>
+          <el-menu-item index="contract" :disabled="addressList.length === 0 || !nodeServiceInfo.isRunSmartContract">
+            {{$t('nav.contracts')}}
+          </el-menu-item>
         </el-menu>
       </div>
       <div class="tool">
@@ -62,6 +64,7 @@
         navActive: '/',//菜单选中
         addressList: [], //地址列表
         lang: 'cn', //语言选择
+        nodeServiceInfo: {},
       };
     },
     components: {},
@@ -71,6 +74,12 @@
     mounted() {
       setInterval(() => {
         this.getAddressList();
+        if (sessionStorage.hasOwnProperty('info')) {
+          this.nodeServiceInfo = JSON.parse(sessionStorage.getItem('info'));
+        } else {
+          this.nodeServiceInfo.isRunCrossChain = false;
+          this.nodeServiceInfo.isRunSmartContract = false;
+        }
       }, 500)
     },
     methods: {
@@ -206,7 +215,7 @@
     .w100 {
       display: block;
       float: left;
-      width: 175px;
+      width: 180px;
     }
   }
 </style>

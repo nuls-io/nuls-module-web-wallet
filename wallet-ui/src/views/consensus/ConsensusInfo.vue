@@ -131,9 +131,11 @@
           return callback(new Error(this.$t('consensusInfo.consensusInfo2')));
         } else if (!re.exec(value) || !res.exec(value)) {
           callback(new Error(this.$t('consensusInfo.consensusInfo3')))
-        } else if (value < 2000 || value > usable) {
-          return callback(new Error(this.$t('consensusInfo.consensusInfo4')));
-        } else if (balance < 0.001) {
+        } else if (value < 2000) {
+          return callback(new Error(this.$t('consensusInfo.consensusInfo43')));
+        }else if(value > usable){
+          return callback(new Error(this.$t('consensusInfo.consensusInfo41')+ usable +this.$t('consensusInfo.consensusInfo42')));
+        }else if (balance < 0.001) {
           return callback(new Error(this.$t('transfer.transfer131')+ Number(Minus(Number(timesDecimals(this.balanceInfo.balance)), 0.001))));
         } else {
           callback()

@@ -7,16 +7,11 @@
     </h3>
     <div class="card w1200">
       <div class="card-info left fl">
-        <h5 class="card-title font18">{{$t('consensus.consensus0')}}</h5>
+        <h5 class="card-title font18">
+          {{$t('consensus.consensus0')}}
+          <span class="font14 fr">{{addressInfo.totalReward}}<font class="fCN"> NULS</font></span>
+        </h5>
         <ul>
-          <li>
-            {{$t('consensus.consensus3')}}
-            <label>{{addressInfo.totalReward}}<span class="fCN">{{addressInfo.symbol}}</span></label>
-          </li>
-          <li>
-            {{$t('consensus.consensus2')}}
-            <label>{{addressInfo.balance}}<span class="fCN">{{addressInfo.symbol}}</span></label>
-          </li>
           <li>
             {{$t('consensus.consensus1')}}
             <label>
@@ -24,6 +19,14 @@
                  @click="toUrl('consensusList',addressInfo.consensusLock)">{{addressInfo.consensusLock}}</u>
               <span class="fCN">{{agentAsset.agentAsset.symbol}}</span>
             </label>
+          </li>
+          <li>
+            {{$t('consensus.consensus2')}}
+            <label>{{addressInfo.balance}}<span class="fCN">{{addressInfo.symbol}}</span></label>
+          </li>
+          <li>
+            {{$t('consensus.consensus3')}}
+            <label>{{addressInfo.lastReward}}<span class="fCN">{{addressInfo.symbol}}</span></label>
           </li>
         </ul>
       </div>
@@ -236,6 +239,11 @@
                   item.balance = timesDecimals(response.result.balance);
                   item.consensusLock = timesDecimals(response.result.consensusLock);
                   item.totalReward = timesDecimals(response.result.totalReward);
+                  if(response.result.lastReward){
+                    item.lastReward = timesDecimals(response.result.lastReward);
+                  }else {
+                    item.lastReward = 0;
+                  }
                   item.totalIn = timesDecimals(response.result.totalIn);
                   item.totalOut = timesDecimals(response.result.totalOut);
                 }
@@ -350,7 +358,7 @@
           this.addressInfo.collectList.push(nodeInfo.agentId);
         }
 
-        if ( this.consensusActive === 'consensusFirst') {
+        if (this.consensusActive === 'consensusFirst') {
           //循环是否收藏
           for (let item of this.allNodeData) {
             if (this.addressInfo.collectList.includes(item.agentId)) {
@@ -359,7 +367,7 @@
               item.isCollect = false;
             }
           }
-        }else{ //循环是否收藏
+        } else { //循环是否收藏
           for (let item of this.myNodeData) {
             if (this.addressInfo.collectList.includes(item.agentId)) {
               item.isCollect = true;
@@ -419,7 +427,7 @@
               for (let items of difference) {
                 newCollectList.push(this.allNodeData.filter(item => item.agentId === items)[0])
               }
-              this.myNodeData = [...response.result.list,...newCollectList];
+              this.myNodeData = [...response.result.list, ...newCollectList];
             }
           })
           .catch((error) => {

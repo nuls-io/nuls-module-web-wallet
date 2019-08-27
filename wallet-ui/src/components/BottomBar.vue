@@ -82,24 +82,26 @@
     },
     watch: {
       heightInfo(val) {
-        if (val.localHeight === 0 && val.networkHeight === 0) {
-          this.failedNu = this.failedNu + 1
-        } else {
-          this.failedNu = 0
-        }
-        if (this.failedNu === 5) {
-          this.$confirm(this.$t('bottom.err0'), {
-            confirmButtonText: this.$t('bottom.err1'),
-            cancelButtonText: '',
-            type: 'error',
-            showClose: false,
-            showCancelButton: false,
-            closeOnClickModal: false,
-            closeOnPressEscape: false,
-          }).then(() => {
-            this.toUrl('nodeService');
-          }).catch(() => {
-          });
+        if (this.$route.path !== '/nodeService' && this.failedNu !== 5) {
+          if (val.localHeight === 0 && val.networkHeight === 0) {
+            this.failedNu = this.failedNu + 1
+          } else {
+            this.failedNu = 0
+          }
+          if (this.failedNu === 5) {
+            this.$confirm(this.$t('bottom.err0'), {
+              confirmButtonText: this.$t('bottom.err1'),
+              cancelButtonText: '',
+              type: 'error',
+              showClose: false,
+              showCancelButton: false,
+              closeOnClickModal: false,
+              closeOnPressEscape: false,
+            }).then(() => {
+              this.toUrl('nodeService');
+            }).catch(() => {
+            });
+          }
         }
       }
     },
@@ -151,6 +153,11 @@
                     item.balance = timesDecimals(response.result.balance);
                     item.consensusLock = timesDecimals(response.result.consensusLock);
                     item.totalReward = timesDecimals(response.result.totalReward);
+                    if(response.result.lastReward){
+                      item.lastReward = timesDecimals(response.result.lastReward);
+                    }else {
+                      item.lastReward = 0;
+                    }
                     item.tokens = [];
                     item.chainId = nuls.verifyAddress(item.address).chainId;
                   }

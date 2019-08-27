@@ -4,6 +4,7 @@
       {{addressInfo.address}}
       <span v-show="addressInfo.alias"> | {{addressInfo.alias}}</span>
       <i class="iconfont iconfuzhi clicks" @click="copy(addressInfo.address)"></i>
+      <i class="iconfont iconerweima clicks" @click="showCode(addressInfo.address)"></i>
     </h3>
     <el-tabs v-model="homeActive" @tab-click="handleClick" class="w1200">
       <el-tab-pane :label="$t('home.home0')" name="homeFirst" v-loading="assetsListLoading">
@@ -88,10 +89,17 @@
         </div>
       </el-tab-pane>
     </el-tabs>
+
+    <el-dialog title="地址二维码" :visible.sync="qrcodeDialog" width="20rem" center>
+      <div class="tc" style="width: 150px;margin: 0 auto">
+        <div id="qrcode" class="qrcode"></div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
+  import QRCode from 'qrcodejs2'
   import {timesDecimals, copys, addressInfo} from '@/api/util'
 
   export default {
@@ -116,6 +124,7 @@
         pageCount: 0, //总条数
         crossLinkData: [],//跨链资产
         crossLinkDataLoading: true, //资产加载动画
+        qrcodeDialog: false,//二维码弹框
       };
     },
     components: {},
@@ -162,6 +171,38 @@
       }
     },
     methods: {
+
+      /**
+       * @disc: 显示二维码
+       * @params:  address
+       * @date: 2019-08-27 11:12
+       * @author: Wave
+       */
+      showCode(address) {
+        this.qrcodeDialog = true;
+        if (document.getElementById('qrcode')) {
+          document.getElementById('qrcode').innerHTML = '';
+        }
+        setTimeout(() => {
+          this.qrcode(address);
+        }, 200);
+      },
+
+      /**
+       * @disc: 二维码生成
+       * @params: address
+       * @date: 2019-08-27 11:12
+       * @author: Wave
+       */
+      qrcode(address) {
+        let qrcode = new QRCode('qrcode', {
+          width: 150,
+          height: 150,
+          colorDark: "#000",
+          colorLight: "#fff",
+        });
+        qrcode.makeCode(address) //生成另一个新的二维码
+      },
 
       /**
        * tab 切换

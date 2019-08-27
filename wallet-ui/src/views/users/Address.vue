@@ -78,7 +78,8 @@
 <script>
   import nuls from 'nuls-sdk-js'
   import Password from '@/components/PasswordBar'
-  import {timesDecimals, chainIdNumber, addressInfo} from '@/api/util'
+  import {timesDecimals, chainIdNumber, addressInfo,chainID} from '@/api/util'
+  import {getPrefixByChainId} from '@/api/requestData'
 
   export default {
     data() {
@@ -87,12 +88,20 @@
         selectAddressInfo: '', //操作的地址信息
         remarkDialog: false,//备注弹框
         remarkInfo: '',//备注信息
+        prefix: '',//地址前缀
       };
     },
     components: {
       Password,
     },
     created() {
+      getPrefixByChainId(chainID()).then((response) => {
+        //console.log(response);
+        this.prefix = response
+      }).catch((err) => {
+        console.log(err);
+        this.prefix = '';
+      });
       this.getAddressList();
     },
     mounted() {
@@ -223,8 +232,8 @@
       passSubmit(password) {
         let newAddressInfo = addressInfo(0);
         const pri = nuls.decrypteOfAES(this.selectAddressInfo.aesPri, password);
-        const deleteAddressInfo = nuls.importByKey(this.selectAddressInfo.chainId, pri, password);
-        if (deleteAddressInfo.address === this.selectAddressInfo.address) {
+        const deleteAddressInfo = nuls.importByKey(this.selectAddressInfo.chainId, pri, password,this.prefix);
+        if (this.selectAddressInfo.address === deleteAddressInfo.address) {
           newAddressInfo.splice(newAddressInfo.findIndex(item => item.address === this.selectAddressInfo.address), 1);
           if (this.selectAddressInfo.selection && newAddressInfo.length !== 0) {
             newAddressInfo[0].selection = true;
