@@ -444,19 +444,19 @@
                     name: "txList"
                   })
                 } else {
-                  this.$message({message: this.$t('public.err') + response.data, type: 'error', duration: 1000});
+                  this.$message({message: this.$t('public.err') + JSON.stringify(response.data), type: 'error', duration: 2000});
                 }
               }).catch((err) => {
-                this.$message({message: this.$t('public.err0') + err, type: 'error', duration: 1000});
+                this.$message({message: this.$t('public.err0') + JSON.stringify(err), type: 'error', duration: 2000});
               });
             } else {
-              this.$message({message: this.$t('public.err') + response.data, type: 'error', duration: 1000});
+              this.$message({message: this.$t('public.err') + JSON.stringify(response.data), type: 'error', duration: 2000});
             }
           }).catch((err) => {
-            this.$message({message: this.$t('public.err0') + err, type: 'error', duration: 1000});
+            this.$message({message: this.$t('public.err0') +JSON.stringify(err), type: 'error', duration: 2000});
           });
         } else {
-          this.$message({message: this.$t('address.address13'), type: 'error', duration: 1000});
+          this.$message({message: this.$t('address.address13'), type: 'error', duration: 2000});
         }
       },
 

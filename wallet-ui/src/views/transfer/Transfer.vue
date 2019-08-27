@@ -36,12 +36,12 @@
           </el-form-item>
           <div class="senior-div" v-if="transferForm.senior">
             <el-form-item label="Gas Limit" prop="gas">
-              <el-input v-model="transferForm.gas" @change="changeGas">
+              <el-input v-model="transferForm.gas" @change="changeGas" disabled>
               </el-input>
               <div class="font12 yellow" v-show="gasTips">{{$t('call.call10')}}</div>
             </el-form-item>
             <el-form-item label="Price" prop="price">
-              <el-input v-model="transferForm.price">
+              <el-input v-model="transferForm.price" disabled>
               </el-input>
             </el-form-item>
           </div>
