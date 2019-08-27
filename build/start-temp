@@ -66,11 +66,6 @@ log(){
     echo "${now}    $@" >> ${STDOUT_FILE}
     echoGreen "$@"
 }
-#获取参数
-if [ ! -n "$1" ]; then
-    echo "args is error"
-    exit 0;
-fi
 
 while [ ! -z $1 ] ; do
     case "$1" in
