@@ -2,31 +2,25 @@
   <div class="new_address bg-gray">
     <div class="bg-white">
       <div class="w1200">
-        <BackBar :backTitle="$t('address.address0')" v-show="ifAddressInfo"></BackBar>
-        <h3 class="title">
-          <font v-if="!isBackups">{{$t('newAddress.newAddress0')}} </font>
-          <font v-else>{{$t('newAddress.newAddress1')}} </font>
-          <font v-show="newAddressInfo.address">: {{newAddressInfo.address}}
-            <i class="iconfont iconfuzhi clicks" @click="copy(newAddressInfo.address)"></i>
-          </font>
-        </h3>
+        <BackBar backTitle="账户管理" v-show="ifAddressInfo"></BackBar>
+        <h3 class="title"><font v-if="!isBackups">创建钱包</font><font v-else>备份账户</font></h3>
       </div>
     </div>
     <div class="new w1200 mt_20 bg-white">
-      <ul class="step" v-show="false">
+      <ul class="step" v-show="!isBackups">
         <li>
           <p class="dotted Ndotted"></p>
         </li>
         <li>
           <p class="ico"><i class="el-icon-view Ncolor"></i></p>
-          <h6 class="Ncolor">{{$t('newAddress.newAddress2')}}</h6>
+          <h6 class="Ncolor">设置密码</h6>
         </li>
         <li>
           <p class="dotted" :class="!isFirst ? 'Ndotted':''"></p>
         </li>
         <li>
           <p class="ico"><i class="el-icon-location-outline" :class="!isFirst ? 'Ncolor':''"></i></p>
-          <h6 :class="!isFirst ? 'Ncolor':''">{{$t('newAddress.newAddress3')}}</h6>
+          <h6 :class="!isFirst ? 'Ncolor':''">备份</h6>
         </li>
         <li>
           <p class="dotted"></p>
@@ -36,65 +30,58 @@
 
       <div class="w630" v-show="isFirst">
         <div class="tip bg-gray">
-          <p><i></i>{{$t('newAddress.newAddress4')}}</p>
-          <p><i></i>{{$t('newAddress.newAddress5')}}</p>
+          <p><i></i>请设置密码用以导入账户、转账、参与共识等重要行为验证</p>
+          <p><i></i>请认真保存钱包密码，NULS钱包不存储密码，也无法帮您找回，请务必牢记</p>
         </div>
         <div class="cb"></div>
         <el-form :model="passwordForm" status-icon :rules="passwordRules" ref="passwordForm" class="mb_20">
-          <el-form-item :label="$t('newAddress.newAddress6')" prop="pass">
+          <el-form-item label="密码" prop="pass">
             <el-input type="password" v-model="passwordForm.pass" autocomplete="off"></el-input>
           </el-form-item>
-          <el-form-item :label="$t('newAddress.newAddress7')" prop="checkPass">
+          <el-form-item label="确认密码" prop="checkPass">
             <el-input type="password" v-model="passwordForm.checkPass" autocomplete="off"></el-input>
           </el-form-item>
-          <el-form-item label="" prop="agreement">
-            <el-checkbox-group v-model="passwordForm.agreement">
-              <el-checkbox :label="$t('newAddress.newAddress8')" name="agreement"></el-checkbox>
-            </el-checkbox-group>
-          </el-form-item>
+          <div class="font12">点击下一步，你已经同意了<span class="click">用户协议</span></div>
           <el-form-item class="form-next">
-            <el-button type="success" @click="submitPasswordForm('passwordForm')" :disabled="!passwordForm.agreement">
-              {{$t('newAddress.newAddress10')}}
-            </el-button>
-            <el-button type="text" @click="toUrl('importAddress')">{{$t('newAddress.newAddress11')}}</el-button>
+            <el-button type="success" @click="submitPasswordForm('passwordForm')">下一步</el-button>
+            <el-button type="text" @click="toUrl('importAddress')">导入钱包</el-button>
           </el-form-item>
         </el-form>
       </div>
 
       <div class="step_tow w630" v-show="!isFirst">
-        <h3 class="title" v-show="false">
-          {{$t('newAddress.newAddress12')}}：
+        <h3 class="title">
+          您的账户地址：
           <span>{{newAddressInfo.address}}</span>
           <i class="iconfont iconfuzhi clicks" @click="copy(newAddressInfo.address)"></i>
         </h3>
         <div class="tip bg-gray">
-          <p>{{$t('newAddress.newAddress13')}}</p>
-          <!--  <p>{{$t('newAddress.newAddress14')}}</p>
-            <p>{{$t('newAddress.newAddress15')}}</p>-->
+          <p>请勿遗失！ NULS将无法帮助您找回遗失的密钥</p>
+          <p>请勿向他人分享！ 如在恶意网站使用此文件，您的资金可能面临被盗窃的风险</p>
+          <p>请制作备份！ 以防您的电脑故障</p>
         </div>
 
         <div class="btn mb_20">
-          <el-button type="success" @click="backKeystore" v-show="RUN_PATTERN">{{$t('newAddress.newAddress16')}}
-          </el-button>
-          <el-button type="success" @click="backKey">{{$t('newAddress.newAddress17')}}</el-button>
-          <el-button @click="goWallet" class="mt_20" v-show="!isBackups">{{$t('newAddress.newAddress18')}}</el-button>
+          <el-button type="success" @click="backKeystore" disabled>Keystore备份</el-button>
+          <el-button type="text" @click="backKey">明文私钥备份</el-button>
+          <el-button type="info" @click="goWallet" v-show="!isBackups">进入钱包</el-button>
         </div>
       </div>
 
     </div>
     <Password ref="password" @passwordSubmit="passSubmit">
     </Password>
-    <el-dialog :title="$t('newAddress.newAddress19')" width="40%"
+    <el-dialog title="安全警告" width="40%"
                :visible.sync="keyDialog"
                :close-on-click-modal="false"
                :close-on-press-escape="false"
     >
-      <span>{{$t('newAddress.newAddress20')}}</span>
+      <span>私钥未经加密，备份存在风险，请保存到安全的地方，建议使用Keystore进行备份</span>
       <p class="bg-white">
         {{newAddressInfo.pri}}
       </p>
       <span slot="footer" class="dialog-footer">
-        <el-button type="success" @click="copy(newAddressInfo.pri)">{{$t('newAddress.newAddress21')}}</el-button>
+        <el-button type="success" @click="copy(newAddressInfo.pri)">复制</el-button>
       </span>
     </el-dialog>
   </div>
@@ -104,18 +91,16 @@
   import nuls from 'nuls-sdk-js'
   import Password from '@/components/PasswordBar'
   import BackBar from '@/components/BackBar'
-  import {copys, chainID, chainIdNumber, defaultAddressInfo, localStorageByAddressInfo} from '@/api/util'
-  import {RUN_PATTERN} from '@/config.js'
-  import {getPrefixByChainId} from '@/api/requestData'
+  import {copys} from '@/api/util'
 
   export default {
     data() {
       let validatePass = (rule, value, callback) => {
         let patrn = /^(?![\d]+$)(?![a-zA-Z]+$)(?![^\da-zA-Z]+$).{8,20}$/;
         if (value === '') {
-          callback(new Error(this.$t('newAddress.newAddress22')));
+          callback(new Error('请输入密码'));
         } else if (!patrn.exec(value)) {
-          callback(new Error(this.$t('newAddress.newAddress23')));
+          callback(new Error('请输入由字母和数字组合的8-20位密码'));
         } else {
           if (this.passwordForm.checkPass !== '') {
             this.$refs.passwordForm.validateField('checkPass');
@@ -125,23 +110,21 @@
       };
       let validatePassTwo = (rule, value, callback) => {
         if (value === '') {
-          callback(new Error(this.$t('newAddress.newAddress24')));
+          callback(new Error('请再次输入密码'));
         } else if (value !== this.passwordForm.pass) {
-          callback(new Error(this.$t('newAddress.newAddress25')));
+          callback(new Error('两次输入密码不一致!'));
         } else {
           callback();
         }
       };
       return {
         isFirst: true,//第一步
-        prefix: '',//地址前缀
         isBackups: false,//备份账户
-        keyDialog: false, //key弹框
-        ifAddressInfo: localStorage.hasOwnProperty(chainIdNumber),//判断是否账户地址
+        keyDialog: false, //弹框
+        ifAddressInfo: sessionStorage.hasOwnProperty(sessionStorage.key(0)),//判断是否账户地址
         passwordForm: {
           pass: '',
           checkPass: '',
-          agreement: '',
         },
         passwordRules: {
           pass: [
@@ -149,31 +132,17 @@
           ],
           checkPass: [
             {validator: validatePassTwo, trigger: 'blur'}
-          ],
-          agreement: [
-            {required: true, message: this.$t('newAddress.newAddress29'), trigger: 'change'}
           ]
         },
         newAddressInfo: {}, //新建的地址信息
-        backType: 0,//备份类型 0：keystore备份 1：明文私钥备份
-        RUN_PATTERN: RUN_PATTERN,//运行模式
       };
     },
     created() {
-      getPrefixByChainId(chainID()).then((response) => {
-        //console.log(response);
-        this.prefix = response
-      }).catch((err) => {
-        console.log(err);
-        this.prefix = '';
-      });
-
-      let backAddressInfo = this.$route.query.backAddressInfo;
-      if (backAddressInfo) {
+      if (this.$route.query.address) {
         this.isFirst = false;
         this.isBackups = true;
-        this.newAddressInfo.address = backAddressInfo.address;
-        this.newAddressInfo.aesPri = backAddressInfo.aesPri;
+        this.newAddressInfo.address = this.$route.query.address;
+        this.newAddressInfo.aesPri = this.$route.query.aesPri;
       }
     },
     mounted() {
@@ -191,13 +160,16 @@
       submitPasswordForm(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            //console.log(this.prefix);
-            this.newAddressInfo = nuls.newAddress(chainID(), this.passwordForm.pass, this.prefix);
-            let newAddressInfo = defaultAddressInfo;
-            newAddressInfo.address = this.newAddressInfo.address;
-            newAddressInfo.aesPri = this.newAddressInfo.aesPri;
-            newAddressInfo.pub = this.newAddressInfo.pub;
-            localStorageByAddressInfo(newAddressInfo);
+            this.newAddressInfo = nuls.newAddress(2, this.passwordForm.pass);
+            let addressInfo = {
+              address: this.newAddressInfo.address,
+              aesPri: this.newAddressInfo.aesPri,
+              pub: this.newAddressInfo.pub,
+              alias: '',
+              remark: '',
+              selection: false,
+            };
+            localStorage.setItem(this.newAddressInfo.address, JSON.stringify(addressInfo));
             this.isFirst = false;
           } else {
             return false;
@@ -209,15 +181,13 @@
        * 备份keystore
        **/
       backKeystore() {
-        this.backType = 0;
-        this.$refs.password.showPassword(true);
+        //TODO 待完善
       },
 
       /**
        * 备份私钥
        **/
       backKey() {
-        this.backType = 1;
         this.$refs.password.showPassword(true)
       },
 
@@ -226,54 +196,13 @@
        * @param password
        **/
       passSubmit(password) {
-        let that = this;
         const pri = nuls.decrypteOfAES(this.newAddressInfo.aesPri, password);
-        let chainid = this.$route.query.backAddressInfo ? this.$route.query.backAddressInfo.chainId : chainID();
-        const newAddressInfo = nuls.importByKey(chainid, pri, password, this.prefix);
+        const newAddressInfo = nuls.importByKey(2, pri, password);
         if (newAddressInfo.address === this.newAddressInfo.address) {
-          if (this.backType === 0) {
-            const {dialog} = require('electron').remote;
-            //console.log(dialog);
-            dialog.showOpenDialog({
-              title: that.$t('newAddress.newAddress28'),
-              properties: ['openFile', 'openDirectory']
-            }, function (files) {
-              //console.log(files);
-              if (files) {
-                let fileName = files + '/' + newAddressInfo.address + '.keystore';
-                let fileInfo = {
-                  address: newAddressInfo.address,
-                  encryptedPrivateKey: newAddressInfo.aesPri,
-                  pubKey: newAddressInfo.pubKey,
-                  priKey: null
-                };
-                if (RUN_PATTERN) {
-                  //console.log(JSON.stringify(fileInfo));
-                  let fs = require("fs");
-                  fs.writeFile(fileName, JSON.stringify(fileInfo), 'utf8', function (error) {
-                    if (error) {
-                      that.$message({
-                        message: that.$t('newAddress.newAddress26') + error,
-                        type: 'error',
-                        duration: 1000
-                      });
-                      return false;
-                    }
-                    that.$message({
-                      message: that.$t('newAddress.newAddress27') + files,
-                      type: 'success',
-                      duration: 3000
-                    });
-                  })
-                }
-              }
-            });
-          } else {
-            this.newAddressInfo.pri = pri;
-            this.keyDialog = true;
-          }
+          this.newAddressInfo.pri = pri;
+          this.keyDialog = true;
         } else {
-          this.$message({message: this.$t('address.address13'), type: 'error', duration: 1000});
+          this.$message({message: "密码错误", type: 'error', duration: 1000});
         }
       },
 
@@ -281,7 +210,7 @@
        * 进入钱包
        */
       goWallet() {
-        this.toUrl('home');
+        this.toUrl('address')
       },
 
       /**
@@ -301,7 +230,7 @@
        **/
       copy(sting) {
         copys(sting);
-        this.$message({message: this.$t('public.copySuccess'), type: 'success', duration: 1000});
+        this.$message({message: "已经复制完成", type: 'success', duration: 1000});
         this.keyDialog = false;
       },
     }
@@ -314,7 +243,6 @@
   .new_address {
     .new {
       border: @BD1;
-      margin-bottom: 100px;
       .step {
         height: 50px;
         margin: 100px 140px 0 140px;
@@ -365,15 +293,9 @@
           margin: 40px auto;
         }
         .btn {
-          .el-button {
-            display: block;
-            margin: 0 auto 30px !important;
-            width: 400px;
+          .el-button--info {
+            margin: 50px 0 20px 0 !important;
           }
-          .mt_20 {
-            margin: 100px auto 30px !important;
-          }
-
         }
       }
     }

@@ -2,46 +2,45 @@
   <div class="home">
     <h3 class="title" v-if="addressInfo">
       {{addressInfo.address}}
-      <span v-show="addressInfo.alias"> | {{addressInfo.alias}}</span>
+      <span v-show="addressInfo.alias">({{addressInfo.alias}})</span>
       <i class="iconfont iconfuzhi clicks" @click="copy(addressInfo.address)"></i>
-      <i class="iconfont iconerweima clicks" @click="showCode(addressInfo.address)"></i>
     </h3>
     <el-tabs v-model="homeActive" @tab-click="handleClick" class="w1200">
-      <el-tab-pane :label="$t('home.home0')" name="homeFirst" v-loading="assetsListLoading">
-        <el-select v-model="assetsValue" @change="channgeAsesets">
-          <el-option v-for="item in assetsOptions" :key="item.value" :label="$t('assetsType.'+item.value)"
-                     :value="item.value">
+      <el-tab-pane label="主网资产" name="homeFirst" v-loading="assetsListLoading">
+        <el-select v-model="assetsValue" @change="channgeAsesets" disabled>
+          <el-option v-for="item in assetsOptions" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
+
         <el-table :data="addressAssetsData" stripe border>
-          <el-table-column prop="account" :label="$t('tab.tab0')" align="center">
+          <el-table-column prop="account" label="资产" align="center">
           </el-table-column>
-          <el-table-column :label="$t('tab.tab1')" align="center" width="150">
-            <template slot-scope="scope"><span>{{ $t('assetsType.'+scope.row.type) }}</span></template>
+          <el-table-column label="类型" align="center" width="150">
+            <template slot-scope="scope"><span>{{ $t('addressType.'+scope.row.type) }}</span></template>
           </el-table-column>
-          <el-table-column prop="balance" :label="$t('tab.tab4')">
+          <el-table-column prop="total" label="总额">
           </el-table-column>
-          <el-table-column :label="$t('tab.tab3')">
+          <el-table-column label="锁定">
             <template slot-scope="scope">
-              <span class="click" @click="toUrl('frozenList',scope.row)"
+              <span class="click td" @click="toUrl('frozenList')"
                     v-show="scope.row.locking !== '--' && scope.row.locking !==0 ">{{scope.row.locking}}</span>
               <span v-show="scope.row.locking === '--' || scope.row.locking ===0">{{scope.row.locking}}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="total" :label="$t('tab.tab2')">
+          <el-table-column prop="balance" label="可用">
           </el-table-column>
-          <el-table-column fixed="right" :label="$t('public.operation')" align="center" min-width="120">
-            <template slot-scope="scope">
-              <label class="click tab_bn" @click="toUrl('transfer',scope.row.account)">{{$t('nav.transfer')}}</label>
+          <el-table-column fixed="right" label="操作" align="center">
+            <template>
+              <label class="click tab_bn" @click="toUrl('transfer')">转账</label>
               <span class="tab_line">|</span>
-              <label class="click tab_bn" @click="toUrl('txList',scope.row)">{{$t('home.home2')}}</label>
+              <label class="click tab_bn" @click="toUrl('txList')">交易记录</label>
             </template>
           </el-table-column>
         </el-table>
         <div class="pages">
           <div class="page-total">
-            {{pageNumber-1 === 0 ? 1 : (pageNumber-1) *pageSize}}-{{pageNumber*pageSize}}
-            of {{addressAssetsData.length}}
+            显示 {{pageNumber-1 === 0 ? 1 : (pageNumber-1) *pageSize}}-{{pageNumber*pageSize}}
+            共 {{addressAssetsData.length}}
           </div>
           <el-pagination v-show="addressAssetsData.length > pageSize" class="fr" background
                          @current-change="addressAssetsListPages"
@@ -49,89 +48,143 @@
                          :total="addressAssetsData.length">
           </el-pagination>
         </div>
+
       </el-tab-pane>
-      <el-tab-pane :label="$t('home.home1')" name="homeSecond">
-        <el-table :data="crossLinkData" stripe border v-loading="crossLinkDataLoading">
-          <el-table-column prop="symbol" :label="$t('tab.tab0')" align="center">
-          </el-table-column>
-          <!--  <el-table-column :label="$t('tab.tab1')" align="center" width="150">
-              <template slot-scope="scope"><span>{{ scope.row.symbol }}</span></template>
-            </el-table-column>-->
-          <el-table-column prop="balance" :label="$t('tab.tab4')">
-          </el-table-column>
-          <el-table-column :label="$t('tab.tab3')">
-            <template slot-scope="scope">
-              <span class="click" @click="toUrl('frozenList',scope.row)"
-                    v-show="scope.row.locking !== '--' && scope.row.locking !==0 ">{{scope.row.locking}}</span>
-              <span v-show="scope.row.locking === '--' || scope.row.locking ===0">{{scope.row.locking}}</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="totalBalance" :label="$t('tab.tab2')">
-          </el-table-column>
-          <el-table-column fixed="right" :label="$t('public.operation')" align="center" min-width="120">
-            <template slot-scope="scope">
-              <label class="click tab_bn" @click="toUrl('transfer',scope.row.symbol)">{{$t('nav.transfer')}}</label>
-              <span class="tab_line">|</span>
-              <label class="click tab_bn" @click="toUrl('txList',scope.row)">{{$t('home.home2')}}</label>
-            </template>
-          </el-table-column>
-        </el-table>
-        <div class="pages">
-          <div class="page-total">
-            {{pageNumber-1 === 0 ? 1 : (pageNumber-1) *pageSize}}-{{pageNumber*pageSize}}
-            of {{crossLinkData.length}}
+      <el-tab-pane label="跨链资产" name="homeSecond" disabled>
+        <div v-loading="txListDataLoading">
+          <div class="filter">
+            <el-select v-model="assetsValue">
+              <el-option v-for="item in assetsOptions" :key="item.value" :label="item.label" :value="item.value">
+              </el-option>
+            </el-select>
+            <el-select v-model="typeValue">
+              <el-option v-for="item in typeOptions" :key="item.value" :label="item.label" :value="item.value">
+              </el-option>
+            </el-select>
+            <el-select v-model="inAndOutValue">
+              <el-option v-for="item in inAndOutOptions" :key="item.value" :label="item.label" :value="item.value">
+              </el-option>
+            </el-select>
+
+            <el-switch v-model="isHide" active-text="" inactive-text="隐藏共识奖励" :width="35" @change="changeHide">
+            </el-switch>
           </div>
-          <el-pagination v-show="addressAssetsData.length > pageSize" class="fr" background
-                         @current-change="addressAssetsListPages"
-                         layout=" prev, pager, next, jumper"
-                         :total="addressAssetsData.length">
-          </el-pagination>
+          <el-table :data="txListData" stripe border>
+            <el-table-column prop="account" label="资产" align="center" width="100">
+            </el-table-column>
+            <el-table-column prop="type" label="类型" align="center" width="100">
+            </el-table-column>
+            <el-table-column label="TxID" align="center">
+              <template slot-scope="scope">
+                <span class="click " @click="toUrl('transferInfo')">{{scope.row.txid}}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="createTime" label="时间" align="center">
+            </el-table-column>
+            <el-table-column prop="tAddress" label="交易地址" align="center">
+            </el-table-column>
+            <el-table-column prop="amount" label="金额" align="center">
+            </el-table-column>
+            <el-table-column prop="balance" label="余额" align="center">
+            </el-table-column>
+            <el-table-column prop="state" label="状态" align="center" width="100">
+            </el-table-column>
+          </el-table>
+          <div class="pages">
+            <div class="page-total">
+              显示 {{pageNumber-1 === 0 ? 1 : (pageNumber-1) *pageSize}}-{{pageNumber*pageSize}}
+              共 {{pageCount}}
+            </div>
+            <el-pagination v-show="pageCount > pageSize" @current-change="txListPages" class="fr"
+                           :current-page="pageNumber"
+                           :page-size="pageSize"
+                           background
+                           layout=" prev, pager, next, jumper"
+                           :total="pageCount">
+            </el-pagination>
+          </div>
         </div>
       </el-tab-pane>
     </el-tabs>
-
-    <el-dialog :title="$t('tab.tab19')" :visible.sync="qrcodeDialog" width="20rem" center>
-      <div class="tc" style="width: 150px;margin: 0 auto;height: 180px">
-        <div id="qrcode" class="qrcode"></div>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
 <script>
-  import QRCode from 'qrcodejs2'
-  import {timesDecimals, copys, addressInfo} from '@/api/util'
+  import moment from 'moment'
+  import {timesDecimals, getLocalTime, superLong, copys} from '@/api/util'
 
   export default {
     name: 'home',
     data() {
       return {
-        homeActive: 'homeFirst',   //tab默认选中
-        addressInfo: {},//默认账户信息
-        addressAssetsData: [],//账户资产列表
-        assetsListLoading: true,//账户资产列表加载动画
+        //tab默认选中
+        homeActive: 'homeFirst',
+        //默认账户信息
+        addressInfo: {},
+        //资产加载动画
+        assetsListLoading: true,
+        //账户资产列表
+        addressAssetsData: [],
         //资产类型
         assetsOptions: [
-          {value: '0', label: '0'},
-          {value: '1', label: '1'},
-          {value: '2', label: '2'}
+          {value: '0', label: '所有资产'},
+          {value: '1', label: '普通资产'},
+          {value: '2', label: '合约资产'}
         ],
-        assetsValue: "0",
-        txListDataLoading: true,  //资产加载动画
-        txListData: [], //交易数据
-        pageNumber: 1, //页码
-        pageSize: 10,//条数
-        pageCount: 0, //总条数
-        crossLinkData: [],//跨链资产
-        crossLinkDataLoading: true, //资产加载动画
-        qrcodeDialog: false,//二维码弹框
+        assetsValue: "所有资产",
+        //资产加载动画
+        txListDataLoading: true,
+        //交易数据
+        txListData: [],
+        //页码
+        pageNumber: 1,
+        //条数
+        pageSize: 10,
+        //总条数
+        pageCount: 0,
+        //类型
+        type: 0,
+        //隐藏共识奖励
+        isHide: false,
+
+        //交易类型
+        typeOptions: [
+          {value: '0', label: '所有交易'},
+          {value: '1', label: '共识奖励'},
+          {value: '2', label: '转账交易'},
+          {value: '3', label: '设置别名'},
+          {value: '4', label: '创建节点'},
+          {value: '5', label: '加入共识'},
+          {value: '6', label: '零钱换整'},
+          {value: '7', label: '退出共识'},
+          {value: '8', label: '黄牌惩罚'},
+          {value: '9', label: '红牌惩罚'},
+          {value: '10', label: '注销节点'},
+          {value: '11', label: '通用数据'},
+          {value: '12', label: '创建合约'},
+          {value: '13', label: '调用合约'},
+          {value: '14', label: '删除合约'},
+          {value: '15', label: '合约转账'},
+          {value: '16', label: '合约返还'},
+          {value: '17', label: '通证转账'},
+        ],
+        typeValue: '所有交易',
+
+        //收入/支出
+        inAndOutOptions: [
+          {value: '0', label: '收入/支出'},
+          {value: '1', label: '收入'},
+          {value: '2', label: '支出'},
+        ],
+        inAndOutValue: '收入/支出',
+
       };
     },
     components: {},
     created() {
-      this.addressInfo = addressInfo(1);
+      this.addressInfo = JSON.parse(sessionStorage.getItem(sessionStorage.key(0)));
       setInterval(() => {
-        this.addressInfo = addressInfo(1);
+        this.addressInfo = JSON.parse(sessionStorage.getItem(sessionStorage.key(0)));
       }, 500);
 
       //判断是否有账户
@@ -149,6 +202,7 @@
 
     },
     mounted() {
+
     },
     watch: {
       addressInfo(val, old) {
@@ -157,13 +211,13 @@
             if (this.homeActive === 'homeFirst') {
               this.getAddressInfoByNode(this.addressInfo.address);
               setTimeout(() => {
-                this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
+                this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address)
               }, 200);
             } else {
               this.pageNumber = 1;
               this.pageSize = 10;
               this.pageCount = 0;
-              this.getAccountCrossLedgerList(this.addressInfo.address);
+              this.getTxlistByAddress(this.pageNumber, this.pageSize, this.addressInfo.address, this.type, this.isHide)
             }
           }
         }
@@ -171,38 +225,6 @@
       }
     },
     methods: {
-
-      /**
-       * @disc: 显示二维码
-       * @params:  address
-       * @date: 2019-08-27 11:12
-       * @author: Wave
-       */
-      showCode(address) {
-        this.qrcodeDialog = true;
-        if (document.getElementById('qrcode')) {
-          document.getElementById('qrcode').innerHTML = '';
-        }
-        setTimeout(() => {
-          this.qrcode(address);
-        }, 200);
-      },
-
-      /**
-       * @disc: 二维码生成
-       * @params: address
-       * @date: 2019-08-27 11:12
-       * @author: Wave
-       */
-      qrcode(address) {
-        let qrcode = new QRCode('qrcode', {
-          width: 150,
-          height: 150,
-          colorDark: "#000",
-          colorLight: "#fff",
-        });
-        qrcode.makeCode(address) //生成另一个新的二维码
-      },
 
       /**
        * tab 切换
@@ -213,12 +235,7 @@
           this.pageNumber = 1;
           this.pageSize = 10;
           this.pageCount = 0;
-          this.getAccountCrossLedgerList(this.addressInfo.address)
-        } else {
-          this.getAddressInfoByNode(this.addressInfo.address);
-          setTimeout(() => {
-            this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address)
-          }, 200);
+          this.getTxlistByAddress(this.pageNumber, this.pageSize, this.addressInfo.address, this.type, this.isHide)
         }
       },
 
@@ -244,52 +261,54 @@
       },
 
       /**
-       * 获取地址基本资产信息
+       * 获取地址网络信息
        * @param address
        **/
       getAddressInfoByNode(address) {
-        this.$post('/', 'getAccountLedgerList', [address], 'Home')
+        this.$post('/', 'getAccount', [address])
           .then((response) => {
             //console.log(response);
             this.addressAssetsData = [];
             let newAssetsList = {};
             if (response.hasOwnProperty("result")) {
-              newAssetsList.account = response.result[0].symbol;
-              newAssetsList.chainId = response.result[0].chainId;
-              newAssetsList.assetId = response.result[0].assetId;
+              newAssetsList.account = "NULS";
               newAssetsList.type = 1;
-              newAssetsList.total = timesDecimals(response.result[0].totalBalance);
-              newAssetsList.locking = timesDecimals(response.result[0].consensusLock + response.result[0].timeLock);
-              newAssetsList.balance = timesDecimals(response.result[0].balance);
+              newAssetsList.total = timesDecimals(response.result.totalBalance);
+              newAssetsList.locking = timesDecimals(response.result.consensusLock + response.result.timeLock);
+              newAssetsList.balance = timesDecimals(response.result.balance);
             } else {
-              newAssetsList.account = response.result.symbol;
-              newAssetsList.chainId = response.result.chainId;
-              newAssetsList.assetId = response.result.assetId;
+              newAssetsList.account = "NULS";
               newAssetsList.type = 1;
               newAssetsList.total = 0;
               newAssetsList.locking = 0;
               newAssetsList.balance = 0;
             }
             this.addressInfo.balance = newAssetsList.balance;
+            localStorage.setItem(this.addressInfo.address,JSON.stringify(this.addressInfo));
+            sessionStorage.setItem(this.addressInfo.address,JSON.stringify(this.addressInfo));
             this.addressAssetsData.push(newAssetsList);
             this.assetsListLoading = false;
           })
+          .catch((error) => {
+            console.log("getAccount:"+error);
+            this.assetsListLoading = false;
+          });
       },
 
       /**
-       * 获取地址代币资产信息
+       * 获取地址代币列表
        * @param pageSize
        * @param pageRows
        * @param address
        **/
       getTokenListByAddress(pageSize, pageRows, address) {
-        this.$post('/', 'getAccountTokens', [pageSize, pageRows, address], 'Home')
+        this.$post('/', 'getAccountTokens', [pageSize, pageRows, address])
           .then((response) => {
             //console.log(response);
             let newAssetsList = {};
             if (response.hasOwnProperty("result")) {
               for (let itme of response.result.list) {
-                itme.account = itme.tokenSymbol;
+                itme.account = itme.tokenName;
                 itme.type = 2;
                 itme.total = timesDecimals(itme.balance, itme.decimals);
                 itme.locking = '--';
@@ -298,30 +317,35 @@
               newAssetsList = response.result.list;
             }
             this.addressAssetsData.push(...newAssetsList);
-            this.addressInfo.tokens = [];
-            this.addressInfo.tokens = this.addressAssetsData;
-            //localStorage.setItem(this.addressInfo.address, JSON.stringify(this.addressInfo));
             this.assetsListLoading = false;
           })
+          .catch((error) => {
+            console.log("getAccountTokens:"+error);
+            this.assetsListLoading = false;
+          });
       },
 
       /**
-       * 获取地址跨链资产信息
+       * 获取地址交易信息
+       * @param pageSize
+       * @param pageRows
        * @param address
+       * @param type
+       * @param isHide
        **/
-      getAccountCrossLedgerList(address) {
-        //this.txListDataLoading = true;
-        this.$post('/', 'getAccountCrossLedgerList', [address], 'Home')
+      getTxlistByAddress(pageSize, pageRows, address, type, isHide) {
+        this.txListDataLoading = true;
+        this.$post('/', 'getAccountTxs', [pageSize, pageRows, address, type, isHide])
           .then((response) => {
             //console.log(response);
-            this.crossLinkDataLoading = false;
             if (response.hasOwnProperty("result")) {
-              for (let item of response.result) {
-                item.totalBalance = timesDecimals(item.totalBalance);
+              for (let item of response.result.list) {
+                item.createTime = moment(getLocalTime(item.createTime)).format('YYYY-MM-DD HH:mm:ss');
+                item.txid = superLong(item.txHash, 8);
                 item.balance = timesDecimals(item.balance);
-                item.locking = timesDecimals(item.consensusLock + item.timeLock);
               }
-              this.crossLinkData = response.result;
+              this.txListData = response.result.list;
+              this.pageCount = response.result.totalCount;
               this.txListDataLoading = false;
             }
           })
@@ -332,8 +356,8 @@
        * @param val
        **/
       addressAssetsListPages(val) {
-        this.pageNumber = val;
-        this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
+        //TODO 资产数据是否会有很多分页功能
+        console.log(val);
       },
 
       /**
@@ -358,34 +382,12 @@
       /**
        * 连接跳转
        * @param name
-       * @param parms
        */
-      toUrl(name, parms) {
+      toUrl(name) {
         //console.log(name)
-        //console.log(parms);
-        let newParms = {accountType: parms};
-        if (name === 'transfer') {
-          this.$router.push({
-            name: name,
-            query: newParms
-          })
-        } else if (name === 'frozenList') {
-          newParms = {accountInfo: parms};
-          this.$router.push({
-            name: name,
-            query: newParms
-          })
-        } else {
-          if (parms.type === 2) {
-            this.$router.push({
-              name: 'tokenTxList'
-            })
-          } else {
-            this.$router.push({
-              name: name,
-            })
-          }
-        }
+        this.$router.push({
+          name: name
+        })
       },
 
       /**
@@ -394,7 +396,7 @@
        **/
       copy(sting) {
         copys(sting);
-        this.$message({message: this.$t('public.copySuccess'), type: 'success', duration: 1000});
+        this.$message({message: "已经复制完成", type: 'success', duration: 1000});
       },
     }
   }
@@ -405,6 +407,7 @@
   .home {
     background-color: @Bcolour1;
     .title {
+      height: 100px;
     }
     .el-tabs {
       margin: 30px auto 0;

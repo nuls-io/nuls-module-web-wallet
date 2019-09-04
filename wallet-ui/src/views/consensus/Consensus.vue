@@ -1,119 +1,97 @@
 <template>
-  <div class="consensus bg-gray">
-    <h3 class="title">
-      {{addressInfo.address}}
-      <span v-show="addressInfo.alias"> | {{addressInfo.alias}}</span>
-      <i class="iconfont icon-fuzhi clicks" @click="copy(addressInfo.address)"></i>
-    </h3>
-    <div class="card w1200">
-      <div class="card-info left fl">
-        <h5 class="card-title font18">
-          {{$t('consensus.consensus0')}}
-          <span class="font14 fr">{{addressInfo.totalReward}}<font class="fCN"> NULS</font></span>
-        </h5>
-        <ul>
-          <li>
-            {{$t('consensus.consensus1')}}
-            <label>
-              <u class="click"
-                 @click="toUrl('consensusList',addressInfo.consensusLock)">{{addressInfo.consensusLock}}</u>
-              <span class="fCN">{{agentAsset.agentAsset.symbol}}</span>
-            </label>
-          </li>
-          <li>
-            {{$t('consensus.consensus2')}}
-            <label>{{addressInfo.balance}}<span class="fCN">{{addressInfo.symbol}}</span></label>
-          </li>
-          <li>
-            {{$t('consensus.consensus3')}}
-            <label>{{addressInfo.lastReward}}<span class="fCN">{{addressInfo.symbol}}</span></label>
-          </li>
-        </ul>
-      </div>
-      <div class="card-info right fr">
-        <h5 class="card-title font18">
-          {{$t('consensus.consensus4')}}
-          <span class="font16 click fr" @click="toUrl('newConsensus')" v-show="!isNew && !isRed">
-            {{$t('consensus.consensus5')}}
-          </span>
-        </h5>
-        <ul>
-          <li>
-            {{$t('consensus.consensus8')}}
-            <label>{{nulsCount.consensusTotal}}<span class="fCN">{{agentAsset.agentAsset.symbol}}</span></label>
-          </li>
-          <li>{{$t('consensus.consensus7')}} <label>{{nodeCount.totalCount}}</label></li>
-          <li>{{$t('consensus.consensus6')}} <label>{{nodeCount.agentCount}}</label></li>
-        </ul>
-      </div>
+    <div class="consensus bg-gray">
+        <h3 class="title">
+            {{addressInfo.address}}
+            <span v-show="addressInfo.alias">({{addressInfo.alias}})</span>
+            <i class="iconfont icon-fuzhi clicks" @click="copy(addressInfo.address)"></i>
+        </h3>
+        <div class="card w1200">
+            <div class="card-info left fl">
+                <h5 class="card-title font18">我的共识</h5>
+                <ul>
+                    <li>总委托 <label><u class="td click" @click="toUrl('consensusList')">{{addressInfo.consensusLock}}</u><span
+                            class="fCN">NULS</span></label></li>
+                    <li>可用余额 <label>{{addressInfo.balance}}<span class="fCN">NULS</span></label></li>
+                    <li>总共识奖励 <label>{{addressInfo.totalReward}}<span class="fCN">NULS</span></label></li>
+                </ul>
+            </div>
+            <div class="card-info right fr">
+                <h5 class="card-title font18">
+                    所有共识
+                    <span class="font16 click fr" @click="toUrl('newConsensus')" v-show="!isNew">创建</span>
+                </h5>
+                <ul>
+                    <li>共识节点 <label>{{nodeCount.agentCount}}</label></li>
+                    <li>总节点数 <label>{{nodeCount.totalCount}}</label></li>
+                    <li>总委托量 <label>{{nulsCount.consensusTotal}}<span class="fCN">NULS</span></label></li>
+                </ul>
+            </div>
+        </div>
+        <div class="cb"></div>
+        <el-tabs v-model="consensusActive" @tab-click="handleClick" class="w1200">
+            <el-tab-pane label="所有节点" name="consensusFirst">
+                <div class="filter">
+                    <SelectBar v-model="nodeStatusRegion" :typeOptions="nodeStatusOptions" typeName="nodeStatus"
+                               @change="changeNodeStatus">
+                    </SelectBar>
+                    <SelectBar v-model="nodeTypeRegion" :typeOptions="nodeTypeOptions" typeName="nodeType"
+                               @change="changeNodeType">
+                    </SelectBar>
+                    <el-input placeholder="请选择输入ID\别名\地址...." class="search" v-model="searchValue"
+                              suffix-icon="el-icon-search">
+                        <i class="iconfont icon-search_icon fr click"></i>
+                    </el-input>
+                </div>
+                <div class="node">
+                    <div class="node_info" v-for="item in searchData" :key="item.agentId">
+                        <h4 class="bg-gray">
+                            <i class="iconfont iconwo" v-show="item.isNew"></i>&nbsp;
+                            <span class="uppercase">{{item.agentId}}</span>&nbsp;
+                            <i class="iconfont"
+                               :class="item.status ===0 ? 'icondaigongshi fred' : 'icongongshizhong fCN'"></i>
+                            <i class="follow el-icon-star-off"></i>
+                        </h4>
+                        <ul class="bg-white click" @click="toUrl('consensusInfo',item.txHash)">
+                            <li>别名<span>{{item.agentAlias}}</span></li>
+                            <li>佣金比例 <span>{{item.commissionRate}}%</span></li>
+                            <li>总委托量<span>{{item.totalDeposit}}</span></li>
+                            <li>参与人数<span>{{item.depositCount}}</span></li>
+                            <li>保证金<span>{{item.deposit}}</span></li>
+                            <li>信用值<span>{{item.creditValue}}</span></li>
+                        </ul>
+                    </div>
+                    <div class="cb"></div>
+                </div>
+            </el-tab-pane>
+            <el-tab-pane label="我的节点" name="consensusSecond">
+                <div class="node">
+                    <div class="node_info" v-for="item in myNodeData" :key="item.agentId">
+                        <h4 class="bg-gray">
+                            <i class="iconfont iconwo" v-show="item.isNew"></i>&nbsp;
+                            <span class="uppercase">{{item.agentId}}</span>&nbsp;
+                            <i class="iconfont"
+                               :class="item.status ===0 ? 'icondaigongshi fred' : 'icongongshizhong fCN'"></i>
+                            <i class="follow el-icon-star-off"></i>
+                        </h4>
+                        <ul class="bg-white click" @click="toUrl('consensusInfo',item.txHash)">
+                            <li>别名<span>{{item.agentAlias}}</span></li>
+                            <li>佣金比例 <span>{{item.commissionRate}}%</span></li>
+                            <li>总委托量<span>{{item.totalDeposit/100000000}}</span></li>
+                            <li>参与人数<span>{{item.depositCount}}</span></li>
+                            <li>保证金<span>{{item.deposit/100000000}}</span></li>
+                            <li>信用值<span>{{item.creditValue}}</span></li>
+                        </ul>
+                    </div>
+                    <div class="cb"></div>
+                </div>
+            </el-tab-pane>
+        </el-tabs>
     </div>
-    <div class="cb"></div>
-    <el-tabs v-model="consensusActive" @tab-click="handleClick" class="w1200">
-      <el-tab-pane :label="$t('consensus.consensus9')" name="consensusFirst">
-        <div class="filter">
-          <SelectBar v-model="nodeStatusRegion" :typeOptions="nodeStatusOptions" typeName="nodeStatus"
-                     @change="changeNodeStatus">
-          </SelectBar>
-          <SelectBar v-model="nodeTypeRegion" :typeOptions="nodeTypeOptions" typeName="nodeType"
-                     @change="changeNodeType">
-          </SelectBar>
-          <el-input :placeholder="$t('consensus.consensus10')" class="search" v-model="searchValue"
-                    suffix-icon="el-icon-search">
-            <i class="iconfont icon-search_icon fr click"></i>
-          </el-input>
-        </div>
-        <div class="node">
-          <div class="node_info" v-for="item in searchData" :key="item.agentId">
-            <h4 class="bg-gray">
-              <i class="iconfont iconwo" v-show="item.isNew"></i>&nbsp;
-              <span class="uppercase">{{item.agentId}}</span>&nbsp;
-              <i class="iconfont"
-                 :class="item.status ===0 ? 'icondaigongshi fred' : 'icongongshizhong fCN'"></i>
-              <i class="follow clicks" :class="item.isCollect ? 'el-icon-star-on fCN':'el-icon-star-off'"
-                 @click="collect(item)"></i>
-            </h4>
-            <ul class="bg-white click" @click="toUrl('consensusInfo',item.txHash)">
-              <li>{{$t('public.alias')}}<span>{{item.agentAlias}}</span></li>
-              <li>{{$t('public.commission')}} <span>{{item.commissionRate}}%</span></li>
-              <li>{{$t('public.totalStake')}}<span>{{item.totalDeposit}}</span></li>
-              <li>{{$t('public.participants')}}<span>{{item.depositCount}}</span></li>
-              <li>{{$t('public.deposit')}}<span>{{item.deposit}}</span></li>
-              <li>{{$t('public.credit')}}<span>{{item.creditValue}}</span></li>
-            </ul>
-          </div>
-          <div class="cb"></div>
-        </div>
-      </el-tab-pane>
-      <el-tab-pane :label="$t('consensus.consensus11')" name="consensusSecond">
-        <div class="node">
-          <div class="node_info" v-for="item in myNodeData" :key="item.agentId">
-            <h4 class="bg-gray">
-              <i class="iconfont iconwo" v-show="item.isNew"></i>&nbsp;
-              <span class="uppercase">{{item.agentId}}</span>&nbsp;
-              <i class="iconfont"
-                 :class="item.status ===0 ? 'icondaigongshi fred' : 'icongongshizhong fCN'"></i>
-              <i class="follow clicks" :class="item.isCollect ? 'el-icon-star-on fCN':'el-icon-star-off'"
-                 @click="collect(item)"></i>
-            </h4>
-            <ul class="bg-white click" @click="toUrl('consensusInfo',item.txHash)">
-              <li>{{$t('public.alias')}}<span>{{item.agentAlias}}</span></li>
-              <li>{{$t('public.commission')}} <span>{{item.commissionRate}}%</span></li>
-              <li>{{$t('public.totalStake')}}<span>{{item.totalDeposit}}</span></li>
-              <li>{{$t('public.participants')}}<span>{{item.depositCount}}</span></li>
-              <li>{{$t('public.deposit')}}<span>{{item.deposit}}</span></li>
-              <li>{{$t('public.credit')}}<span>{{item.creditValue}}</span></li>
-            </ul>
-          </div>
-          <div class="cb"></div>
-        </div>
-      </el-tab-pane>
-    </el-tabs>
-  </div>
 </template>
 
 <script>
   import SelectBar from '@/components/SelectBar';
-  import {timesDecimals, copys, addressInfo, chainIdNumber} from '@/api/util'
+  import {timesDecimals, copys} from '@/api/util'
 
   export default {
     name: 'consensus',
@@ -145,32 +123,32 @@
         searchValue: '',//搜索框
         allNodeData: [],//所有节点信息
         addressInfo: [], //账户信息
-        agentAsset: JSON.parse(sessionStorage.getItem('info')),//pocm合约单位等信息
-        isRed: false,//地址是否有红牌
         isNew: false,//账户是否已经创建了节点
         pageIndex: 1, //页码
-        pageSize: 500, //每页条数
+        pageSize: 20, //每页条数
         pageTotal: 0,//总页数
         myNodeData: [],//我的节点信息
-        setInterval: null,//定时器变量
+        setInterval:null,//定时器变量
       };
     },
     components: {
       SelectBar
     },
     created() {
-      this.addressInfo = addressInfo(1);
+      this.addressInfo = JSON.parse(sessionStorage.getItem(sessionStorage.key(0)));
       setInterval(() => {
-        this.addressInfo = addressInfo(1);
+        this.addressInfo = JSON.parse(sessionStorage.getItem(sessionStorage.key(0)));
       }, 500);
       this.getConsensusNodeCount();
       this.getCoinInfo();
     },
     mounted() {
       this.getConsensusNodes(this.pageIndex, this.pageSize, this.nodeTypeRegion);
-      //this.getConsensusInfoByAddress(this.pageIndex, this.pageSize, this.addressInfo.address);
-      this.getAddressInfoByNode(this.addressInfo);
-      this.getPunishByAddress(this.addressInfo.address);
+      this.getConsensusInfoByAddress(this.pageIndex, this.pageSize, this.addressInfo.address);
+      this.setInterval = setInterval(() => {
+        this.getAddressInfoByNode(this.addressInfo)
+      },10000)
+
     },
     destroyed() {
       clearInterval(this.setInterval);
@@ -194,7 +172,6 @@
       addressInfo(val, old) {
         if (val.address !== old.address && old.address) {
           this.isNew = false;
-          this.getPunishByAddress(this.addressInfo.address);
           this.getConsensusNodeCount();
           this.getCoinInfo();
           this.getConsensusNodes(this.pageIndex, this.pageSize, this.nodeTypeRegion);
@@ -205,56 +182,31 @@
     methods: {
 
       /**
-       * 查询创建地址是否有红牌
-       * @param address
-       **/
-      getPunishByAddress(address) {
-        this.$post('/', 'getPunishList', [1, 1, 2, address])
-          .then((response) => {
-            //console.log(response);
-            if (response.result.list.length !== 0) {
-              this.isRed = true;
-            } else {
-              this.isRed = false;
-            }
-          }).catch((error) => {
-          this.$message({message: this.$t('public.err3') + error, type: 'error', duration: 1000});
-        });
-      },
-
-      /**
        * 获取地址网络信息
-       * @param addressInfos
+       * @param addressInfo
        **/
-      async getAddressInfoByNode(addressInfos) {
-        await this.$post('/', 'getAccount', [addressInfos.address])
+      async getAddressInfoByNode(addressInfo) {
+        addressInfo.alias = "";
+        addressInfo.balance = 0;
+        addressInfo.consensusLock = 0;
+        addressInfo.totalReward = 0;
+        await this.$post('/', 'getAccount', [addressInfo.address])
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
-              let newAddressInfo = addressInfo(0);
-              for (let item of newAddressInfo) {
-                if (item.address === addressInfos.address) {
-                  item.alias = response.result.alias;
-                  item.symbol = response.result.symbol;
-                  item.balance = timesDecimals(response.result.balance);
-                  item.consensusLock = timesDecimals(response.result.consensusLock);
-                  item.totalReward = timesDecimals(response.result.totalReward);
-                  if(response.result.lastReward){
-                    item.lastReward = timesDecimals(response.result.lastReward);
-                  }else {
-                    item.lastReward = 0;
-                  }
-                  item.totalIn = timesDecimals(response.result.totalIn);
-                  item.totalOut = timesDecimals(response.result.totalOut);
-                }
-              }
-              localStorage.setItem(chainIdNumber(), JSON.stringify(newAddressInfo));
+              addressInfo.alias = response.result.alias;
+              addressInfo.balance = timesDecimals(response.result.balance);
+              addressInfo.consensusLock = timesDecimals(response.result.consensusLock);
+              addressInfo.totalReward = timesDecimals(response.result.totalReward);
             }
+            localStorage.setItem(addressInfo.address, JSON.stringify(addressInfo));
           })
           .catch((error) => {
             console.log("getAccount:" + error);
+            localStorage.setItem(addressInfo.address, JSON.stringify(addressInfo));
           });
       },
+
 
       /**
        * 获取共识数统计信息
@@ -313,15 +265,7 @@
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
-              if (!this.addressInfo.collectList) {
-                this.addressInfo.collectList = [];
-              }
               for (let itme of response.result.list) {
-                if (this.addressInfo.collectList.includes(itme.agentId)) {
-                  itme.isCollect = true;
-                } else {
-                  itme.isCollect = false;
-                }
                 itme.bozhengjin = itme.deposit;
                 itme.deposit = timesDecimals(itme.deposit);
                 itme.agentReward = timesDecimals(itme.agentReward);
@@ -343,49 +287,6 @@
       },
 
       /**
-       * 收藏功能
-       * @param nodeInfo
-       **/
-      collect(nodeInfo) {
-        //console.log(nodeInfo);
-        if (!this.addressInfo.hasOwnProperty('collectList')) {
-          this.addressInfo.collectList = []
-        }
-        if (this.addressInfo.collectList.includes(nodeInfo.agentId)) {
-          //移除已收藏
-          this.addressInfo.collectList.splice(this.addressInfo.collectList.findIndex(v => v === nodeInfo.agentId), 1);
-        } else {
-          this.addressInfo.collectList.push(nodeInfo.agentId);
-        }
-
-        if (this.consensusActive === 'consensusFirst') {
-          //循环是否收藏
-          for (let item of this.allNodeData) {
-            if (this.addressInfo.collectList.includes(item.agentId)) {
-              item.isCollect = true;
-            } else {
-              item.isCollect = false;
-            }
-          }
-        } else { //循环是否收藏
-          for (let item of this.myNodeData) {
-            if (this.addressInfo.collectList.includes(item.agentId)) {
-              item.isCollect = true;
-            } else {
-              item.isCollect = false;
-            }
-          }
-        }
-        let newAddressList = addressInfo(0);
-        for (let item of newAddressList) {
-          if (item.address === this.addressInfo.address) {
-            item.collectList = this.addressInfo.collectList
-          }
-        }
-        localStorage.setItem(chainIdNumber(), JSON.stringify(newAddressList));
-      },
-
-      /**
        * 我的节点（根据地址获取共识信息）
        * @param pageIndex
        * @param pageSize
@@ -396,21 +297,9 @@
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
+              this.myNodeData = response.result.list;
               //循环获取节点列表判断是否有地址创建列表
-              let newAgentIdList = [];
               for (let item of response.result.list) {
-                if (!this.addressInfo.collectList) {
-                  this.addressInfo.collectList = [];
-                }
-                if (this.addressInfo.collectList.includes(item.agentId)) {
-                  item.isCollect = true;
-                } else {
-                  item.isCollect = false;
-                }
-                newAgentIdList.push(item.agentId);
-                item.deposit = timesDecimals(item.deposit);
-                item.totalDeposit = timesDecimals(item.totalDeposit);
-                item.totalReward = timesDecimals(item.totalReward);
                 if (item.agentAddress === this.addressInfo.address) {
                   item.isNew = true;//创建的节点
                   this.isNew = true;
@@ -419,15 +308,6 @@
                   this.isNew = false;
                 }
               }
-              let setnNewAgentIdList = new Set(newAgentIdList);
-              let setCollectList = new Set(this.addressInfo.collectList);
-              // 差集
-              let difference = new Set([...setCollectList].filter(x => !setnNewAgentIdList.has(x)));
-              let newCollectList = [];
-              for (let items of difference) {
-                newCollectList.push(this.allNodeData.filter(item => item.agentId === items)[0])
-              }
-              this.myNodeData = [...response.result.list, ...newCollectList];
             }
           })
           .catch((error) => {
@@ -504,7 +384,7 @@
         if (name === 'consensusInfo') {
           newQuery = {hash: params}
         } else {
-          newQuery = {consensusLock: params}
+          newQuery = {}
         }
         this.$router.push({
           name: name,
@@ -518,7 +398,7 @@
        **/
       copy(sting) {
         copys(sting);
-        this.$message({message: this.$t('public.copySuccess'), type: 'success', duration: 1000});
+        this.$message({message: "已经复制完成", type: 'success', duration: 1000});
       },
 
       /**
@@ -538,53 +418,53 @@
 </script>
 
 <style lang="less">
-  @import "./../../assets/css/style";
+    @import "./../../assets/css/style";
 
-  .consensus {
-    .card {
-      margin: -20px auto 0;
-      height: 200px;
-      .left, .right {
-        width: 590px;
-      }
-    }
-    .node {
-      margin: 0 0 100px 0;
-      .node_info {
-        border: @BD1;
-        width: 285px;
-        height: 175px;
-        margin: 20px 20px 0 0;
-        float: left;
-        &:nth-child(4n) {
-          margin: 20px 0 0 0;
-        }
-        h4 {
-          height: 32px;
-          line-height: 32px;
-          padding: 0 20px;
-          .follow {
-            float: right;
-            padding-top: 5px;
-          }
-        }
-        ul {
-          padding: 0 0 2px 0;
-          li {
-            height: 23px;
-            line-height: 23px;
-            padding: 0 0 0 30px;
-            font-size: 12px;
-            span {
-              display: block;
-              float: right;
-              text-align: left;
-              width: 160px;
+    .consensus {
+        .card {
+            margin: -20px auto 0;
+            height: 200px;
+            .left, .right {
+                width: 590px;
             }
-          }
-
         }
-      }
+        .node {
+            margin: 0 0 100px 0;
+            .node_info {
+                border: @BD1;
+                width: 285px;
+                height: 175px;
+                margin: 20px 20px 0 0;
+                float: left;
+                &:nth-child(4n) {
+                    margin: 20px 0 0 0;
+                }
+                h4 {
+                    height: 32px;
+                    line-height: 32px;
+                    padding: 0 20px;
+                    .follow {
+                        float: right;
+                        padding-top: 5px;
+                    }
+                }
+                ul {
+                    padding: 0 0 2px 0;
+                    li {
+                        height: 23px;
+                        line-height: 23px;
+                        padding: 0 0 0 30px;
+                        font-size: 12px;
+                        span {
+                            display: block;
+                            float: right;
+                            text-align: left;
+                            width: 160px;
+                        }
+                    }
+
+                }
+            }
+        }
     }
-  }
 </style>

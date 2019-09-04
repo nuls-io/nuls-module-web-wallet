@@ -1,70 +1,70 @@
 <template>
-  <div class="header">
-    <div class="w1200">
-      <div class="logo">
-        <img class="click" @click="toUrl('home')" :src=logoSvg>
-      </div>
-      <div class="nav">
-        <el-menu mode="horizontal" :default-active="navActives($route.path)" @select="handleSelect">
-          <el-menu-item index="home">{{$t('nav.wallet')}}</el-menu-item>
-          <el-menu-item index="transfer" :disabled="addressList.length === 0">{{$t('nav.transfer')}}
-          </el-menu-item>
-          <el-menu-item index="consensus" :disabled="addressList.length === 0">{{$t('nav.consensus')}}
-          </el-menu-item>
-          <el-menu-item index="contract" :disabled="addressList.length === 0 || !nodeServiceInfo.isRunSmartContract">
-            {{$t('nav.contracts')}}
-          </el-menu-item>
-        </el-menu>
-      </div>
-      <div class="tool">
-        <el-menu mode="horizontal" :default-active="navActive" @select="handleSelect">
-          <el-submenu index="address" class="user" :disabled="addressList.length === 0">
-            <template slot="title"><i class="iconfont iconzhanghu"></i></template>
-            <el-menu-item v-for="item of addressList" :key="item.address" :index="item.address">
-              <span :class="item.selection ? 'fCN' : '' ">
-                 <i class="iconfont iconwo ico" :class="item.selection ? 'fCN' : 'transparent' "></i>
-                <font v-show="!item.alias" class="w100"> {{item.addresss}}</font>
-                <span v-show="item.alias" class="w100">{{item.alias}}</span> |
-                <span>{{item.balance}}</span>
-              </span>
+    <div class="header">
+        <div class="w1200">
+            <div class="logo">
+                <img class="click" @click="toUrl('home')" :src=logoSvg>
+            </div>
+            <div class="nav">
+                <el-menu mode="horizontal" :default-active="navActives($route.path)" @select="handleSelect">
+                    <el-menu-item index="home">{{$t('nav.wallet')}}</el-menu-item>
+                    <el-menu-item index="transfer" :disabled="addressList.length === 0">{{$t('nav.transfer')}}
+                    </el-menu-item>
+                    <el-menu-item index="consensus" :disabled="addressList.length === 0">{{$t('nav.consensus')}}
+                    </el-menu-item>
+                    <el-menu-item index="contract" disabled>{{$t('nav.contracts')}}</el-menu-item>
+                    <!--<el-submenu index="5" disabled>
+                      <template slot="title">{{$t('nav.application')}}</template>
+                      <el-menu-item index="2-1">应用1</el-menu-item>
+                      <el-menu-item index="2-2">应用2</el-menu-item>
+                      <el-menu-item index="2-3">应用3</el-menu-item>
+                    </el-submenu>-->
+                </el-menu>
+            </div>
+            <div class="tool">
+                <el-menu mode="horizontal" :default-active="navActive" @select="handleSelect">
+                    <el-submenu index="address" class="user" :disabled="addressList.length === 0" >
+                        <template slot="title"><i class="iconfont iconzhanghu"></i></template>
+                        <el-menu-item v-for="item in addressList" :key="item.address" :index="item.address" >
+                            <i class="iconfont iconwo" :class="item.selection ? '' : 'transparent' "></i>
+                            {{item.addresss}}<span v-show="item.alias"> | ({{item.alias}})</span> | <span>{{item.balance}}</span>
+                        </el-menu-item>
+                    </el-submenu>
+                    <el-submenu index="set">
+                        <template slot="title">设置</template>
+                        <el-menu-item index="address" class="tc">地址管理</el-menu-item>
+                        <el-menu-item index="nodeService" class="tc">服务节点</el-menu-item>
+                        <el-menu-item index="address" class="tc" disabled>通讯录</el-menu-item>
+                    </el-submenu>
+                    <el-submenu index="lang" disabled>
+                        <template slot="title">{{this.lang ==="en" ? "Eng":"中文"}}</template>
+                        <el-menu-item index="cn">中文</el-menu-item>
+                        <el-menu-item index="en">English</el-menu-item>
+                    </el-submenu>
+                    <li class="el-menu-item">|</li>
+                    <el-menu-item index="24" disabled>帮助</el-menu-item>
+                </el-menu>
 
-            </el-menu-item>
-          </el-submenu>
-          <el-submenu index="set">
-            <template slot="title">{{$t('nav.set')}}</template>
-            <el-menu-item index="address">{{$t('nav.addressList')}}</el-menu-item>
-            <el-menu-item index="nodeService">{{$t('nav.nodeList')}}</el-menu-item>
-            <el-menu-item index="contact">{{$t('public.bookList')}}</el-menu-item>
-            <el-menu-item index="seting">{{$t('public.about')}}</el-menu-item>
-          </el-submenu>
-          <el-submenu index="lang">
-            <template slot="title">{{this.lang ==="en" ? "Eng":"中文"}}</template>
-            <el-menu-item index="cn">中文</el-menu-item>
-            <el-menu-item index="en">English</el-menu-item>
-          </el-submenu>
-          <!-- <li class="el-menu-item">|</li>
-           <el-menu-item index="24" disabled>{{$t('nav.help')}}</el-menu-item>-->
-        </el-menu>
-
-      </div>
+            </div>
+        </div>
+        <div class="cb"></div>
     </div>
-    <div class="cb"></div>
-  </div>
 
 </template>
 
 <script>
-  import logoSvg from './../assets/img/logo-beta.svg'
-  import {superLong, chainIdNumber, addressInfo} from '@/api/util'
+  import * as config from '../config.js'
+  import logo from './../assets/img/logo.svg'
+  //import testnetLogo from './../assets/img/logo-test-black.svg'
+  import testnetLogo from './../assets/img/alpha-black.svg'
+  import {superLong} from '@/api/util'
 
   export default {
     data() {
       return {
-        logoSvg: logoSvg, //logo
+        logoSvg: config.RUN_DEV ? logo : testnetLogo, //logo
         navActive: '/',//菜单选中
         addressList: [], //地址列表
         lang: 'cn', //语言选择
-        nodeServiceInfo: {},
       };
     },
     components: {},
@@ -74,12 +74,6 @@
     mounted() {
       setInterval(() => {
         this.getAddressList();
-        if (sessionStorage.hasOwnProperty('info')) {
-          this.nodeServiceInfo = JSON.parse(sessionStorage.getItem('info'));
-        } else {
-          this.nodeServiceInfo.isRunCrossChain = false;
-          this.nodeServiceInfo.isRunSmartContract = false;
-        }
       }, 500)
     },
     methods: {
@@ -92,17 +86,18 @@
       handleSelect(key, keyPath) {
         if (keyPath.length > 1) {
           if (keyPath[0] === "address") {
-            for (let item  of this.addressList) {
+            for (let itmes of this.addressList) {
               //清除选中
-              if (item.selection) {
-                item.selection = false;
+              if (itmes.selection) {
+                itmes.selection = false;
+                localStorage.setItem(itmes.address, JSON.stringify(itmes))
               }
               //添加选中
-              if (item.address === keyPath[1]) {
-                item.selection = true;
+              if (itmes.address === keyPath[1]) {
+                itmes.selection = true;
+                localStorage.setItem(itmes.address, JSON.stringify(itmes))
               }
             }
-            localStorage.setItem(chainIdNumber(), JSON.stringify(this.addressList));
           } else if (keyPath[0] === "set") {
             this.$router.push({
               name: keyPath[1]
@@ -126,8 +121,6 @@
           return 'transfer'
         } else if (val.indexOf('/consensus') === 0) {
           return 'consensus'
-        } else if (val.indexOf('/contract') === 0) {
-          return 'contract'
         } else {
           return 'home'
         }
@@ -137,10 +130,17 @@
        * 获取账户列表
        */
       getAddressList() {
-        this.addressList = addressInfo(0);
-        if (this.addressList) {
-          for (let item  of this.addressList) {
-            item.addresss = superLong(item.address, 8);
+        this.addressList = [];
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          if (localStorage.getItem(localStorage.key(i)) !== 'SILENT' && localStorage.key(i).length > 10) {
+            this.addressList.push(JSON.parse(localStorage.getItem(localStorage.key(i))))
+          }
+        }
+        for (let itmes of this.addressList) {
+          itmes.addresss = superLong(itmes.address, 8);
+          if (itmes.selection) {
+            sessionStorage.clear();
+            sessionStorage.setItem(itmes.address, JSON.stringify(itmes))
           }
         }
       },
@@ -157,8 +157,10 @@
       /**
        * 连接跳转
        * @param name
+       * @param params
        */
       toUrl(name) {
+        //console.log(name,params);
         this.$router.push({
           name: name
         })
@@ -169,53 +171,36 @@
 </script>
 
 <style lang="less">
-  @import "./../assets/css/style";
+    @import "./../assets/css/style";
 
-  .header {
-    border-bottom: 1px solid @Dcolour;
-    height: 80px;
-    .logo {
-      width: 120px;
-      float: left;
-      img {
-        margin: 20px 0 0 0;
-        width: 100%;
-      }
-    }
-    .nav {
-      width: 600px;
-      margin: 10px 0 0 0;
-      float: left;
-    }
-    .tool {
-      width: 340px;
-      margin: 10px 0 0 0;
-      float: right;
-      background-color: #e6a23c;
-      .user {
-        .el-submenu__title {
-          .el-icon-arrow-down {
-            margin: 35px 0 0 -16px;
-
-          }
+    .header {
+        border-bottom: 1px solid @Dcolour;
+        height: 80px;
+        .logo {
+            width: 120px;
+            float: left;
+            img {
+                margin: 20px 0 0 0;
+                width: 100%;
+            }
         }
-      }
+        .nav {
+            width: 600px;
+            margin: 10px 0 0 0;
+            float: left;
+        }
+        .tool {
+            width: 340px;
+            margin: 10px 0 0 0;
+            float: right;
+            background-color: #e6a23c;
+            .user {
+                .el-submenu__title {
+                    .el-icon-arrow-down {
+                        margin: 35px 0 0 -16px
+                    }
+                }
+            }
+        }
     }
-  }
-
-  .el-menu--horizontal {
-    .ico {
-      float: left;
-      display: block;
-      width: 25px;
-    }
-    .fCN {
-      color: @Ncolour;
-    }
-    .w100 {
-      display: block;
-      float: left;
-      width: 180px;
-    }
-  }
 </style>

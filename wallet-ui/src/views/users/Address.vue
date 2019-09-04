@@ -1,17 +1,17 @@
 <template>
   <div class="address bg-gray">
-    <h3 class="title">{{$t('address.address0')}}</h3>
+    <h3 class="title">钱包管理</h3>
 
     <div class="w1200 mt_20">
       <div class="top_ico">
         <i class="el-icon-plus click" @click="toUrl('newAddress')"></i>
       </div>
       <el-table :data="addressList" stripe border>
-        <el-table-column prop="address" :label="$t('address.address1')" align="center" min-width="200">
+        <el-table-column prop="address" label="账户" align="center" min-width="200">
         </el-table-column>
-        <el-table-column prop="balance" :label="$t('address.address2')" align="center">
+        <el-table-column prop="balance" label="余额" align="center">
         </el-table-column>
-        <el-table-column :label="$t('address.address3')" align="center">
+        <el-table-column label="别名" align="center">
           <template slot-scope="scope">
             <span v-show="scope.row.alias">{{scope.row.alias}}</span>
             <span v-show="!scope.row.alias" @click="addAlias(scope.row)">
@@ -19,7 +19,7 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('address.address4')" align="center">
+        <el-table-column label="备注" align="center">
           <template slot-scope="scope">
             <span v-show="scope.row.remark !=='' " @click="editRemark(scope.row)"
                   class="click">{{scope.row.remark}}</span>
@@ -28,21 +28,18 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('address.address5')" align="center" width="350">
+        <el-table-column label="操作" align="center" width="250">
           <template slot-scope="scope">
-            <label class="click tab_bn" @click="editPassword(scope.row)">{{$t('address.address6')}}</label>
+            <label class="click tab_bn" @click="editPassword(scope.row)">修改密码</label>
             <span class="tab_line">|</span>
-            <label class="click tab_bn" @click="backAddress(scope.row)">{{$t('address.address7')}}</label>
+            <label class="click tab_bn" @click="backAddress(scope.row)">备份</label>
             <span class="tab_line">|</span>
-            <label class="click tab_bn" @click="deleteAddress(scope.row)">{{$t('address.address8')}}</label>
-            <span class="tab_line">|</span>
-            <el-link disabled v-if="scope.row.selection">{{$t('public.into')}}</el-link>
-            <label class="click tab_bn" @click="selectionAddress(scope.row)" v-else>{{$t('public.into')}}</label>
+            <label class="click tab_bn" @click="deleteAddress(scope.row)">移除</label>
           </template>
         </el-table-column>
       </el-table>
       <div class="pages">
-        <div class="page-total">{{$t('public.total')}} {{addressList.length}}</div>
+        <div class="page-total">共 {{addressList.length}} 条</div>
         <!--<div class="page-total">显示1-20 共 1000</div>-->
         <!-- <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" class="fr"
                         :current-page="currentPage4"
@@ -62,10 +59,10 @@
     >
 
       <div class="address-remark bg-white">
-        <el-input v-model.trim="remarkInfo" :placeholder="$t('address.address9')"></el-input>
+        <el-input v-model.trim="remarkInfo" placeholder="请输入备注"></el-input>
         <div class="btn-next">
-          <el-button @click="remarkDialog=false">{{$t('address.address10')}}</el-button>
-          <el-button type="success" @click='addRemark'>{{$t('address.address11')}}</el-button>
+          <el-button @click="remarkDialog=false">取 消</el-button>
+          <el-button type="success" @click='addRemark'>确 定</el-button>
         </div>
       </div>
     </el-dialog>
@@ -77,9 +74,8 @@
 
 <script>
   import nuls from 'nuls-sdk-js'
-  import Password from '@/components/PasswordBar'
-  import {timesDecimals, chainIdNumber, addressInfo,chainID} from '@/api/util'
-  import {getPrefixByChainId} from '@/api/requestData'
+  import Password from './../../components/PasswordBar'
+  import {timesDecimals} from './../../api/util'
 
   export default {
     data() {
@@ -88,20 +84,12 @@
         selectAddressInfo: '', //操作的地址信息
         remarkDialog: false,//备注弹框
         remarkInfo: '',//备注信息
-        prefix: '',//地址前缀
       };
     },
     components: {
       Password,
     },
     created() {
-      getPrefixByChainId(chainID()).then((response) => {
-        //console.log(response);
-        this.prefix = response
-      }).catch((err) => {
-        console.log(err);
-        this.prefix = '';
-      });
       this.getAddressList();
     },
     mounted() {
@@ -113,9 +101,32 @@
        * 获取账户列表
        */
       getAddressList() {
-        this.addressList = addressInfo(0);
+        this.addressList = [];
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          if (localStorage.getItem(localStorage.key(i)) !== 'SILENT' && localStorage.key(i).length > 10) {
+            this.addressList.push(JSON.parse(localStorage.getItem(localStorage.key(i))))
+          }
+        }
         //如果没有账户跳转到创建地址界面
-        if (this.addressList.length === 0) {
+        if (this.addressList.length !== 0) {
+          //循环账户智能有一个是选中的账户
+          let countSelection = 0;
+          for (let item  of this.addressList) {
+            if (item.selection) {
+              countSelection++;
+              sessionStorage.setItem(item.address, JSON.stringify(item));
+              if (countSelection > 1) {
+                item.selection = false;
+                localStorage.setItem(item.address, JSON.stringify(item))
+              }
+            }
+          }
+          //一个选中的都没就默认第一个
+          if (countSelection === 0) {
+            this.addressList[0].selection = true;
+            localStorage.setItem(this.addressList[0].address, JSON.stringify(this.addressList[0]))
+          }
+        } else {
           this.$router.push({
             name: "newAddress",
             query: {'address': ''}
@@ -128,25 +139,24 @@
        * @param addressInfo
        **/
       async getAddressInfoByNode(addressInfo) {
+        addressInfo.alias = "";
+        addressInfo.balance = 0;
+        addressInfo.consensusLock = 0;
+        addressInfo.totalReward = 0;
         await this.$post('/', 'getAccount', [addressInfo.address])
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
-              for (let item of this.addressList) {
-                if (item.address === addressInfo.address) {
-                  addressInfo.alias = response.result.alias;
-                  addressInfo.balance = timesDecimals(response.result.balance);
-                  addressInfo.consensusLock = timesDecimals(response.result.consensusLock);
-                  addressInfo.totalReward = timesDecimals(response.result.totalReward);
-                  addressInfo.tokens = [];
-                  addressInfo.chainId = nuls.verifyAddress(item.address).chainId;
-                }
-              }
-              localStorage.setItem(chainIdNumber(), JSON.stringify(this.addressList))
+              addressInfo.alias = response.result.alias;
+              addressInfo.balance = timesDecimals(response.result.balance);
+              addressInfo.consensusLock = timesDecimals(response.result.consensusLock);
+              addressInfo.totalReward = timesDecimals(response.result.totalReward);
             }
+            localStorage.setItem(addressInfo.address, JSON.stringify(addressInfo));
           })
           .catch((error) => {
             console.log("getAccount:" + error);
+            localStorage.setItem(addressInfo.address, JSON.stringify(addressInfo));
           });
       },
 
@@ -167,11 +177,12 @@
        * @param rowInfo
        **/
       addAlias(rowInfo) {
-        if (rowInfo.balance === 0) {
-          this.$message({message: this.$t('address.address12'), type: 'error', duration: 1000});
-        } else {
+        if(rowInfo.balance  ===0){
+          this.$message({message: "对不起，账户余额不足!", type: 'error', duration: 1000});
+        }else {
           this.toUrl('setAlias', rowInfo.address)
         }
+
       },
 
       /**
@@ -190,7 +201,7 @@
         this.selectAddressInfo = rowInfo;
         this.$router.push({
           name: "newAddress",
-          query: {'backAddressInfo': rowInfo}
+          query: {'address': rowInfo.address, 'aesPri': rowInfo.aesPri}
         })
       },
 
@@ -204,44 +215,20 @@
       },
 
       /**
-       * 进入账户（使用账户）
-       * @param rowInfo
-       **/
-      selectionAddress(rowInfo) {
-        //console.log(rowInfo);
-        for (let item  of this.addressList) {
-          //清除选中
-          if (item.selection) {
-            item.selection = false;
-          }
-          //添加选中
-          if (item.address === rowInfo.address) {
-            item.selection = true;
-          }
-        }
-        localStorage.setItem(chainIdNumber(), JSON.stringify(this.addressList));
-        this.$router.push({
-          name: 'home',
-        })
-      },
-
-      /**
        *  获取密码框的密码
        * @param password
        **/
       passSubmit(password) {
-        let newAddressInfo = addressInfo(0);
         const pri = nuls.decrypteOfAES(this.selectAddressInfo.aesPri, password);
-        const deleteAddressInfo = nuls.importByKey(this.selectAddressInfo.chainId, pri, password,this.prefix);
-        if (this.selectAddressInfo.address === deleteAddressInfo.address) {
-          newAddressInfo.splice(newAddressInfo.findIndex(item => item.address === this.selectAddressInfo.address), 1);
-          if (this.selectAddressInfo.selection && newAddressInfo.length !== 0) {
-            newAddressInfo[0].selection = true;
+        const newAddressInfo = nuls.importByKey(2, pri, password);
+        if (newAddressInfo.address === this.selectAddressInfo.address) {
+          localStorage.removeItem(this.selectAddressInfo.address);
+          if (sessionStorage.hasOwnProperty(this.selectAddressInfo.address)) {
+            sessionStorage.removeItem(this.selectAddressInfo.address);
           }
-          localStorage.setItem(chainIdNumber(), JSON.stringify(newAddressInfo));
           this.getAddressList();
         } else {
-          this.$message({message: this.$t('address.address13'), type: 'error', duration: 1000});
+          this.$message({message: "密码错误", type: 'error', duration: 1000});
         }
       },
 
@@ -259,14 +246,8 @@
        * 账户备注提交
        */
       addRemark() {
-        let newAddressInfo = addressInfo(0);
-        for (let item of newAddressInfo) {
-          if (item.address === this.selectAddressInfo.address) {
-            this.selectAddressInfo.remark = this.remarkInfo;
-            item.remark = this.remarkInfo;
-          }
-        }
-        localStorage.setItem(chainIdNumber(), JSON.stringify(newAddressInfo));
+        this.selectAddressInfo.remark = this.remarkInfo;
+        localStorage.setItem(this.selectAddressInfo.address, JSON.stringify(this.selectAddressInfo));
         this.remarkDialog = false;
         this.selectAddressInfo = '';
       },
@@ -283,6 +264,13 @@
           query: {'address': param}
         })
       },
+
+      handleSizeChange(val) {
+        console.log(`每页 ${val} 条`);
+      },
+      handleCurrentChange(val) {
+        console.log(`当前页: ${val}`);
+      }
     }
   }
 </script>

@@ -2,30 +2,30 @@
   <div class="new_address bg-gray">
     <div class="bg-white">
       <div class="w1200">
-        <BackBar :backTitle="$t('address.address0')"></BackBar>
-        <h3 class="title">{{$t('setAlias.setAlias0')}}</h3>
+        <BackBar backTitle="地址管理"></BackBar>
+        <h3 class="title">设置别名</h3>
       </div>
     </div>
     <div class="new w1200 mt_20 bg-white">
       <div class="w630">
         <h3 class="tc mzt_20">{{this.$route.query.address}}</h3>
         <div class="tip bg-gray">
-          <p>• {{$t('setAlias.setAlias1')}}{{addressInfo.symbol}}{{$t('setAlias.setAlias11')}}</p>
-          <p>• {{$t('setAlias.setAlias2')}}{{addressInfo.symbol}}</p>
+          <p>• 别名可作为NULS转账的收款人，为了账户安全，别名设置确定后，将无法修改，请谨慎操作。</p>
+          <p>• 设置别名需要花费1个NULS</p>
         </div>
         <el-form :model="aliasForm" status-icon :rules="aliasRules" ref="aliasForm" class="mb_20">
-          <el-form-item :label="$t('public.alias')" prop="alias">
-            <span class="balance font12 fr">{{$t('public.usableBalance')}}：{{addressInfo.balance}}</span>
+          <el-form-item label="别名" prop="alias">
+            <span class="balance font12 fr">可用余额：{{addressInfo.balance}}</span>
             <el-input type="text" v-model="aliasForm.alias" maxlength="20" autocomplete="off"></el-input>
           </el-form-item>
           <div class="div-data font14">
-            {{$t('public.fee')}}: <label>0.001 <span class="fCN">{{addressInfo.symbol}}</span></label>
+            手续费: <label>0.001 <span class="fCN">NULS</span></label>
           </div>
           <el-form-item class="form-next">
-            <el-button type="success" @click="submitAliasForm('aliasForm')"> {{$t('public.next')}}</el-button>
+            <el-button type="success" @click="submitAliasForm('aliasForm')">下一步</el-button>
           </el-form-item>
           <div class="tc font18 mzt_20">
-            {{$t('setAlias.setAlias3')}}: 1.001
+            总花费: 1.001
           </div>
         </el-form>
       </div>
@@ -37,20 +37,18 @@
 
 <script>
   import nuls from 'nuls-sdk-js'
-  import {inputsOrOutputs, validateAndBroadcast,getPrefixByChainId} from '@/api/requestData'
+  import {inputsOrOutputs, validateAndBroadcast} from '@/api/requestData'
   import Password from '@/components/PasswordBar'
   import BackBar from '@/components/BackBar'
-  import * as config from '@/config.js'
-  import {addressInfo, chainID} from '@/api/util'
 
   export default {
     data() {
       let validateAlias = (rule, value, callback) => {
         let patrn = /^(?!_)(?!.*?_$)[a-z0-9_]+$/;
         if (value === '') {
-          callback(new Error(this.$t('setAlias.setAlias4')));
+          callback(new Error('请输入别名'));
         } else if (!patrn.exec(value)) {
-          callback(new Error(this.$t('setAlias.setAlias5')));
+          callback(new Error('请输入别名(只允许使用小写字母、数字、下划线（下划线不能在两端）)'));
         } else {
           callback();
         }
@@ -66,24 +64,11 @@
         },
         addressInfo: '', //默认账户信息
         balanceInfo: '',//账户余额信息
-        prefix: '',//地址前缀
       };
     },
     created() {
-      getPrefixByChainId(chainID()).then((response) => {
-        //console.log(response);
-        this.prefix = response
-      }).catch((err) => {
-        console.log(err);
-        this.prefix = '';
-      });
-
-      for (let item of addressInfo(0)) {
-        if (item.address === this.$route.query.address) {
-          this.addressInfo = item
-        }
-      }
-      this.getNulsBalance(chainID(), 1, this.$route.query.address);
+      this.addressInfo = JSON.parse(localStorage.getItem(this.$route.query.address));
+      this.getNulsBalance(1, this.$route.query.address);
     },
     watch: {
       addressInfo(val, old) {
@@ -105,10 +90,11 @@
       submitAliasForm(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            if (this.balanceInfo.balance > 100100000) {
+            //console.log(this.balanceInfo.balance);
+            if(this.balanceInfo.balance > 100100000){
               this.$refs.password.showPassword(true);
-            } else {
-              this.$message({message: this.$t('newConsensus.newConsensus7'), type: 'error', duration: 1000});
+            }else {
+              this.$message({message: "对不起，获取账户余额不足!", type: 'error', duration: 1000});
             }
           } else {
             return false;
@@ -118,23 +104,22 @@
 
       /**
        * 获取转出账户余额信息
-       *  @param chainId
        *  @param assetsId
        *  @param address
        **/
-      async getNulsBalance(chainId, assetsId, address) {
-        await this.$post('/', 'getAccountBalance', [chainId, assetsId, address])
+      async getNulsBalance(assetsId = 1, address) {
+        await this.$post('/', 'getAccountBalance', [assetsId, address])
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
               this.balanceInfo = {'balance': response.result.balance, 'nonce': response.result.nonce};
               //this.$refs.password.showPassword(true);
             } else {
-              this.$message({message: this.$t('public.err2') + response, type: 'error', duration: 1000});
+              this.$message({message: "获取账户余额失败:" + response, type: 'error', duration: 1000});
             }
           })
           .catch((error) => {
-            this.$message({message: this.$t('public.err3') + error, type: 'error', duration: 1000});
+            this.$message({message: "获取账户余额失败：" + error, type: 'error', duration: 1000});
           });
       },
 
@@ -145,15 +130,12 @@
       async passSubmit(password) {
 
         const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password);
-        const newAddressInfo = nuls.importByKey(chainID(), pri, password,this.prefix);
+        const newAddressInfo = nuls.importByKey(2, pri, password);
         if (newAddressInfo.address === this.addressInfo.address) {
-          //根据公钥获取地址
-          let burningAddress = nuls.getAddressByPub(chainID(), 1, config.API_BURNING_ADDRESS_PUB,this.prefix);
-          //console.log(burningAddress);
           let transferInfo = {
             fromAddress: this.addressInfo.address,
-            toAddress: burningAddress,
-            assetsChainId: chainID(),
+            toAddress: 'tNULSeBaMkqeHbTxwKqyquFcbewVTUDHPkF11o',
+            assetsChainId: 2,
             assetsId: 1,
             amount: 100000000,
             fee: 100000
@@ -168,17 +150,16 @@
           //console.log(txhex);
           //验证并广播交易
           await validateAndBroadcast(txhex).then((response) => {
-            //console.log(response);
             if (response.success) {
               this.toUrl("txList");
             } else {
-              this.$message({message: this.$t('error.' + response.data.code), type: 'error', duration: 3000});
+              this.$message({message: "验证并广播交易错误：" + response.data, type: 'error', duration: 1000});
             }
           }).catch((err) => {
-            this.$message({message: this.$t('public.err0') + err, type: 'error', duration: 1000});
+            this.$message({message: "验证并广播交易异常：" + err, type: 'error', duration: 1000});
           });
-        } else {
-          this.$message({message: this.$t('address.address13'), type: 'error', duration: 1000});
+        }else {
+          this.$message({message: "对不起，密码错误", type: 'error', duration: 1000});
         }
       },
 
@@ -198,7 +179,6 @@
 
 <style lang="less">
   @import "./../../assets/css/style";
-
   .new_address {
     .new {
       min-height: 600px;
