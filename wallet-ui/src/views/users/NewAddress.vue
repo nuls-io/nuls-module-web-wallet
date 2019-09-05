@@ -179,7 +179,6 @@
         console.log(err);
         this.prefix = '';
       });
-      console.log(this.resetAddress);
       this.activeName = this.resetAddress !== '0' ? 'keyImport' : 'keystoreImport'
     },
     methods: {

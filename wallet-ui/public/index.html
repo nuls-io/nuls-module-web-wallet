@@ -5,12 +5,73 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+  <script src="https://cdn.bootcss.com/vue/2.5.17/vue.runtime.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
   <title>NULS Wallet</title>
 </head>
 <body>
 <div id="app">
+  <div id="loading" class="loading">
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
 </div>
-<!-- built files will be auto injected -->
 </body>
 </html>
+
+<script type="text/javascript">
+  function load() {
+    setTimeout(() => {
+      document.getElementById("loading").style.visibility = 'hidden'
+    }, 50000);
+  }
+</script>
+<style type="text/css">
+  .loading {
+    width: 80px;
+    height: 40px;
+    margin: 300px auto;
+  }
+
+  .loading span {
+    display: inline-block;
+    width: 8px;
+    height: 100%;
+    border-radius: 4px;
+    background: lightgreen;
+    -webkit-animation: load 1s ease infinite;
+  }
+
+  @-webkit-keyframes load {
+    0%, 100% {
+      height: 40px;
+      background: lightgreen;
+    }
+    50% {
+      height: 70px;
+      margin: -15px 0;
+      background: lightblue;
+    }
+  }
+
+  .loading span:nth-child(2) {
+    -webkit-animation-delay: 0.2s;
+  }
+
+  .loading span:nth-child(3) {
+    -webkit-animation-delay: 0.4s;
+  }
+
+  .loading span:nth-child(4) {
+    -webkit-animation-delay: 0.6s;
+  }
+
+  .loading span:nth-child(5) {
+    -webkit-animation-delay: 0.8s;
+  }
+
+</style>
 
