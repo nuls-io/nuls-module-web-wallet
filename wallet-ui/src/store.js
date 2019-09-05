@@ -1,21 +1,33 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import {defaultData} from '@/config'
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    addressInfo:{}
+    addressInfo: {},
+    urlData: [],
   },
   mutations: {
-    setAddressInfo (state, data) {
+    setAddressInfo(state, data) {
       state.addressInfo = data
     },
+    setUrlData(state, data) {
+      state.urlData = data;
+      localStorage.setItem('urlsData', JSON.stringify(data));
+    },
   },
-  getters:{
+  getters: {
     getAddressInfo: state => state.addressInfo,
-  },
-  actions: {
 
-  }
+    getUrlData(state) {
+      if (state.urlData.length === 0) {
+        state.urlData = localStorage.hasOwnProperty('urlsData') ? JSON.parse(localStorage.getItem('urlsData')) : defaultData;
+        localStorage.setItem('urlsData', JSON.stringify(state.urlData));
+      }
+      return state.urlData
+    }
+  },
+  actions: {}
 })

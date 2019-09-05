@@ -147,13 +147,8 @@
     created() {
       this.loading = true;
       setTimeout(() => {
-        if (localStorage.hasOwnProperty('urlsData')) {
-          this.nodeServiceData = [...JSON.parse(localStorage.getItem('urlsData'))];
-        } else {
-          this.nodeServiceData = [...defaultData]
-        }
+        this.nodeServiceData = this.$store.getters.getUrlData;
       }, 500);
-
     },
     mounted() {
       setTimeout(() => {
@@ -163,8 +158,11 @@
     methods: {
 
       /**
-       * 连接或断开
-       **/
+       * @disc: 连接或断开
+       * @params: index
+       * @date: 2019-09-05 18:07
+       * @author: Wave
+       */
       editState(index) {
         if (this.nodeServiceData[index].delay === 200000 || this.nodeServiceData[index].delay === 300000) {
           this.$message({message: this.$t('nodeService.nodeService16'), type: 'error', duration: 1000});
@@ -205,7 +203,7 @@
         for (let item of this.nodeServiceData) {
           let startTime = (new Date()).valueOf();
           let endTime = 0;
-          const params = {jsonrpc: "2.0", method: "getChainInfo", "params": [], "id": 5898};
+          const params = {jsonrpc: "2.0", method: "getChainInfo", "params": [], "id": Math.floor(Math.random() * 1000)};
           await axios.post(item.urls, params)
             .then(function (response) {
               //console.log(response);
@@ -237,14 +235,6 @@
         if (isUrl) {
           this.$message({message: this.$t('public.checkNetwork'), type: 'error', duration: 3000});
           localStorage.removeItem("urls");
-          /*let minNumber = Math.min.apply(Math, newData.map((o) => o.delay));
-          let minIndex = newData.map((o) => o.delay).findIndex((n) => n === minNumber);
-          for (let item in newData) {
-            if (Number(item) === minIndex) {
-              newData[minIndex].selection = true;
-              localStorage.setItem("urls", JSON.stringify(newData[minIndex]));
-            }
-          }*/
         } else {
           for (let item of newData) {
             if (item.urls !== JSON.parse(localStorage.getItem('urls')).urls) {
@@ -393,7 +383,7 @@
       },
 
       /**
-       *移除连接
+       * 移除连接
        * @param index
        **/
       removeUrl(index) {

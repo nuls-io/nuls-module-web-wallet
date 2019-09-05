@@ -30,48 +30,21 @@
     name: "bottom-bar",
     data() {
       return {
+        serviceUrls:{},//服务节点信息
         heightInfo: [],//高度信息
         failedNu: 0,//失败请次数
       }
     },
     created() {
-      if (localStorage.hasOwnProperty('urlsData')) {
-        let newUrlsData = [];
-        let selectionUrl = '';
-        for (let item of JSON.parse(localStorage.getItem("urlsData"))) {
-          if (item.name !== 'Official') {
-            newUrlsData.push(item)
-          }
-          if (item.selection) {
-            selectionUrl = item.urls
-          }
-        }
-        for (let item of defaultData) {
-          if (item.urls === selectionUrl) {
-            item.selection = true
-          }
-        }
-        let urlsData = [...defaultData, ...newUrlsData];
-        for (let item of urlsData) {
-          if (item.selection) {
-            this.serviceUrls = item;
-          }
-        }
-        localStorage.removeItem('urlsData');
-        localStorage.setItem("urlsData", JSON.stringify(urlsData));
-      } else {
-        localStorage.setItem("urlsData", JSON.stringify(defaultData));
-        for (let item of defaultData) {
-          if (item.selection) {
-            localStorage.setItem("urls", JSON.stringify(item));
-            this.serviceUrls = item;
-          }
-        }
-      }
+
+      let newUrlData = this.$store.getters.getUrlData;
+      let url = newUrlData.filter(item => item.selection)[0];
+      localStorage.setItem("urls", JSON.stringify(url));
+      this.serviceUrls = url;
+
       this.getHeaderInfo();
       setInterval(() => {
         this.serviceUrls = JSON.parse(localStorage.getItem("urls"));
-        //console.log(this.serviceUrls.urls)
       }, 500);
     },
     mounted() {
