@@ -42,7 +42,7 @@
       margin: 10px 0;
       height: 20px;
       text-align: left;
-      width: 100px;
+      width: 200px;
       &:hover{
         color:@Hcolour;
        }

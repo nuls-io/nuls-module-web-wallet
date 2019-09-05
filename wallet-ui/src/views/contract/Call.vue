@@ -20,14 +20,14 @@
           <el-switch v-model="callForm.senior"></el-switch>
         </el-form-item>
         <div class="senior-div" v-if="callForm.senior">
-          <el-form-item label="Gas Limit" prop="gas">
+          <el-form-item label="Gas Limit">
             <el-input v-model="callForm.gas" @change="changeGas" disabled></el-input>
             <div class="font12 yellow" v-show="gasTips">{{$t('call.call10')}}</div>
           </el-form-item>
-          <el-form-item label="Price" prop="price">
+          <el-form-item label="Price">
             <el-input v-model="callForm.price" disabled></el-input>
           </el-form-item>
-          <el-form-item label="Value" prop="values" v-show="selectionData.payable">
+          <el-form-item label="Value" prop="values" v-if="selectionData.payable">
             <el-input v-model="callForm.values"></el-input>
           </el-form-item>
         </div>
@@ -52,7 +52,7 @@
   import utils from 'nuls-sdk-js/lib/utils/utils'
   import {getNulsBalance, countFee, inputsOrOutputs, validateAndBroadcast, getPrefixByChainId} from '@/api/requestData'
   import Password from '@/components/PasswordBar'
-  import {getArgs, Times, Plus, addressInfo, chainID} from '@/api/util'
+  import {getArgs, timesDecimals0, Times, Plus, addressInfo, chainID} from '@/api/util'
 
   export default {
     data() {
@@ -240,6 +240,7 @@
       submitForm(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
+            //console.log(this.selectionData);
             if (!this.selectionData.view) { //上链方法调用
               if (this.selectionData.params.length !== 0) {
                 this.newArgs = getArgs(this.callForm.parameterList);
@@ -428,12 +429,11 @@
        **/
       async passSubmit(password) {
         const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password);
-        const newAddressInfo = nuls.importByKey(2, pri, password, this.prefix);
+        const newAddressInfo = nuls.importByKey(chainID(), pri, password, this.prefix);
         if (newAddressInfo.address === this.addressInfo.address) {
           //console.log(this.contractCallData);
           let pub = this.addressInfo.pub;
           let amount = Number(Times(this.callForm.gas, this.callForm.price));
-          amount = Number(Plus(this.callForm.values, amount));
           let transferInfo = {
             fromAddress: this.addressInfo.address,
             assetsChainId: chainID(),
@@ -441,9 +441,10 @@
             amount: amount,
             fee: 100000
           };
+          amount = Number(Plus(transferInfo.fee, amount));
           if (this.callForm.values > 0) {
             transferInfo.toAddress = this.contractAddress;
-            transferInfo.value = Number(Times(this.callForm.values, 100000000));
+            transferInfo.value = Number(timesDecimals0(this.callForm.values));
             transferInfo.amount = Number(Plus(transferInfo.value, amount))
           }
           let remark = '';

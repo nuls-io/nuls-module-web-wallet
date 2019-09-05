@@ -27,6 +27,11 @@ export default new Router({
       component: resolve => require(['@/views/users/TxList.vue'], resolve)
     },
     {
+      path: '/wallet/tokenTxList',
+      name: 'tokenTxList',
+      component: resolve => require(['@/views/users/TokenTxList.vue'], resolve)
+    },
+    {
       path: '/transfer',
       name: 'transfer',
       component: resolve => require(['@/views/transfer/Transfer.vue'], resolve)
@@ -62,6 +67,11 @@ export default new Router({
       component: resolve => require(['@/views/contract/Contract.vue'], resolve)
     },
     {
+      path: '/contractInfo',
+      name: 'contractInfo',
+      component: resolve => require(['@/views/contract/ContractInfo.vue'], resolve)
+    },
+    {
       path: '/address',
       name: 'address',
       component: resolve => require(['@/views/users/Address.vue'], resolve)
@@ -72,9 +82,9 @@ export default new Router({
       component: resolve => require(['@/views/users/NewAddress.vue'], resolve)
     },
     {
-      path: '/importAddress',
-      name: 'importAddress',
-      component: resolve => require(['@/views/users/ImportAddress.vue'], resolve)
+      path: '/backupsAddress',
+      name: 'backupsAddress',
+      component: resolve => require(['@/views/users/BackupsAddress.vue'], resolve)
     },
     {
       path: '/setAlias',
@@ -90,6 +100,16 @@ export default new Router({
       path: '/nodeService',
       name: 'nodeService',
       component: resolve => require(['@/views/set/NodeService.vue'], resolve)
+    },
+    {
+      path: '/set',
+      name: 'seting',
+      component: resolve => require(['@/views/set/Set.vue'], resolve)
+    },
+    {
+      path: '/contact',
+      name: 'contact',
+      component: resolve => require(['@/views/set/Contact.vue'], resolve)
     }
 
 

@@ -30,11 +30,11 @@
                :close-on-press-escape="false">
       <el-form :model="contacForm" status-icon :rules="contacRules" ref="contacForm" class="contac-form bg-white">
         <el-form-item :label="$t('transfer.transfer4')" prop="name">
-          <el-input v-model="contacForm.name" maxlength="20" show-word-limit>
+          <el-input v-model.trim="contacForm.name" maxlength="20" show-word-limit>
           </el-input>
         </el-form-item>
         <el-form-item :label="$t('tab.tab11')" prop="address">
-          <el-input v-model="contacForm.address">
+          <el-input v-model.trim="contacForm.address">
           </el-input>
         </el-form-item>
         <div v-show="contacForm.alias">{{$t('address.address3')}}: {{contacForm.alias}}</div>
@@ -49,11 +49,13 @@
 </template>
 
 <script>
+  import nuls from 'nuls-sdk-js'
   import {chainIdNumber, addressInfo} from '@/api/util'
 
   export default {
     data() {
       let validateName = (rule, value, callback) => {
+
         if (!value) {
           return callback(new Error(this.$t('tab.tab16')));
         } else {
@@ -61,11 +63,14 @@
         }
       };
       let validateAddress = (rule, value, callback) => {
+        let verify =  nuls.verifyAddress(value);
         if (!value) {
           return callback(new Error(this.$t('tab.tab17')));
         } else if (this.isAdd === 0 && this.isAddressExist(value)) {
           return callback(new Error(this.$t('tab.tab18')));
-        } else {
+        } else if(!verify.right){
+          return callback(new Error(this.$t('tab.tab18')));
+        }else {
           this.getAddressInfo(value);
           callback();
         }

@@ -2,26 +2,28 @@
   <div class="new_address bg-gray">
     <div class="bg-white">
       <div class="w1200">
-        <BackBar backTitle="账户管理"></BackBar>
-        <h3 class="title">修改密码</h3>
+        <BackBar :backTitle="$t('address.address0')"></BackBar>
+        <h3 class="title">{{$t('editPassword.editPassword0')}}: {{this.$route.query.address}}</h3>
       </div>
     </div>
     <div class="new w1200 mt_20 bg-white">
       <div class="w630">
-        <h3 class="tc mzt_20">{{this.$route.query.address}}</h3>
+        <h3 class="tc mzt_20"></h3>
         <el-form :model="passwordForm" status-icon :rules="passwordRules" ref="passwordForm" class="mb_20">
-          <el-form-item label="旧密码" prop="oldPass">
+          <el-form-item :label="$t('editPassword.editPassword1')" prop="oldPass">
             <el-input type="password" v-model="passwordForm.oldPass" autocomplete="off"></el-input>
           </el-form-item>
-          <el-form-item label="新密码" prop="newPass">
+          <el-form-item :label="$t('editPassword.editPassword2')" prop="newPass">
             <el-input type="password" v-model="passwordForm.newPass" autocomplete="off"></el-input>
           </el-form-item>
-          <el-form-item label="确认新密码" prop="checkPass">
+          <el-form-item :label="$t('editPassword.editPassword3')" prop="checkPass">
             <el-input type="password" v-model="passwordForm.checkPass" autocomplete="off"></el-input>
           </el-form-item>
           <el-form-item class="form-next">
-            <el-button type="success" @click="submitPasswordForm('passwordForm')">提交</el-button>
-            <div>如果你忘记密码可以使用私钥重新导入</div>
+            <el-button type="success" @click="submitPasswordForm('passwordForm')">{{$t('editPassword.editPassword4')}}
+            </el-button>
+            <div>{{$t('editPassword.editPassword5')}}<span class="click" @click="toUrl('newAddress')"> {{$t('public.re-import')}}</span>
+            </div>
           </el-form-item>
         </el-form>
       </div>
@@ -33,15 +35,17 @@
 <script>
   import nuls from 'nuls-sdk-js'
   import BackBar from '@/components/BackBar'
+  import {addressInfo, chainIdNumber,chainID} from '@/api/util'
+  import {getPrefixByChainId} from '@/api/requestData'
 
   export default {
     data() {
       let validateOldPass = (rule, value, callback) => {
         let patrn = /^(?![\d]+$)(?![a-zA-Z]+$)(?![^\da-zA-Z]+$).{8,20}$/;
         if (value === '') {
-          callback(new Error('请旧输入密码'));
+          callback(new Error(this.$t('editPassword.editPassword6')));
         } else if (!patrn.exec(value)) {
-          callback(new Error('请输入由字母和数字组合的8-20位密码'));
+          callback(new Error(this.$t('editPassword.editPassword7')));
         } else {
           if (this.passwordForm.checkPass !== '') {
             this.$refs.passwordForm.validateField('newPass');
@@ -52,11 +56,11 @@
       let validateNewPass = (rule, value, callback) => {
         let patrn = /^(?![\d]+$)(?![a-zA-Z]+$)(?![^\da-zA-Z]+$).{8,20}$/;
         if (value === '') {
-          callback(new Error('请输入新密码'));
+          callback(new Error(this.$t('editPassword.editPassword8')));
         } else if (!patrn.exec(value)) {
-          callback(new Error('请输入由字母和数字组合的8-20位密码'));
+          callback(new Error(this.$t('editPassword.editPassword7')));
         } else if (this.passwordForm.oldPass === this.passwordForm.newPass) {
-          callback(new Error('新密码不能和旧密码相同'));
+          callback(new Error(this.$t('editPassword.editPassword9')));
         } else {
           if (this.passwordForm.checkPass !== '') {
             this.$refs.passwordForm.validateField('checkPass');
@@ -66,9 +70,9 @@
       };
       let validateChechPass = (rule, value, callback) => {
         if (value === '') {
-          callback(new Error('请再次输入新密码'));
+          callback(new Error(this.$t('editPassword.editPassword10')));
         } else if (this.passwordForm.checkPass !== this.passwordForm.newPass) {
-          callback(new Error('新密码与确认新密码不一样，请重新输入'));
+          callback(new Error(this.$t('editPassword.editPassword11')));
         } else {
           callback();
         }
@@ -92,39 +96,56 @@
           ]
         },
         editAddressInfo: '',//新建的地址信息
+        prefix: '',//地址前缀
       };
     },
     created() {
-      this.addressInfo = JSON.parse(sessionStorage.getItem(sessionStorage.key(0)));
-      setInterval(() => {
-        this.addressInfo = JSON.parse(sessionStorage.getItem(sessionStorage.key(0)));
-      }, 500);
+      getPrefixByChainId(chainID()).then((response) => {
+        //console.log(response);
+        this.prefix = response
+      }).catch((err) => {
+        console.log(err);
+        this.prefix = '';
+      });
     },
-    mounted() {},
+    mounted() {
+    },
     components: {
       BackBar
     },
     methods: {
 
       /**
-       * 创建地址
+       * 修改密码
        * @param formName
        */
       submitPasswordForm(formName) {
+        let address = this.$route.query.address;
+        let oldAddressInfo = {};
+        for (let item of addressInfo(0)) {
+          if (item.address === address) {
+            oldAddressInfo = item
+          }
+        }
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, this.passwordForm.oldPass);
-            const newAddressInfo = nuls.importByKey(2, pri, this.passwordForm.oldPass);
-            if (newAddressInfo.address === this.addressInfo.address) {
-              const importAddressInfo = nuls.importByKey(2, pri, this.passwordForm.newPass);
-              newAddressInfo.aesPri = importAddressInfo.aesPri;
-              newAddressInfo.pub = importAddressInfo.pub;
-              localStorage.setItem(importAddressInfo.address, JSON.stringify(importAddressInfo));
-              sessionStorage.setItem(importAddressInfo.address, JSON.stringify(importAddressInfo));
-              this.$message({message: "密码修改完成", type: 'success', duration: 1000});
+            const pri = nuls.decrypteOfAES(oldAddressInfo.aesPri, this.passwordForm.oldPass);
+            const newAddressInfo = nuls.importByKey(chainID(), pri, this.passwordForm.oldPass,this.prefix);
+            if (newAddressInfo.address === address) {
+              const importAddressInfo = nuls.importByKey(chainID(), pri, this.passwordForm.newPass,this.prefix);
+              oldAddressInfo.aesPri = importAddressInfo.aesPri;
+              oldAddressInfo.pub = importAddressInfo.pub;
+              let addressList = addressInfo(0);
+              for (let item of addressList) {
+                if (item.address === oldAddressInfo.address) {
+                  item.aesPri = oldAddressInfo.aesPri
+                }
+              }
+              localStorage.setItem(chainIdNumber(), JSON.stringify(addressList));
+              this.$message({message: this.$t('editPassword.editPassword12'), type: 'success', duration: 1000});
               this.toUrl("address");
             } else {
-              this.$message({message: "旧密码错误", type: 'error', duration: 1000});
+              this.$message({message: this.$t('editPassword.editPassword13'), type: 'error', duration: 1000});
             }
           } else {
             return false;
@@ -137,9 +158,17 @@
        * @param name
        */
       toUrl(name) {
-        this.$router.push({
-          name: name
-        })
+        if (name === 'newAddress') {
+          this.$router.push({
+            name: name,
+            query: {address: this.$route.query.address}
+          })
+        } else {
+          this.$router.push({
+            name: name,
+          })
+        }
+
       },
     }
   }

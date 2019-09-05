@@ -2,86 +2,204 @@
   <div class="transfer_info bg-gray" v-loading="txInfoLoading">
     <div class="bg-white">
       <div class="w1200">
-        <BackBar backTitle="交易记录"></BackBar>
+        <BackBar :backTitle="$t('home.home2')"></BackBar>
         <h3 class="title">{{hash}}
-          <i class="iconfont icon-fuzhi clicks" @click="copy(hash)"></i></h3>
+          <i class="iconfont iconfuzhi clicks" @click="copy(hash)"></i></h3>
       </div>
     </div>
 
     <div class="card_long mt_20 w1200">
-      <h5 class="card-title font18">基础信息</h5>
+      <h5 class="card-title font18">{{$t('public.basicData')}}</h5>
       <ul>
-        <li>时间 <label>{{txInfo.createTime}}</label></li>
-        <li>金额 <label>{{txInfo.value}}<span class="fCN">NULS</span></label></li>
-        <li>高度 <label class="click"><u class="td">{{txInfo.height}}</u></label></li>
-        <li>手续费 <label>{{txInfo.fee}}<span class="fCN">NULS</span></label></li>
-        <li>类型 <label>{{$t('type.'+txInfo.type)}}</label></li>
-        <li>状态 <label>{{txInfo.status === 0 ? '已确认':'未确认'}}</label></li>
-        <li v-if="txInfo.type ===1">
-          节点ID
-          <label><u class="click td uppercase">{{txInfo.txData.agentId}}</u></label>
+        <li>{{$t('public.time')}} <label>{{txInfo.createTime}}</label></li>
+        <li>{{$t('public.amount')}} <label>{{txInfo.value}}</label></li>
+        <li>
+          {{$t('public.height')}}
+          <label class="click"><u class="td" @click="toUrl('height',txInfo.height)">{{txInfo.height}}</u></label>
+        </li>
+        <li>{{$t('public.fee')}} <label>{{txInfo.fees}}<span class="fCN">{{symbol}}</span></label></li>
+        <li>{{$t('public.type')}} <label>{{$t('type.'+txInfo.type)}}</label></li>
+        <li>
+          {{$t('public.status')}}
+          <label>{{txInfo.status === 0 ? $t('transferStatus.0'):$t('transferStatus.1')}}</label>
         </li>
         <li v-if="txInfo.type ===1">
-          轮次信息
-          <label>轮次
-            <u class=" click cd">{{txInfo.txData.roundIndex}}</u>
-            编号 {{txInfo.txData.packageIndex}}
+          {{$t('public.nodeID')}}
+          <label>
+            <u class="click td uppercase" @click="toUrl('hash',txInfo.txData.txHash)">{{txInfo.txData.agentId}}</u>
           </label>
         </li>
-        <li v-if="txInfo.type ===3">别名 <label>{{txInfo.txData.alias}}</label></li>
+        <li v-if="txInfo.type ===1">
+          {{$t('public.roundInfo')}}
+          <label>{{$t('public.rotation')}}
+            <u class=" click cd" @click="toUrl('rotation',txInfo.txData.roundIndex)">{{txInfo.txData.roundIndex}}</u>
+            {{$t('public.number')}} {{txInfo.txData.packageIndex}}
+          </label>
+        </li>
+        <li v-if="txInfo.type ===3">{{$t('public.alias')}} <label>{{txInfo.txData.alias}}</label></li>
         <li v-if="txInfo.type ===4 || txInfo.type ===5 || txInfo.type ===9">
-          创建地址
-          <label><u class="click td">{{txInfo.txData.agentAddress}}</u></label>
+          {{$t('public.createAddress')}}
+          <label><u class="click td"
+                    @click="toUrl('address',txInfo.txData.agentAddress)">{{txInfo.txData.agentAddress}}</u></label>
         </li>
         <li v-if="txInfo.type ===4 || txInfo.type ===5 || txInfo.type ===6 || txInfo.type ===9">
-          节点ID
-          <label><u class="click td uppercase">{{txInfo.txData.agentId}}</u></label>
+          {{$t('public.nodeID')}}
+          <label>
+            <u class="click td uppercase" @click="toUrl('hash',txInfo.txData.txHash)">{{txInfo.txData.agentId}}</u>
+          </label>
         </li>
         <li v-if="txInfo.type ===4 || txInfo.type ===9">
-          打包地址
-          <label><u class="click td">{{txInfo.txData.packingAddress}}</u></label>
+          {{$t('public.packingAddress')}}
+          <label>
+            <u class="click td" @click="toUrl('address',txInfo.txData.packingAddress)">
+              {{txInfo.txData.packingAddress}}
+            </u>
+          </label>
         </li>
-        <li v-if="txInfo.type ===4 || txInfo.type ===9">佣金比例 <label>{{txInfo.txData.commissionRate}}%</label></li>
         <li v-if="txInfo.type ===4 || txInfo.type ===9">
-          奖励地址
-          <label><u class="click td">{{txInfo.txData.rewardAddress}}</u></label>
+          {{$t('public.commission')}}
+          <label>{{txInfo.txData.commissionRate}}%</label>
         </li>
-        <li v-if="txInfo.type ===9">保证金 <label>{{txInfo.txData.deposit/100000000}}<span class="fCN">NULS</span></label>
+        <li v-if="txInfo.type ===4 || txInfo.type ===9">
+          {{$t('public.rewardAddress')}}
+          <label>
+            <u class="click td" @click="toUrl('address',txInfo.txData.rewardAddress)">
+              {{txInfo.txData.rewardAddress}}
+            </u>
+          </label>
         </li>
-        <li v-if="txInfo.type ===9">信用值 <label>{{txInfo.txData.creditValue}}</label></li>
+        <li v-if="txInfo.type ===9">
+          {{$t('public.deposit')}}
+          <label>{{txInfo.txData.deposit/100000000}}<span class="fCN">NULS</span></label>
+        </li>
+        <li v-if="txInfo.type ===9">{{$t('public.credit')}} <label>{{txInfo.txData.creditValue}}</label></li>
+
+        <li v-if="txInfo.type ===15 || txInfo.type ===16 || txInfo.type ===17">{{$t('contract.contract2')}}
+          <label>
+            <u class="click td" @click="toUrl('contractsInfo',txInfo.txData.resultInfo.contractAddress)">
+              {{txInfo.txData.resultInfo.contractAddress}}
+            </u>
+          </label>
+        </li>
+        <li v-if="txInfo.type ===15 || txInfo.type ===16">Price<label>{{txInfo.txData.resultInfo.price}}<span
+                class="fCN">NULS</span> / GAS</label></li>
+        <li v-if="txInfo.type ===15 || txInfo.type ===16">Gas Used<label>{{txInfo.txData.resultInfo.gasUsed}}</label>
+        </li>
+        <li v-if="txInfo.type ===15 || txInfo.type ===16">Gas Limit<label>{{txInfo.txData.resultInfo.gasLimit}}
+          GAS</label></li>
+
+        <li v-if="txInfo.type ===16">{{$t('public.method')}}<label>{{txInfo.txData.methodName}}</label></li>
+        <li v-if="txInfo.type ===16">{{$t('public.results')}}
+          <label>{{txInfo.txData.resultInfo.success ? $t('public.success'):$t('public.fail')}}
+            <span class="click" @click="dataDialog=true">View</span>
+          </label>
+        </li>
         <li v-if="txInfo.type !==3">
-          备注
+          {{$t('public.remarks')}}
           <label class="remark overflow tr" :title="txInfo.remark">{{txInfo.remark}}</label>
         </li>
-        <li v-if="txInfo.type !==4 && txInfo.type !==6 && txInfo.type !==9"></li>
+        <li v-if="txInfo.type !==4 && txInfo.type !==6 && txInfo.type !==9 && txInfo.type !==17"></li>
         <p class="cb"></p>
       </ul>
     </div>
     <div class="cb"></div>
 
-    <div class="card w1200">
-      <div class="card-info left fl">
-        <h5 class="card-title font18">Input</h5>
-        <ul>
-          <li v-for="itme of inputData" :key="itme.address"><font class="click td">{{itme.address}}</font><label>{{itme.amount}}<span
-                  class="fCN">NULS</span></label></li>
-        </ul>
-      </div>
-      <div class="card-info right fr">
-        <h5 class="card-title font18">Output</h5>
-        <ul>
-          <li v-for="itme of outputData" :key="itme.address"><font class="click td">{{itme.address}}</font><label>{{itme.amount}}<span
-                  class="fCN">NULS</span></label></li>
-        </ul>
+    <div class="card_long mzt_20 w1200 inorouput" v-if="tokenTransfersData.length !==0">
+      <h5 class="card-title font18" style="padding-left: 40px">{{$t('public.tokenTransfer')}}</h5>
+      <div class="inorou-info bg-white">
+        <div class="card-info left fl">
+          <ul>
+            <li v-for="item of tokenTransfersData" :key="item.address">
+              <font class="click td" @click="toUrl('address',item.fromAddress)">{{item.fromAddress}}</font>
+              <label>{{item.value}}<span class="fCN">{{item.name}}</span></label>
+            </li>
+          </ul>
+        </div>
+        <div class="card-info right fr">
+          <ul>
+            <li v-for="item of tokenTransfersData" :key="item.address">
+              <font class="click td" @click="toUrl('address',item.toAddress)">{{item.toAddress}}</font>
+              <label>{{item.value}}<span class="fCN">{{item.name}}</span></label>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
 
+    <div class="cb"></div>
+
+    <div class="card_long mzt_20 w1200 inorouput" v-if="nulsTransfersData.length !==0">
+      <h5 class="card-title font18" style="padding-left: 40px">NULS {{$t('nav.transfer')}}</h5>
+      <div class="inorou-info bg-white">
+        <div class="card-info left fl">
+          <ul>
+            <li v-for="item of nulsTransfersData" :key="item.address">
+              <font class="click td" @click="toUrl('address',item.from)">{{item.from}}</font>
+              <label>{{item.value}}<span class="fCN">NULS</span></label>
+            </li>
+          </ul>
+        </div>
+        <div class="card-info right fr">
+          <ul>
+            <li v-for="item of nulsTransfersData" :key="item.to">
+              <p v-for="k of item.outputs" :key="k.to">
+                <font class="click td" @click="toUrl('address',k.to)">{{k.to}}</font>
+                <label>{{k.value}}<span class="fCN">NULS</span></label>
+              </p>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="cb"></div>
+
+    <div class="card_long mzt_20 w1200 inorouput mb_100">
+      <h5 class="card-title font18">
+        <span>{{$t('public.input')}}</span>
+        <span>{{$t('public.output')}}</span>
+        <!--{{$t('public.input')}} & {{$t('public.output')}}-->
+      </h5>
+      <div class="cb"></div>
+      <div class="inorou-info bg-white">
+        <div class="card-info left fl">
+          <ul>
+            <li v-for="itme of inputData" :key="itme.nonce">
+              <font class="click td" @click="toUrl('address',itme.address)">{{itme.address}}</font>
+              <label>{{itme.amount}}<span class="fCN">{{itme.symbol}}</span></label>
+            </li>
+            <li v-if="inputData.length ===0"></li>
+          </ul>
+        </div>
+        <div class="card-info right fr">
+          <ul>
+            <li v-for="itme of outputData" :key="itme.nonce">
+              <font class="click td" @click="toUrl('address',itme.address)">{{itme.address}}</font>
+              <label>
+                {{itme.amount}}
+                <span class="fCN">{{itme.symbol}}</span>&nbsp;
+                <el-tooltip :content="$t('lockType.'+txInfo.type)" placement="top" v-if="itme.lockTime !==0">
+                  <i class="iconfont iconmima yellow"></i>
+                </el-tooltip>
+              </label>
+            </li>
+            <li v-if="outputData.length ===0"></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <el-dialog title="Data" width="40%" :visible.sync="dataDialog" class="userDiolog">
+      <div class="bg-white userInfo" v-if="txInfo.type ===15 || txInfo.type ===16 || txInfo.type ===17">
+        <pre>{{txInfo.txData.resultInfo}}</pre>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
   import moment from 'moment'
-  import {timesDecimals, getLocalTime, copys} from '@/api/util'
+  import {timesDecimals, getLocalTime, copys, connectToExplorer} from '@/api/util'
   import BackBar from '@/components/BackBar'
 
   export default {
@@ -92,6 +210,10 @@
         txInfo: [],//交易信息
         inputData: [],//输入
         outputData: [],//输出
+        tokenTransfersData: [],//代币转账data
+        nulsTransfersData: [],//nuls转账data
+        dataDialog: false,//data 弹框
+        symbol: 'NULS',
       };
     },
     created() {
@@ -113,12 +235,11 @@
         this.txInfoLoading = true;
         this.$post('/', 'getTx', [hash])
           .then((response) => {
-            console.log(response);
+            //console.log(response);
             if (response.hasOwnProperty("result")) {
-              response.result.createTime = moment(getLocalTime(response.result.createTime)).format('YYYY-MM-DD HH:mm:ss');
-              response.result.fee = timesDecimals(response.result.fee);
+              response.result.createTime = moment(getLocalTime(response.result.createTime * 1000)).format('YYYY-MM-DD HH:mm:ss');
+              response.result.fees = timesDecimals(response.result.fee.value);
               response.result.value = timesDecimals(response.result.value);
-
               //输入
               if (response.result.coinFroms) {
                 for (let itme of response.result.coinFroms) {
@@ -126,7 +247,6 @@
                 }
                 this.inputData = response.result.coinFroms
               }
-
               //输出
               if (response.result.coinTos) {
                 for (let itme of response.result.coinTos) {
@@ -135,7 +255,31 @@
                 this.outputData = response.result.coinTos
               }
 
+              if (response.result.type === 16 && response.result.txData.methodName === 'transfer') {
+                this.tokenTransfersData = response.result.txData.resultInfo.tokenTransfers
+              }
+
+
+              if (response.result.type === 16) {
+                response.result.txData.resultInfo.price = timesDecimals(response.result.txData.resultInfo.price);
+                if (response.result.txData.resultInfo.nulsTransfers.length !== 0) {
+                  for (let item of response.result.txData.resultInfo.nulsTransfers) {
+                    item.value = timesDecimals(item.value);
+                    for (let k of item.outputs) {
+                      k.value = timesDecimals(k.value);
+                    }
+                  }
+                  this.nulsTransfersData = response.result.txData.resultInfo.nulsTransfers;
+                }
+                if (response.result.txData.resultInfo.tokenTransfers.length !== 0) {
+                  for (let item of response.result.txData.resultInfo.tokenTransfers) {
+                    item.value = timesDecimals(item.value, item.decimals);
+                  }
+                }
+              }
+
               this.txInfo = response.result;
+              this.symbol = this.txInfo.fee.symbol;
               this.txInfoLoading = false;
             }
           })
@@ -147,12 +291,10 @@
       /**
        * 连接跳转
        * @param name
+       * @param parameter
        */
-      toUrl(name) {
-        //console.log(name)
-        this.$router.push({
-          name: name
-        })
+      toUrl(name, parameter) {
+        connectToExplorer(name, parameter);
       },
 
       /**
@@ -161,10 +303,8 @@
        **/
       copy(sting) {
         copys(sting);
-        this.$message({message: "已经复制完成", type: 'success', duration: 1000});
+        this.$message({message: this.$t('public.copySuccess'), type: 'success', duration: 1000});
       },
-
-
     }
   }
 </script>
@@ -189,6 +329,46 @@
           }
         }
       }
+    }
+
+    .inorouput {
+      border-bottom: 0;
+      border-right: 0;
+      border-left: 0;
+      .card-title {
+        border-bottom: 0;
+        border-right: 1px solid #dfe4ef;
+        border-left: 1px solid #dfe4ef;
+        padding: 0;
+        span {
+          display: block;
+          width: 46%;
+          line-height: 20px;
+          float: left;
+          padding-left: 40px;
+        }
+      }
+      .inorou-info {
+        border: 1px solid #dfe4ef;
+        min-height: 100px;
+        overflow-x: auto;
+        .card-info {
+          width: 50%;
+          height: 150px;
+          overflow-y: auto;
+          ul {
+            li {
+              width: 100%;
+              border: 0;
+              font {
+              }
+              label {
+              }
+            }
+          }
+        }
+      }
+
     }
 
   }

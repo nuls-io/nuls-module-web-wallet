@@ -1,14 +1,47 @@
 'use strict';
-import {app, protocol, BrowserWindow, ipcMain} from 'electron'
+import {app, protocol, BrowserWindow, ipcMain, Menu} from 'electron'
 import {createProtocol, installVueDevtools} from 'vue-cli-plugin-electron-builder/lib'
 import {autoUpdater} from 'electron-updater'
+
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 let win;
 protocol.registerStandardSchemes(['app'], {secure: true});
 
 function createWindow() {
-  win = new BrowserWindow({width: 2000, height: 1000, minWidth: 1500, minHeight: 1000});
+
+  if (process.platform === 'darwin') {
+    const template = [
+      {
+        label: "Application",
+        submenu: [
+          {
+            label: "Quit", accelerator: "Command+Q", click: function () {
+              app.quit();
+            }
+          }
+        ]
+      },
+      {
+        label: "Edit",
+        submenu: [
+          {label: "Copy", accelerator: "CmdOrCtrl+C", selector: "copy:"},
+          {label: "Paste", accelerator: "CmdOrCtrl+V", selector: "paste:"},
+        ]
+      }
+    ];
+    Menu.setApplicationMenu(Menu.buildFromTemplate(template))
+  } else {
+    Menu.setApplicationMenu(null)
+  }
+
+  win = new BrowserWindow({
+    width: 1600,
+    height: 900,
+    minWidth: 1300,
+    minHeight: 800,
+    webPreferences: {webSecurity: false}
+  });
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
     if (!process.env.IS_TEST) win.webContents.openDevTools();
@@ -16,6 +49,7 @@ function createWindow() {
     createProtocol('app');
     win.loadURL('app://./index.html')
   }
+
   win.on('closed', () => {
     win = null
   });
@@ -69,7 +103,7 @@ if (isDevelopment) {
     updateAva: {type: 3, info: '检测到新版本，正在下载……'},
     updateNotAva: {type: 4, info: '现在使用的就是最新版本，不用更新'},
   };
-  const uploadUrl = "http://192.168.1.119:8000/"; // 下载地址，不加后面的**.exe
+  const uploadUrl = "http://file.wallet.nuls.io/download/main"; // 下载地址，不加后面的**.exe http://192.168.1.119:8000/
   autoUpdater.setFeedURL(uploadUrl);
   autoUpdater.on('error', function (error) {
     console.log(error);
@@ -80,7 +114,6 @@ if (isDevelopment) {
     sendUpdateMessage(message.checking)
   });
   autoUpdater.on('update-available', function (info) {
-    console.log("检测到新版本，正在下载:****");
     console.log(info);
     sendUpdateMessage(message.updateAva)
   });
