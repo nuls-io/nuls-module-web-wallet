@@ -42,8 +42,12 @@
             <el-menu-item index="cn">中文</el-menu-item>
             <el-menu-item index="en">English</el-menu-item>
           </el-submenu>
-          <!-- <li class="el-menu-item">|</li>
-           <el-menu-item index="24" disabled>{{$t('nav.help')}}</el-menu-item>-->
+          <el-submenu index="more">
+            <template slot="title"><i class="el-icon-more"></i></template>
+            <el-menu-item index="official">{{$t('tab.tab21')}}</el-menu-item>
+            <el-menu-item index="explorer">{{$t('tab.tab22')}}</el-menu-item>
+            <el-menu-item index="docs">{{$t('tab.tab23')}}</el-menu-item>
+          </el-submenu>
         </el-menu>
 
       </div>
@@ -56,7 +60,7 @@
 <script>
   import logo from '@/assets/img/logo.svg'
   import logoSvg from '@/assets/img/logo-beta.svg'
-  import {superLong, chainIdNumber, addressInfo} from '@/api/util'
+  import {superLong, chainIdNumber, addressInfo, connectToExplorer} from '@/api/util'
   import {RUN_DEV} from '@/config.js'
 
   export default {
@@ -111,6 +115,16 @@
             })
           } else if (keyPath[0] === "lang") {
             this.selectLanguage(key)
+          } else if (keyPath[0] === "more") {
+            let newUrl = '';
+            if (keyPath[1] === 'official') {
+              newUrl = 'https://nuls.io/'
+            } else if (keyPath[1] === 'explorer') {
+              newUrl = RUN_DEV ? 'https://nulscan.io/' : 'http://beta.nulscan.io/'
+            } else if (keyPath[1] === 'docs') {
+              newUrl = 'https://docs.nuls.io/'
+            }
+            connectToExplorer('nuls', newUrl);
           }
         } else {
           this.$router.push({
@@ -190,7 +204,7 @@
       float: left;
     }
     .tool {
-      width: 200px;
+      width: 270px;
       margin: 10px 0 0 0;
       float: right;
       background-color: #e6a23c;

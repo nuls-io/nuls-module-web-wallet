@@ -431,7 +431,7 @@
         const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password);
         const newAddressInfo = nuls.importByKey(chainID(), pri, password, this.prefix);
         if (newAddressInfo.address === this.addressInfo.address) {
-          //console.log(this.contractCallData);
+          //console.log(this.selectionData);
           let pub = this.addressInfo.pub;
           let amount = Number(Times(this.callForm.gas, this.callForm.price));
           let transferInfo = {
@@ -442,12 +442,15 @@
             fee: 100000
           };
           amount = Number(Plus(transferInfo.fee, amount));
+
           if (this.callForm.values > 0) {
             transferInfo.toAddress = this.contractAddress;
             transferInfo.value = Number(timesDecimals0(this.callForm.values));
             transferInfo.amount = Number(Plus(transferInfo.value, amount))
           }
+
           let remark = '';
+          //console.log(transferInfo);
           let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
           let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 16, this.contractCallData);
           let txhex = '';

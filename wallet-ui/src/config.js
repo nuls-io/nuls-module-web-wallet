@@ -5,8 +5,8 @@ export const API_CHAIN_ID = sessionStorage.hasOwnProperty('chainID') ? Number(se
 //燃烧地址的公钥
 export const API_BURNING_ADDRESS_PUB = '000000000000000000000000000000000000000000000000000000000000000000';
 //运行环境（true:正式环境，false:测试环境）
-export const RUN_DEV = true;
-//正式环境ChainId和资产ID
+export const RUN_DEV = false;
+//ChainId和资产ID
 export const MAIN_INFO = RUN_DEV ? {chainId: 1, assetsId: 1} : {chainId: 2, assetsId: 1};
 //运行模式（true:electron窗体模式，false:浏览器模式）
 export const RUN_PATTERN = false;
@@ -21,16 +21,86 @@ setInterval(() => {
 export const API_TIME = IS_DEV ? '9000' : '8000';
 
 //默认节点服务列表
-const electronData =[
-  {name: 'Official', chainId: 1, assetId: 1, decimals: 8, chainName: 'NULS', urls: 'https://wallet.nuls.io/public', delay: '10ms', selection: true, isDelete: false},
-  {name: 'Official', chainId: 1, assetId: 1, decimals: 8, chainName: 'NULS', urls: 'https://public1.nuls.io', delay: '10ms', selection: false, isDelete: false},
-  {name: 'Official', chainId: 1, assetId: 1, decimals: 8, chainName: 'NULS', urls: 'http://public2.nuls.io', delay: '10ms', selection: false, isDelete: false},
+const electronData = [
+  {
+    name: 'Official',
+    chainId: MAIN_INFO.assetsId,
+    assetId: MAIN_INFO.assetId,
+    decimals: 8,
+    chainName: RUN_DEV ? 'NULS' : 'tNULS',
+    urls: RUN_DEV ? 'https://wallet.nuls.io/public' : 'https://beta.wallet.nuls.io/api',
+    delay: '10ms',
+    selection: true,
+    isDelete: false
+  },
+  {
+    name: 'Official',
+    chainId: MAIN_INFO.assetsId,
+    assetId: MAIN_INFO.assetId,
+    decimals: 8,
+    chainName: RUN_DEV ? 'NULS' : 'tNULS',
+    urls: RUN_DEV ? 'https://public1.nuls.io' : 'http://apitn1.nulscan.io',
+    delay: '10ms',
+    selection: false,
+    isDelete: false
+  },
+  {
+    name: 'Official',
+    chainId: MAIN_INFO.assetsId,
+    assetId: MAIN_INFO.assetId,
+    decimals: 8,
+    chainName: RUN_DEV ? 'NULS' : 'tNULS',
+    urls: RUN_DEV ? 'http://public2.nuls.io' : 'http://apitn2.nulscan.io',
+    delay: '10ms',
+    selection: false,
+    isDelete: false
+  },
 ];
 const explorerData = [
-  {name: 'Official',chainId:1,assetId:1,decimals:8,chainName:'NULS', urls: '/api', delay: '10ms', selection: true, isDelete: false},
-  {name: 'Official', chainId: 1, assetId: 1, decimals: 8, chainName: 'NULS', urls: 'https://wallet.nuls.io/public', delay: '10ms', selection: false, isDelete: false},
-  {name: 'Official', chainId: 1, assetId: 1, decimals: 8, chainName: 'NULS', urls: 'https://public1.nuls.io', delay: '10ms', selection: false, isDelete: false},
-  {name: 'Official', chainId: 1, assetId: 1, decimals: 8, chainName: 'NULS', urls: 'http://public2.nuls.io', delay: '10ms', selection: false, isDelete: false},
+  {
+    name: 'Official',
+    chainId: MAIN_INFO.assetsId,
+    assetId: MAIN_INFO.assetId,
+    decimals: 8,
+    chainName: RUN_DEV ? 'NULS' : 'tNULS',
+    urls: '/api',
+    delay: '10ms',
+    selection: true,
+    isDelete: false
+  },
+  {
+    name: 'Official',
+    chainId: MAIN_INFO.assetsId,
+    assetId: MAIN_INFO.assetId,
+    decimals: 8,
+    chainName: RUN_DEV ? 'NULS' : 'tNULS',
+    urls: RUN_DEV ? 'https://wallet.nuls.io/public' : 'https://beta.wallet.nuls.io/api',
+    delay: '10ms',
+    selection: false,
+    isDelete: false
+  },
+  {
+    name: 'Official',
+    chainId: MAIN_INFO.assetsId,
+    assetId: MAIN_INFO.assetId,
+    decimals: 8,
+    chainName: RUN_DEV ? 'NULS' : 'tNULS',
+    urls: RUN_DEV ? 'https://public1.nuls.io' : 'http://apitn1.nulscan.io',
+    delay: '10ms',
+    selection: false,
+    isDelete: false
+  },
+  {
+    name: 'Official',
+    chainId: MAIN_INFO.assetsId,
+    assetId: MAIN_INFO.assetId,
+    decimals: 8,
+    chainName: RUN_DEV ? 'NULS' : 'tNULS',
+    urls: RUN_DEV ? 'http://public2.nuls.io' : 'http://apitn2.nulscan.io',
+    delay: '10ms',
+    selection: false,
+    isDelete: false
+  },
 ];
 export const defaultData = RUN_PATTERN ? electronData : explorerData;
 

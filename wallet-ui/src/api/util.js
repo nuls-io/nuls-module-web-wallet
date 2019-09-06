@@ -269,6 +269,8 @@ export function connectToExplorer(name, parameter) {
   }
   else if (name === 'transactionInfo') {
     newUrl = explorerUrl + 'transaction/info?hash=' + parameter
+  } else if (name === 'nuls') {
+    newUrl = parameter
   }
   openner(newUrl);
 }

@@ -403,6 +403,9 @@ const en = {
     "tab18": "Please enter the correct address.",
     "tab19": "Address code",
     "tab20": "Reset password",
+    "tab21": "Official  Websit",
+    "tab22": "Explorer",
+    "tab23": "Docs",
   },
 
   "type": {
@@ -420,6 +423,8 @@ const en = {
     "10": "Cross Trading",
     "11": "Cross Register",
     "12": "Cross Cancellation",
+    "13": "Add Cross Assets",
+    "14": "Cancel Cross Assets",
     "15": "Contract creation",
     "16": "Call contract",
     "17": "Delete contract",
