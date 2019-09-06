@@ -570,6 +570,7 @@ const cn = {
   "consensusList": {
     "consensusList0": "共识明细",
     "consensusList1": "加入时间",
+    "consensusList2": "节点ID",
   },
 
   "consensusInfo": {

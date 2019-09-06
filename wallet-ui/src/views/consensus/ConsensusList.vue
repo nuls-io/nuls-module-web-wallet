@@ -16,7 +16,7 @@
         </el-table-column>
         <el-table-column prop="createTime" :label="$t('consensusList.consensusList1')" align="center">
         </el-table-column>
-        <el-table-column label="节点ID" align="center" min-width="200">
+        <el-table-column :label="$t('consensusList.consensusList2')" align="center" min-width="200">
           <template slot-scope="scope">
             <span class="click uppercase"
                   @click="toUrl('consensusInfo',scope.row.agentHash)">{{scope.row.agendID}}</span>
