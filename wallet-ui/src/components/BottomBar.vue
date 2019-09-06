@@ -23,28 +23,27 @@
 <script>
   import nuls from 'nuls-sdk-js'
   import axios from 'axios'
-  import {defaultData} from '@/config.js'
   import {chainID, chainIdNumber, addressInfo, timesDecimals} from '@/api/util'
 
   export default {
     name: "bottom-bar",
     data() {
       return {
-        serviceUrls:{},//服务节点信息
+        serviceUrls: {},//服务节点信息
         heightInfo: [],//高度信息
         failedNu: 0,//失败请次数
       }
     },
     created() {
-
+      this.serviceUrls = {};
       let newUrlData = this.$store.getters.getUrlData;
-      let url = newUrlData.filter(item => item.selection)[0];
-      localStorage.setItem("urls", JSON.stringify(url));
-      this.serviceUrls = url;
-
+      this.serviceUrls = newUrlData.filter(item => item.selection)[0];
+      sessionStorage.setItem('url', JSON.stringify(this.serviceUrls));
       this.getHeaderInfo();
       setInterval(() => {
-        this.serviceUrls = JSON.parse(localStorage.getItem("urls"));
+        let newUrlData = this.$store.getters.getUrlData;
+        this.serviceUrls = newUrlData.filter(item => item.selection)[0];
+        sessionStorage.setItem('url', JSON.stringify(this.serviceUrls));
       }, 500);
     },
     mounted() {
@@ -84,7 +83,7 @@
        * 获取主网最新高度和本地高度
        */
       getHeaderInfo() {
-        const url = localStorage.hasOwnProperty('urls') ? JSON.parse(localStorage.getItem('urls')).urls : 'http://192.168.1.40:18003/';
+        const url = sessionStorage.hasOwnProperty('url') ? JSON.parse(sessionStorage.getItem('url')).urls : 'http://192.168.1.40:18003/';
         const params = {
           "jsonrpc": "2.0", "method": "getInfo", "params": [chainID()], "id": Math.floor(Math.random() * 1000)
         };

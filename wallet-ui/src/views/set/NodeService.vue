@@ -94,7 +94,7 @@
 
 <script>
   import axios from 'axios'
-  import {defaultData} from '@/config'
+  import {RUN_DEV} from '@/config'
 
   export default {
     data() {
@@ -117,6 +117,7 @@
       };
       return {
         loading: false,//切换时加载动画
+        urlName: RUN_DEV ? 'mainUrlData' : 'TestUrlData',//服务节点名称
         nodeServiceData: [],//节点列表
         nodeServiceLoading: false,//节点列表加载动画
         nodeServiceDialog: false,//服务地址弹框
@@ -173,8 +174,7 @@
               item.selection = false;
             }
             this.nodeServiceData[index].selection = true;
-            localStorage.setItem("urls", JSON.stringify(this.nodeServiceData[index]));
-            localStorage.setItem("urlsData", JSON.stringify(this.nodeServiceData));
+            this.$store.commit('setUrlData', this.nodeServiceData);
             setTimeout(() => {
               this.loading = false;
             }, 2000);
@@ -193,13 +193,12 @@
         }
         this.nodeServiceData = newData;
         this.nodeServiceLoading = false;
-        localStorage.setItem("urlsData", JSON.stringify(this.nodeServiceData));
+        this.$store.commit('setUrlData', this.nodeServiceData);
         this.getDelays();
       },
 
       async getDelays() {
         let newData = [];
-        let isUrl = true;//是否有可用连接
         for (let item of this.nodeServiceData) {
           let startTime = (new Date()).valueOf();
           let endTime = 0;
@@ -224,28 +223,27 @@
               item.state = 0;
               console.log(error);
             });
-          //console.log(item);
-          if (item.selection) {
-            isUrl = false;
-            localStorage.setItem("urls", JSON.stringify(item));
-          }
           newData.push(item);
-        }
-        //没有选中的连接默认选中一个
-        if (isUrl) {
-          this.$message({message: this.$t('public.checkNetwork'), type: 'error', duration: 3000});
-          localStorage.removeItem("urls");
-        } else {
-          for (let item of newData) {
-            if (item.urls !== JSON.parse(localStorage.getItem('urls')).urls) {
-              item.selection = false;
-            }
-          }
         }
         this.nodeServiceData = newData;
         this.nodeServiceLoading = false;
         this.loading = false;
-        localStorage.setItem("urlsData", JSON.stringify(this.nodeServiceData));
+        //没有选中的连接默认选中一个
+        let selectionUrl = newData.filter(item => item.selection);
+        if (selectionUrl.length === 0) {
+          let minNumber = Math.min.apply(Math, newData.map((o) => o.delay));
+          if (minNumber !== 200000) {
+            let minIndex = newData.map((o) => o.delay).findIndex((n) => n === minNumber);
+            for (let item in newData) {
+              if (Number(item) === minIndex) {
+                newData[minIndex].selection = true;
+              }
+            }
+          } else {
+            this.$message({message: this.$t('public.checkNetwork'), type: 'error', duration: 3000});
+          }
+        }
+        this.$store.commit('setUrlData', this.nodeServiceData);
       },
 
       /**
@@ -253,7 +251,7 @@
        *@param url
        */
       async getChainInfo(url) {
-        const params = {jsonrpc: "2.0", method: "getChainInfo", "params": [], "id": 5898};
+        const params = {jsonrpc: "2.0", method: "getChainInfo", "params": [], "id": Math.floor(Math.random() * 1000)};
         await axios.post(url, params)
           .then((response) => {
             return response;
@@ -272,7 +270,12 @@
         this.$refs[formName].validate((valid) => {
           if (valid) {
             that.nodeServiceDialogLoading = true;
-            const params = {jsonrpc: "2.0", method: "getChainInfo", "params": [], "id": 5898};
+            const params = {
+              jsonrpc: "2.0",
+              method: "getChainInfo",
+              "params": [],
+              "id": Math.floor(Math.random() * 1000)
+            };
             axios.post(this.nodeServiceForm.urls, params)
               .then(function (response) {
                 //console.log(response.data);
@@ -338,10 +341,11 @@
             }
             if (this.editIndex !== 10000) {
               this.nodeServiceData[this.editIndex] = newNodeInfo;
-              localStorage.setItem("urlsData", JSON.stringify(this.nodeServiceData));
+              this.$store.commit('setUrlData', this.nodeServiceData);
             } else {
               this.nodeServiceData.push(newNodeInfo);
-              localStorage.setItem("urlsData", JSON.stringify(this.nodeServiceData));
+              console.log(this.nodeServiceData);
+              this.$store.commit('setUrlData', this.nodeServiceData);
             }
             this.getDelay();
             this.nodeServiceDialog = false;
@@ -395,7 +399,7 @@
           this.$message({type: 'success', message: this.$t('nodeService.nodeService22')});
           this.nodeServiceData.splice(index, 1);
           this.getDelays();
-          localStorage.setItem("urlsData", JSON.stringify(this.nodeServiceData));
+          this.$store.commit('setUrlData', this.nodeServiceData);
         }).catch(() => {
         });
       },

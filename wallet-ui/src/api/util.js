@@ -103,7 +103,7 @@ export function passwordVerification(accountInfo, password, prefix) {
  * @returns {number}
  */
 export function chainID() {
-  let newUrl = localStorage.hasOwnProperty('urls') ? JSON.parse(localStorage.getItem('urls')) : {};
+  let newUrl = sessionStorage.hasOwnProperty('url') ? JSON.parse(sessionStorage.getItem('url')) : {};
   if (newUrl) {
     return newUrl.chainId
   } else {
