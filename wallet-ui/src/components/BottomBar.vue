@@ -83,7 +83,7 @@
        * 获取主网最新高度和本地高度
        */
       getHeaderInfo() {
-        const url = sessionStorage.hasOwnProperty('url') ? JSON.parse(sessionStorage.getItem('url')).urls : 'http://192.168.1.40:18003/';
+        const url = sessionStorage.hasOwnProperty("url") &&  sessionStorage.getItem('url') !== 'undefined' ? JSON.parse(sessionStorage.getItem('url')).urls : 'http://192.168.1.40:18003/';
         const params = {
           "jsonrpc": "2.0", "method": "getInfo", "params": [chainID()], "id": Math.floor(Math.random() * 1000)
         };

@@ -344,7 +344,6 @@
               this.$store.commit('setUrlData', this.nodeServiceData);
             } else {
               this.nodeServiceData.push(newNodeInfo);
-              console.log(this.nodeServiceData);
               this.$store.commit('setUrlData', this.nodeServiceData);
             }
             this.getDelay();

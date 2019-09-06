@@ -103,7 +103,7 @@ if (isDevelopment) {
     updateNotAva: {type: 4, info: '现在使用的就是最新版本，不用更新'},
   };
   // 下载地址，不加后面的**.exe
-  const uploadUrl = "http://file.wallet.nuls.io/download/test";
+  const uploadUrl = "http://file.wallet.nuls.io/download/main";
   autoUpdater.setFeedURL(uploadUrl);
   autoUpdater.on('error', function (error) {
     console.log(error);
