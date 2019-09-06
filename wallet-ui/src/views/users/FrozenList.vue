@@ -91,7 +91,7 @@
       getTxListByAddress(chainId, assetId, address, pageIndex, pageSize) {
         this.$post('/', 'getAccountFreezes', [chainId, assetId,address, pageIndex, pageSize])
           .then((response) => {
-            console.log(response);
+            //console.log(response);
             if (response.hasOwnProperty("result")) {
               //let long = 1000000000; 4294967295
               for (let item of response.result.list) {

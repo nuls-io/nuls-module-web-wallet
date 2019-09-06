@@ -455,6 +455,7 @@ const en = {
     "8": "Red card",
     "9": "Unregister node",
     "11": "Registration Cross-Chain",
+    "13": "Add Cross Assets",
   },
 
   "addressType": {
