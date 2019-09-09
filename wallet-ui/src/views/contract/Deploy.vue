@@ -152,10 +152,11 @@
         this.prefix = '';
       });
       this.createAddress = this.addressInfo.address;
-      this.getBalanceByAddress(this.addressInfo.chainId, 1, this.createAddress);
     },
     mounted() {
-      //this.getTxInfoByHash(this.hash);
+      setTimeout(() => {
+        this.getBalanceByAddress(this.addressInfo.chainId, 1, this.createAddress);
+      }, 600);
     },
     watch: {
       addressInfo(val, old) {

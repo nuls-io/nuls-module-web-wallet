@@ -182,9 +182,12 @@
       }, 500);
     },
     mounted() {
-      this.getBalanceByAddress(this.agentAsset.agentAsset.chainId, this.agentAsset.agentAsset.assetId, this.addressInfo.address);
-      this.getNodeInfoByHash(this.$route.query.hash);
-      this.getNodeDepositByHash(this.pageIndex, this.pageSize, this.addressInfo.address, this.$route.query.hash)
+      setTimeout(() => {
+        this.getBalanceByAddress(this.agentAsset.agentAsset.chainId, this.agentAsset.agentAsset.assetId, this.addressInfo.address);
+        this.getNodeInfoByHash(this.$route.query.hash);
+        this.getNodeDepositByHash(this.pageIndex, this.pageSize, this.addressInfo.address, this.$route.query.hash)
+      }, 600);
+
     },
     components: {
       Password,

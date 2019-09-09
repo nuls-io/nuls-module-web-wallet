@@ -193,8 +193,10 @@
       }, 500);
     },
     mounted() {
-      this.getPunishByAddress(this.addressInfo.address);
-      this.getBalanceByAddress(this.agentAsset.agentAsset.chainId, this.agentAsset.agentAsset.assetId, this.addressInfo.address);
+      setTimeout(() => {
+        this.getPunishByAddress(this.addressInfo.address);
+        this.getBalanceByAddress(this.agentAsset.agentAsset.chainId, this.agentAsset.agentAsset.assetId, this.addressInfo.address);
+      },600);
     },
     watch: {
       addressInfo(val, old) {

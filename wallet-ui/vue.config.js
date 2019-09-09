@@ -27,8 +27,10 @@ module.exports = {
     }
     config.externals = {
       'vue': 'Vue',
-      'moment': 'moment'
-      /*'element-ui': 'ELEMENT',*/
+      'vue-router': 'VueRouter',
+      'vuex': 'Vuex',
+      'moment': 'moment',
+      'element-ui': 'ELEMENT',
     }
   },
 

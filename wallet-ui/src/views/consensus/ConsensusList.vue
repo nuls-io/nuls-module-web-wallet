@@ -61,13 +61,13 @@
       };
     },
     created() {
-      this.totalAmount = Number(this.$route.query.consensusLock);
-      console.log(this.$route.query.consensusLock);
       this.addressInfo = addressInfo(1);
       setInterval(() => {
         this.addressInfo = addressInfo(1);
       }, 500);
-      this.getNodeDepositByHash(this.pageIndex, this.pageSize, this.addressInfo.address)
+      setTimeout(() => {
+        this.getNodeDepositByHash(this.pageIndex, this.pageSize, this.addressInfo.address)
+      },600);
     },
     components: {
       BackBar

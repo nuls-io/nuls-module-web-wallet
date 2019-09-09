@@ -260,7 +260,11 @@
         this.addressInfo = addressInfo(1);
       }, 500);
       this.transferForm.fromAddress = this.addressInfo.address;
-      this.getCapitalListByAddress(this.transferForm.fromAddress);
+
+      setTimeout(() => {
+        this.getCapitalListByAddress(this.transferForm.fromAddress);
+      }, 600);
+
     },
     mounted() {
     },

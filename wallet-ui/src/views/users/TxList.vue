@@ -149,12 +149,13 @@
       }
     },
     mounted() {
-      this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.types);
+      setTimeout(() => {
+        this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.types);
+      }, 600);
       //10秒循环一次数据
       this.txListSetInterval = setInterval(() => {
         this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.types);
       }, 10000);
-
     },
     //离开当前页面后执行
     destroyed() {
@@ -181,9 +182,9 @@
                 item.createTime = moment(getLocalTime(item.createTime * 1000)).format('YYYY-MM-DD HH:mm:ss');
                 item.txid = superLong(item.txHash, 8);
                 item.balance = timesDecimals(item.balance);
-                if(item.type ===16){
+                if (item.type === 16) {
                   item.amount = timesDecimals(item.fee.value);
-                }else {
+                } else {
                   item.amount = timesDecimals(item.values);
                 }
 

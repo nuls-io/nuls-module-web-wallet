@@ -38,12 +38,12 @@
       this.serviceUrls = {};
       let newUrlData = this.$store.getters.getUrlData;
       this.serviceUrls = newUrlData.filter(item => item.selection)[0];
-      sessionStorage.setItem('url', JSON.stringify(this.serviceUrls));
+      localStorage.setItem('url', JSON.stringify(this.serviceUrls));
       this.getHeaderInfo();
       setInterval(() => {
         let newUrlData = this.$store.getters.getUrlData;
         this.serviceUrls = newUrlData.filter(item => item.selection)[0];
-        sessionStorage.setItem('url', JSON.stringify(this.serviceUrls));
+        localStorage.setItem('url', JSON.stringify(this.serviceUrls));
       }, 500);
     },
     mounted() {
@@ -83,10 +83,12 @@
        * 获取主网最新高度和本地高度
        */
       getHeaderInfo() {
-        const url = sessionStorage.hasOwnProperty("url") &&  sessionStorage.getItem('url') !== 'undefined' ? JSON.parse(sessionStorage.getItem('url')).urls : 'http://192.168.1.40:18003/';
+        const url = localStorage.hasOwnProperty("url") && localStorage.getItem('url') !== 'undefined' ? JSON.parse(localStorage.getItem('url')).urls : 'http://192.168.1.40:18003/';
         const params = {
           "jsonrpc": "2.0", "method": "getInfo", "params": [chainID()], "id": Math.floor(Math.random() * 1000)
         };
+        //console.log(url);
+        //console.log(params);
         axios.post(url, params)
           .then((response) => {
             //console.log(response.data);

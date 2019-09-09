@@ -66,7 +66,6 @@
     },
     created() {
       this.seeLog();
-
     },
     mounted() {
 

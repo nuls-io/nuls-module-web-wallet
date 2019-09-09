@@ -20,7 +20,9 @@
           <el-button type="success" @click="backKeystore" v-if="RUN_PATTERN">{{$t('newAddress.newAddress16')}}
           </el-button>
           <el-button type="success" @click="backKey">{{$t('newAddress.newAddress17')}}</el-button>
+          <el-button @click="toUrl('home')">{{$t('tab.tab24')}}</el-button>
         </div>
+
       </div>
     </div>
     <Password ref="password" @passwordSubmit="passSubmit">
@@ -156,6 +158,16 @@
         copys(sting);
         this.$message({message: this.$t('public.copySuccess'), type: 'success', duration: 1000});
         this.keyDialog = false;
+      },
+
+      /**
+       * 连接跳转
+       * @param name
+       */
+      toUrl(name) {
+        this.$router.push({
+          name: name,
+        })
       },
     }
   }

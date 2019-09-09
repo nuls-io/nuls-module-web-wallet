@@ -149,9 +149,11 @@
       setInterval(() => {
         this.addressInfo = addressInfo(1);
       }, 500);
-      this.getBalanceByAddress(chainID(), 1, this.addressInfo.address);
     },
     mounted() {
+      setTimeout(() => {
+        this.getBalanceByAddress(chainID(), 1, this.addressInfo.address);
+      }, 600);
     },
     watch: {
       modelList(val) {

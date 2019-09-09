@@ -406,6 +406,7 @@ const en = {
     "tab21": "Official  Websit",
     "tab22": "Explorer",
     "tab23": "Docs",
+    "tab24": "Complete backup",
   },
 
   "type": {
@@ -508,6 +509,7 @@ const en = {
     "8": "Red card penalty lock-in",
     "9": "Logout Node Locking",
     "11": "Registration Cross-Chain",
+    "13": "Add Cross Assets",
   },
 
   "contractStatus": {

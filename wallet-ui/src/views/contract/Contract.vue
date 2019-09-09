@@ -6,7 +6,7 @@
       <i class="iconfont icon-fuzhi clicks"></i>
     </h3>
     <el-tabs v-model="contractActive" class="w1200" @tab-click="handleClick">
-      <el-tab-pane :label="$t('contract.contract1')" name="contractFirst">
+      <el-tab-pane :label="$t('contract.contract1')" name="contractFirst" v-loading="myContractDataLoading">
         <div class="my_contract">
           <el-table :data="myContractData" stripe border>
             <el-table-column :label="$t('contract.contract2')" align="center" min-width="220">
@@ -31,7 +31,8 @@
                 <label class="tab_bn" v-if="scope.row.status ===3 || scope.row.status ===-1">--</label>
                 <label class="click tab_bn" v-else @click="toUrl('contractInfo',scope.row.contractAddress,0,'fourth')">{{$t('contract.contract4')}}</label>
                 <i class="el-icon-star-on font20 transparent" v-show="scope.row.creater === addressInfo.address"></i>
-                <el-tooltip :content="$t('public.cancelCollection')" placement="top" v-show="scope.row.creater !== addressInfo.address">
+                <el-tooltip :content="$t('public.cancelCollection')" placement="top"
+                            v-show="scope.row.creater !== addressInfo.address">
                   <i class="el-icon-star-on font20 clicks" @click="cancelCollection(scope.row.contractAddress)"></i>
                 </el-tooltip>
 
@@ -121,7 +122,8 @@
         isCollection: false,//是否收藏
         contractInfo: {},//合约详情
         modelData: [],//合约方法列表
-        decimals:0,//合约精度系数
+        decimals: 0,//合约精度系数
+        myContractDataLoading: true,//我的合约加载动画
       };
     },
     created() {
@@ -132,7 +134,9 @@
 
     },
     mounted() {
-      this.getMyContractByAddress(this.addressInfo.address);
+      setTimeout(() => {
+        this.getMyContractByAddress(this.addressInfo.address);
+      }, 600);
     },
     components: {
       Deploy,
@@ -158,7 +162,7 @@
           this.isCollection = false;
           this.contractInfo = {};
           this.modelData = [];
-        }else if(tab.name === 'contractFirst'){
+        } else if (tab.name === 'contractFirst') {
           this.getMyContractByAddress(this.addressInfo.address);
         }
       },
@@ -168,7 +172,6 @@
        * @param address
        **/
       async getMyContractByAddress(address) {
-        //await this.$post('/', 'getContractList', [this.pageIndex, this.pageSize, false, false])
         await this.$post('/', 'getAccountContractList', [this.pageIndex, this.pageSize, address, -1, false])
           .then((response) => {
             //console.log(response);
@@ -183,8 +186,13 @@
               } else {
                 this.getContractListById(this.pageIndex, this.pageSize, this.addressInfo.contractList.length, this.addressInfo.contractList);
               }
+              this.myContractDataLoading = false;
             } else {
-              this.$message({message: this.$t('contract.contract11') + JSON.stringify(response.error), type: 'error', duration: 1000});
+              this.$message({
+                message: this.$t('contract.contract11') + JSON.stringify(response.error),
+                type: 'error',
+                duration: 1000
+              });
             }
           })
           .catch((error) => {

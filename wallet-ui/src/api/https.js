@@ -23,8 +23,10 @@ export function post(url, methodName, data = [], templateName = '') {
   return new Promise((resolve, reject) => {
     data.unshift(chainID());
     const params = {"jsonrpc": "2.0", "method": methodName, "params": data, "id": Math.floor(Math.random()*1000)};
+    //console.log(params);
     axios.post(url, params)
       .then(response => {
+        //console.log(response);
         if (!response.data.hasOwnProperty('error')) {
           logger.info(methodName + ' ' + templateName);
         } else {

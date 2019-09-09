@@ -102,10 +102,12 @@
         console.log(err);
         this.prefix = '';
       });
-      this.getAddressList();
     },
     mounted() {
-      this.getAddressLists(this.addressList);
+      setTimeout(() => {
+        this.getAddressList();
+        this.getAddressLists(this.addressList);
+      }, 600);
     },
     methods: {
 

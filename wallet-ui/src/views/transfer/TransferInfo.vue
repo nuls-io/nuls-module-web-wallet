@@ -220,7 +220,9 @@
 
     },
     mounted() {
-      this.getTxInfoByHash(this.hash);
+      setTimeout(() => {
+        this.getTxInfoByHash(this.hash);
+      }, 600);
     },
     components: {
       BackBar

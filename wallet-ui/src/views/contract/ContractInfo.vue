@@ -119,7 +119,7 @@
   import BackBar from '@/components/BackBar'
   import SelectBar from '@/components/SelectBar';
   import Call from './Call'
-  import {timesDecimals, getLocalTime, superLong, addressInfo,connectToExplorer} from '@/api/util'
+  import {timesDecimals, getLocalTime, superLong, addressInfo, connectToExplorer} from '@/api/util'
   import {getNulsBalance, inputsOrOutputs, validateAndBroadcast} from '@/api/requestData'
   import Password from '@/components/PasswordBar'
 
@@ -146,7 +146,7 @@
         pageTotal: 0,//总页数
         modeList: [],//合约方法列表
         modelData: [],//合约方法列表
-        decimals:0,//合约精度系数
+        decimals: 0,//合约精度系数
 
       };
     },
@@ -155,15 +155,14 @@
       setInterval(() => {
         this.addressInfo = addressInfo(1);
       }, 500);
-      this.getBalanceByAddress(this.addressInfo.chainId, 1, this.addressInfo.address);
+
     },
     mounted() {
-      this.contractInfoByAddress(this.contractAddress);
-      this.contractTxList(this.pageIndex, this.pageSize, 0, this.contractAddress);
-      //定时获取地址
-      this.contractAddressInterval = setInterval(() => {
-        //this.contractsAddress= this.$route.query.contractAddress;
-      }, 500)
+      setTimeout(() => {
+        this.getBalanceByAddress(this.addressInfo.chainId, 1, this.addressInfo.address);
+        this.contractInfoByAddress(this.contractAddress);
+        this.contractTxList(this.pageIndex, this.pageSize, 0, this.contractAddress);
+      }, 600);
     },
     beforeDestroy() {
       //离开界面清除定时器
@@ -204,7 +203,7 @@
               response.result.createTxHashs = superLong(response.result.createTxHash, 5);
               response.result.balance = timesDecimals(response.result.balance);
               this.contractInfo = response.result;
-              for(let item in response.result.methods){
+              for (let item in response.result.methods) {
                 //console.log(response.result.methods[item].event);
                 response.result.methods[item].keys = item;
               }
@@ -375,7 +374,7 @@
        * @param params
        * @param type
        */
-      toUrl(name,params, type = 0) {
+      toUrl(name, params, type = 0) {
         //console.log(name)
         if (type === 0) {
           let newQuery = {hash: params};
@@ -384,7 +383,7 @@
             query: newQuery
           })
         } else {
-          connectToExplorer(name,params)
+          connectToExplorer(name, params)
         }
       },
 

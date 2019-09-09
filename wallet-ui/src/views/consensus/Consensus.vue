@@ -163,14 +163,16 @@
       setInterval(() => {
         this.addressInfo = addressInfo(1);
       }, 500);
-      this.getConsensusNodeCount();
-      this.getCoinInfo();
     },
     mounted() {
-      this.getConsensusNodes(this.pageIndex, this.pageSize, this.nodeTypeRegion);
-      //this.getConsensusInfoByAddress(this.pageIndex, this.pageSize, this.addressInfo.address);
-      this.getAddressInfoByNode(this.addressInfo);
-      this.getPunishByAddress(this.addressInfo.address);
+      setTimeout(() => {
+        this.getConsensusNodeCount();
+        this.getCoinInfo();
+        this.getConsensusNodes(this.pageIndex, this.pageSize, this.nodeTypeRegion);
+        //this.getConsensusInfoByAddress(this.pageIndex, this.pageSize, this.addressInfo.address);
+        this.getAddressInfoByNode(this.addressInfo);
+        this.getPunishByAddress(this.addressInfo.address);
+      }, 600);
     },
     destroyed() {
       clearInterval(this.setInterval);

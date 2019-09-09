@@ -2,7 +2,6 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
 import store from './store'
-import './plugins/element.js'
 import i18n from './i18n'
 import {post} from './api/https'
 //浏览器模式注释下面两行代码

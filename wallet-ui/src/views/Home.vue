@@ -136,10 +136,12 @@
 
       //判断是否有账户
       if (this.addressInfo) {
-        this.getAddressInfoByNode(this.addressInfo.address);
         setTimeout(() => {
-          this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address)
-        }, 200);
+          this.getAddressInfoByNode(this.addressInfo.address);
+          setTimeout(() => {
+            this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address)
+          },100);
+        }, 600);
       } else {
         this.$router.push({
           name: "newAddress"
@@ -246,8 +248,8 @@
        * 获取地址基本资产信息
        * @param address
        **/
-      getAddressInfoByNode(address) {
-        this.$post('/', 'getAccountLedgerList', [address], 'Home')
+      async getAddressInfoByNode(address) {
+        await this.$post('/', 'getAccountLedgerList', [address], 'Home')
           .then((response) => {
             //console.log(response);
             this.addressAssetsData = [];
@@ -281,8 +283,8 @@
        * @param pageRows
        * @param address
        **/
-      getTokenListByAddress(pageSize, pageRows, address) {
-        this.$post('/', 'getAccountTokens', [pageSize, pageRows, address], 'Home')
+      async getTokenListByAddress(pageSize, pageRows, address) {
+        await this.$post('/', 'getAccountTokens', [pageSize, pageRows, address], 'Home')
           .then((response) => {
             //console.log(response);
             let newAssetsList = {};
@@ -308,9 +310,9 @@
        * 获取地址跨链资产信息
        * @param address
        **/
-      getAccountCrossLedgerList(address) {
+      async getAccountCrossLedgerList(address) {
         //this.txListDataLoading = true;
-        this.$post('/', 'getAccountCrossLedgerList', [address], 'Home')
+        await this.$post('/', 'getAccountCrossLedgerList', [address], 'Home')
           .then((response) => {
             //console.log(response);
             this.crossLinkDataLoading = false;

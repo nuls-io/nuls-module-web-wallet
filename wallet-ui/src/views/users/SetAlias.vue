@@ -83,7 +83,12 @@
           this.addressInfo = item
         }
       }
-      this.getNulsBalance(chainID(), 1, this.$route.query.address);
+
+    },
+    mounted() {
+      setTimeout(() => {
+        this.getNulsBalance(chainID(), 1, this.$route.query.address);
+      }, 600);
     },
     watch: {
       addressInfo(val, old) {
