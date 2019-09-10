@@ -738,11 +738,13 @@
           if (this.contractInfo.success) { //合约转账
             this.contractCallData.chainId = MAIN_INFO.chainId;
             transferInfo['amount'] = Number(Plus(transferInfo.fee, Number(Times(this.transferForm.gas, this.transferForm.price))));
-            transferInfo['fee'] = Number(Plus(transferInfo.fee, Number(Times(this.transferForm.gas, this.transferForm.price))));
-            transferInfo.toAddress = this.contractInfo.contractAddress;
+            transferInfo['fee'] = transferInfo.fee;
+            //transferInfo.toAddress = this.contractInfo.contractAddress;
             transferInfo.value = Number(timesDecimals0(this.transferForm.amount, this.changeAssets.decimals));
             //console.log(transferInfo);
             inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
+            //console.log(inOrOutputs);
+            //console.log(this.contractCallData);
             tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, this.transferForm.remarks, 16, this.contractCallData);
           } else {
             if (this.changeAssets.type === 1 && !this.isCross) { //NULS普通转账交易

@@ -13,9 +13,9 @@ export const RUN_PATTERN = false;
 //桌面程序下载路径（main：http://file.wallet.nuls.io/download/main  test：http://file.wallet.nuls.io/download/test）background.js package 手动修改
 export const FILE_URL = RUN_DEV ? 'http://file.wallet.nuls.io/download/main' : 'http://file.wallet.nuls.io/download/test';
 //正式、测试网络的api
-export let API_URL = 'https://public1.nuls.io';
+export let API_URL = 'https://wallet.nuls.io/public';
 setInterval(() => {
-  API_URL = localStorage.hasOwnProperty("url") &&  localStorage.getItem('url') !== 'undefined' ? JSON.parse(localStorage.getItem("url")).urls : 'https://public1.nuls.io';
+  API_URL = localStorage.hasOwnProperty("url") && localStorage.getItem('url') !== 'undefined' ? JSON.parse(localStorage.getItem("url")).urls : 'https://wallet.nuls.io/public';
 }, 500);
 //请求最迟时间
 export const API_TIME = IS_DEV ? '9000' : '8000';

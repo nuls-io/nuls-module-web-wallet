@@ -454,6 +454,8 @@
           let remark = '';
           //console.log(transferInfo);
           let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
+          //console.log(inOrOutputs);
+          //console.log(this.contractCallData);
           let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 16, this.contractCallData);
           let txhex = '';
           //获取手续费
