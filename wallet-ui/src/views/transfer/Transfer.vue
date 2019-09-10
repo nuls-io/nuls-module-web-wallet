@@ -738,7 +738,7 @@
           if (this.contractInfo.success) { //合约转账
             this.contractCallData.chainId = MAIN_INFO.chainId;
             transferInfo['amount'] = Number(Plus(transferInfo.fee, Number(Times(this.transferForm.gas, this.transferForm.price))));
-            transferInfo['fee'] = transferInfo.fee;
+            //transferInfo['fee'] = transferInfo.fee;
             //transferInfo.toAddress = this.contractInfo.contractAddress;
             transferInfo.value = Number(timesDecimals0(this.transferForm.amount, this.changeAssets.decimals));
             //console.log(transferInfo);
