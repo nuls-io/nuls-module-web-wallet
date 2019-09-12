@@ -168,7 +168,7 @@
         }
       };
       let validateAmount = (rule, value, callback) => {
-        let patrn = new RegExp("^([1-9][\\d]{0," + this.changeAssets.decimals + "}|0)(\\.[\\d]{1," + this.changeAssets.decimals + "})?$");
+        let patrn = new RegExp("^([1-9][\\d]{0,20}|0)(\\.[\\d]{1," + this.changeAssets.decimals + "})?$");
         if (value === '') {
           callback(new Error(this.$t('transfer.transfer11')))
         } else if (!patrn.exec(value)) {

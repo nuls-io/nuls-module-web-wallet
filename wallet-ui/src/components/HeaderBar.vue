@@ -23,8 +23,9 @@
             <el-menu-item v-for="item of addressList" :key="item.address" :index="item.address">
               <span :class="item.selection ? 'fCN' : '' ">
                  <i class="iconfont iconwo ico" :class="item.selection ? 'fCN' : 'transparent' "></i>
-                <font v-show="!item.alias" class="w100"> {{item.addresss}}</font>
-                <span v-show="item.alias" class="w100">{{item.alias}}</span> |
+                <font v-if="item.alias" class="w100"> {{item.alias}}</font>
+                <font v-else-if="item.remark" class="w100"> {{item.remark}}</font>
+                <font v-else class="w100">{{item.addresss}}</font> |
                 <span>{{item.balance}}</span>
               </span>
 

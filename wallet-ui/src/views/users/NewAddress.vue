@@ -80,6 +80,8 @@
       let validateKeys = (rule, value, callback) => {
         if (value === '') {
           callback(new Error(this.$t('importAddress.importAddress9')));
+        } else if (value.length < 60 || value.length > 64) {
+          callback(new Error(this.$t('importAddress.importAddress91')));
         } else {
           callback();
         }
