@@ -15,7 +15,7 @@
       <div class="step_tow w630">
         <div class="tip bg-gray">
           <p v-if="RUN_PATTERN">{{$t('newAddress.newAddress13')}}</p>
-          <p v-else="!RUN_PATTERN">{{$t('newAddress.newAddress131')}}</p>
+          <p v-else>{{$t('newAddress.newAddress131')}}</p>
         </div>
         <div class="btn mb_20">
           <el-button type="success" @click="backKeystore" v-if="RUN_PATTERN">{{$t('newAddress.newAddress16')}}

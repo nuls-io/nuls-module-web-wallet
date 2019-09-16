@@ -60,6 +60,7 @@ const cn = {
     "logInfo":"日志信息",
     "see":"查看",
     "version":"当前版本",
+    "version1":"最新版本",
     "checkUpdates":"检查更新",
     "operatingSystem":"操作系统",
     "into":"进入",

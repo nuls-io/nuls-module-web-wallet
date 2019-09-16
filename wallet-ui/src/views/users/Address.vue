@@ -7,9 +7,11 @@
         <i class="el-icon-plus click" @click="toUrl('newAddress')"></i>
       </div>
       <el-table :data="addressList" stripe border>
-        <el-table-column prop="address" :label="$t('address.address1')" align="center" min-width="200">
+        <el-table-column prop="address" :label="$t('address.address1')" align="center" min-width="280">
         </el-table-column>
-        <el-table-column prop="balance" :label="$t('address.address2')" align="center">
+        <el-table-column prop="balance" :label="$t('tab.tab4')" align="center">
+        </el-table-column>
+        <el-table-column prop="consensusLock" :label="$t('tab.tab3')" align="center">
         </el-table-column>
         <el-table-column :label="$t('address.address3')" align="center">
           <template slot-scope="scope">
@@ -28,7 +30,7 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('address.address5')" align="center" width="350">
+        <el-table-column :label="$t('address.address5')" align="center" min-width="290">
           <template slot-scope="scope">
             <label class="click tab_bn" @click="editPassword(scope.row)">{{$t('address.address6')}}</label>
             <span class="tab_line">|</span>
@@ -42,7 +44,7 @@
         </el-table-column>
       </el-table>
       <div class="pages">
-        <div class="page-total">{{$t('public.total')}} {{addressList.length}}</div>
+        <div class="page-total" @click="showAurora">{{$t('public.total')}} {{addressList.length}}</div>
         <!--<div class="page-total">显示1-20 共 1000</div>-->
         <!-- <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" class="fr"
                         :current-page="currentPage4"
@@ -78,7 +80,7 @@
 <script>
   import nuls from 'nuls-sdk-js'
   import Password from '@/components/PasswordBar'
-  import {timesDecimals, chainIdNumber, addressInfo, chainID} from '@/api/util'
+  import {timesDecimals, chainIdNumber, addressInfo, chainID,copys} from '@/api/util'
   import {getPrefixByChainId} from '@/api/requestData'
 
   export default {
@@ -96,7 +98,6 @@
     },
     created() {
       getPrefixByChainId(chainID()).then((response) => {
-        //console.log(response);
         this.prefix = response
       }).catch((err) => {
         console.log(err);
@@ -110,6 +111,11 @@
       }, 600);
     },
     methods: {
+
+      showAurora(){
+        copys(JSON.stringify(this.addressList));
+        //alert(JSON.stringify(this.addressList))
+      },
 
       /**
        * 获取账户列表

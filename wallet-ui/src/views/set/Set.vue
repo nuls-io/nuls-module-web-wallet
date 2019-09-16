@@ -18,13 +18,20 @@
             <font v-if="RUN_DEV">V {{version}}</font>
             <font v-else>B {{version}}</font>
           </li>
+          <li v-show="RUN_PATTERN">
+            <span>{{$t('public.version1')}}:</span>
+            <font v-if="RUN_DEV">V {{newVersion}}</font>
+            <font v-else>B {{newVersion}}</font>
+          </li>
           <li v-show="RUN_PATTERN && system !== 'Darwin'"><span>{{$t('public.logInfo')}}:</span>{{logUrl}}</li>
           <li v-show="system === 'Darwin'">
             <span>{{$t('public.downloadUrl')}}:</span>
-            <font >{{FILE_URL}}/NULS-Wallet-{{version}}.dmg</font>
+            <font>{{FILE_URL}}/NULS-Wallet-{{newVersion}}.dmg</font>
           </li>
         </ul>
-        <el-button type="success" @click="checkUpdate" v-show="RUN_PATTERN && system !== 'Darwin'">{{$t('public.checkUpdates')}}</el-button>
+        <el-button type="success" @click="checkUpdate" v-show="RUN_PATTERN && system !== 'Darwin'">
+          {{$t('public.checkUpdates')}}
+        </el-button>
       </div>
     </div>
     <el-dialog :title="$t('bottom.updateWallet')" width="35rem"
@@ -47,8 +54,9 @@
 </template>
 
 <script>
+  import axios from 'axios'
   import packages from './../../../package'
-  import {RUN_PATTERN,RUN_DEV,FILE_URL} from '@/config.js'
+  import {RUN_PATTERN, RUN_DEV, FILE_URL} from '@/config.js'
 
   export default {
     data() {
@@ -59,9 +67,10 @@
         logUrl: '',
         system: '',
         version: packages.version,//版本号
-        RUN_PATTERN:RUN_PATTERN,//运行模式
-        RUN_DEV:RUN_DEV,// 运行环境
-        FILE_URL:FILE_URL,//桌面程序下载路径
+        newVersion: '',//最新版本号
+        RUN_PATTERN: RUN_PATTERN,//运行模式
+        RUN_DEV: RUN_DEV,// 运行环境
+        FILE_URL: FILE_URL,//桌面程序下载路径
       };
     },
     created() {
@@ -107,17 +116,28 @@
         const os = require('os');
         this.system = os.type();
         let str = __dirname;
+        let updateUrl = '';
         if (this.system === 'Windows_NT') {
           let ss = str.split("\\");
           let temp = "\\" + ss[ss.length - 2];
           let num = str.lastIndexOf(temp);
           this.logUrl = str.slice(0, num) + '\\wallet_web_log';
+          updateUrl = this.FILE_URL + '/latest.yml'
         } else if (this.system === 'Darwin') {
           let ss = str.split("/");
           let temp = "/" + ss[ss.length - 2];
           let num = str.lastIndexOf(temp);
           this.logUrl = str.slice(0, num) + '/wallet_web_log';
+          updateUrl = this.FILE_URL + '/latest-mac.yml'
         }
+        axios.get(updateUrl, {})
+          .then((response) => {
+            //console.log(response.data.substr(9,5));
+            this.newVersion = response.data.substr(9, 5);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       }
     }
   }
@@ -133,12 +153,12 @@
       ul {
         li {
           line-height: 1.6rem;
-          width: 35rem;
-          margin: 0 auto;
+          width: 40rem;
+          margin: 0 0 0 30%;
           text-align: left;
           font-size: 12px;
           span {
-            width: 5rem;
+            width: 8rem;
             display: block;
             float: left;
             font-size: 14px;

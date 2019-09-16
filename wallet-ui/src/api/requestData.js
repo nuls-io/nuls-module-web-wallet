@@ -74,7 +74,9 @@ export async function inputsOrOutputs(transferInfo, balanceInfo, type) {
     newNonce = transferInfo.depositHash.substring(transferInfo.depositHash.length - 16);
     newoutputAmount = transferInfo.amount - transferInfo.fee;
     //锁定三天
-    newLockTime = (new Date()).valueOf() + 3600000 * 72;
+    let times = (new Date()).valueOf() + 3600000 * 72;
+    //console.log(Number(times.toString().substr(0, times.toString().length - 3)));
+    newLockTime = Number(times.toString().substr(0, times.toString().length - 3));
   } else {
     //return {success: false, data: "No transaction type"}
   }
