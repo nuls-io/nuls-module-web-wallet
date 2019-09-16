@@ -15,13 +15,13 @@
           <li v-show="RUN_PATTERN"><span>{{$t('public.operatingSystem')}}:</span>{{system}}</li>
           <li>
             <span>{{$t('public.version')}}:</span>
-            <font v-if="RUN_DEV">V {{version}}</font>
-            <font v-else>B {{version}}</font>
+            <font v-if="RUN_DEV"> {{version}}</font>
+            <font v-else>Beta-{{version}}</font>
           </li>
           <li v-show="RUN_PATTERN">
             <span>{{$t('public.version1')}}:</span>
-            <font v-if="RUN_DEV">V {{newVersion}}</font>
-            <font v-else>B {{newVersion}}</font>
+            <font v-if="RUN_DEV">{{newVersion}}</font>
+            <font v-else>Beta-{{newVersion}}</font>
           </li>
           <li v-show="RUN_PATTERN && system !== 'Darwin'"><span>{{$t('public.logInfo')}}:</span>{{logUrl}}</li>
           <li v-show="system === 'Darwin'">
