@@ -7,11 +7,9 @@
         <i class="el-icon-plus click" @click="toUrl('newAddress')"></i>
       </div>
       <el-table :data="addressList" stripe border>
-        <el-table-column prop="address" :label="$t('address.address1')" align="center" min-width="280">
+        <el-table-column prop="address" :label="$t('address.address1')" align="center" min-width="330">
         </el-table-column>
-        <el-table-column prop="balance" :label="$t('tab.tab4')" align="center">
-        </el-table-column>
-        <el-table-column prop="consensusLock" :label="$t('tab.tab3')" align="center">
+        <el-table-column prop="balance" :label="$t('consensus.consensus2')" align="center">
         </el-table-column>
         <el-table-column :label="$t('address.address3')" align="center">
           <template slot-scope="scope">
@@ -30,7 +28,7 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('address.address5')" align="center" min-width="290">
+        <el-table-column :label="$t('address.address5')" align="center" min-width="300">
           <template slot-scope="scope">
             <label class="click tab_bn" @click="editPassword(scope.row)">{{$t('address.address6')}}</label>
             <span class="tab_line">|</span>
@@ -80,7 +78,7 @@
 <script>
   import nuls from 'nuls-sdk-js'
   import Password from '@/components/PasswordBar'
-  import {timesDecimals, chainIdNumber, addressInfo, chainID,copys} from '@/api/util'
+  import {timesDecimals, chainIdNumber, addressInfo, chainID, copys} from '@/api/util'
   import {getPrefixByChainId} from '@/api/requestData'
 
   export default {
@@ -112,7 +110,7 @@
     },
     methods: {
 
-      showAurora(){
+      showAurora() {
         copys(JSON.stringify(this.addressList));
         //alert(JSON.stringify(this.addressList))
       },

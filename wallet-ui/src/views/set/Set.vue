@@ -26,7 +26,7 @@
           <li v-show="RUN_PATTERN && system !== 'Darwin'"><span>{{$t('public.logInfo')}}:</span>{{logUrl}}</li>
           <li v-show="system === 'Darwin'">
             <span>{{$t('public.downloadUrl')}}:</span>
-            <font>{{FILE_URL}}/NULS-Wallet-{{newVersion}}.dmg</font>
+            <font>https://github.com/nuls-io/nuls-v2/releases</font>
           </li>
         </ul>
         <el-button type="success" @click="checkUpdate" v-show="RUN_PATTERN && system !== 'Darwin'">
