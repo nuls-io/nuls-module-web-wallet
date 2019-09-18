@@ -181,7 +181,8 @@
         console.log(err);
         this.prefix = '';
       });
-      this.activeName = this.resetAddress !== '0' ? 'keyImport' : 'keystoreImport'
+      this.activeName = this.resetAddress !== '0' ? 'keyImport' : 'keystoreImport';
+
     },
     methods: {
 

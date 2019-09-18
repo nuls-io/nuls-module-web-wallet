@@ -99,10 +99,10 @@
                 item.txHashs = superLong(item.txHash, 16);
                 item.balance = timesDecimals(item.amount);
                 item.values = timesDecimals(item.amount);
-                item.lockedTime = moment(getLocalTime(item.lockedValue)).format('YYYY-MM-DD HH:mm:ss');
+                item.lockedTime = moment(getLocalTime(item.lockedValue*1000)).format('YYYY-MM-DD HH:mm:ss');
                 if (item.type === 2) {
                   item.reason = "注销节点";
-                  item.lockedValue = moment(getLocalTime(item.lockedValue)).format('YYYY-MM-DD HH:mm:ss');
+                  item.lockedValue = moment(getLocalTime(item.lockedValue*1000)).format('YYYY-MM-DD HH:mm:ss');
                 } else if (item.type === 3) {
                   if (item.lockedValue === -1) {
                     item.lockedValue = '--'

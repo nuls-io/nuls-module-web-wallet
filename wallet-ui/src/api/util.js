@@ -272,6 +272,7 @@ export function connectToExplorer(name, parameter) {
   } else if (name === 'nuls') {
     newUrl = parameter
   }
+  console.log(newUrl);
   openner(newUrl);
 }
 

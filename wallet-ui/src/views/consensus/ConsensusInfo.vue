@@ -115,16 +115,23 @@
 <script>
   import moment from 'moment'
   import nuls from 'nuls-sdk-js'
-  import {getNulsBalance, countFee, inputsOrOutputs, validateAndBroadcast, agentDeposistList, getPrefixByChainId} from '@/api/requestData'
-  import {timesDecimals, getLocalTime, Minus, Times, addressInfo, connectToExplorer,chainID} from '@/api/util'
+  import {
+    getNulsBalance,
+    countFee,
+    inputsOrOutputs,
+    validateAndBroadcast,
+    agentDeposistList,
+    getPrefixByChainId
+  } from '@/api/requestData'
+  import {timesDecimals, getLocalTime, Minus, Times, addressInfo, connectToExplorer, chainID} from '@/api/util'
   import Password from '@/components/PasswordBar'
   import BackBar from '@/components/BackBar'
 
   export default {
     data() {
       let checkAmount = (rule, value, callback) => {
-        let usable = Number(Minus(500000,Number(this.nodeInfo.totalDeposit)));
-        let balance =  Number(Minus(this.balanceInfo.balance, Number(Times(value,100000000))));
+        let usable = Number(Minus(500000, Number(this.nodeInfo.totalDeposit)));
+        let balance = Number(Minus(this.balanceInfo.balance, Number(Times(value, 100000000))));
         let re = /^\d+(?=\.{0,1}\d+$|$)/;
         let res = /^\d{1,8}(\.\d{1,8})?$/;
         if (!value) {
@@ -133,10 +140,10 @@
           callback(new Error(this.$t('consensusInfo.consensusInfo3')))
         } else if (value < 2000) {
           return callback(new Error(this.$t('consensusInfo.consensusInfo43')));
-        }else if(value > usable){
-          return callback(new Error(this.$t('consensusInfo.consensusInfo41')+ usable +this.$t('consensusInfo.consensusInfo42')));
-        }else if (balance < 0.001) {
-          return callback(new Error(this.$t('transfer.transfer131')+ Number(Minus(Number(timesDecimals(this.balanceInfo.balance)), 0.001))));
+        } else if (value > usable) {
+          return callback(new Error(this.$t('consensusInfo.consensusInfo41') + usable + this.$t('consensusInfo.consensusInfo42')));
+        } else if (balance < 0.001) {
+          return callback(new Error(this.$t('transfer.transfer131') + Number(Minus(Number(timesDecimals(this.balanceInfo.balance)), 0.001))));
         } else {
           callback()
         }
@@ -346,7 +353,7 @@
        **/
       async passSubmit(password) {
         const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password);
-        const newAddressInfo = nuls.importByKey(this.addressInfo.chainId, pri, password,this.prefix);
+        const newAddressInfo = nuls.importByKey(this.addressInfo.chainId, pri, password, this.prefix);
         if (newAddressInfo.address === this.addressInfo.address) {
           let transferInfo = {
             fromAddress: this.addressInfo.address,
@@ -430,8 +437,13 @@
                 }
               });
               newOutputs.unshift(inOrOutputs.data.outputs[0]);
+              newOutputs[0].lockTime = newOutputs[0].lockTime + 86400 * 3;
+             /* console.log(newInputs);
+              console.log(newOutputs);*/
               let tAssemble = await nuls.transactionAssemble(newInputs, newOutputs, remark, 9, this.$route.query.hash);
+              //console.log(tAssemble);
               let newFee = countFee(tAssemble, 1);
+              //console.log(transferInfo.fee !== newFee);
               if (transferInfo.fee !== newFee) {
                 transferInfo.fee = newFee;
                 newOutputs[0].amount = Number(Minus(this.nodeInfo.deposit, newFee).toString());

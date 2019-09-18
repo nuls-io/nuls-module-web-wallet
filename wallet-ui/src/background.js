@@ -1,5 +1,5 @@
 'use strict';
-import {app, protocol, BrowserWindow, ipcMain, Menu} from 'electron'
+import {app, protocol, BrowserWindow, ipcMain, Menu,ipcRenderer} from 'electron'
 import {createProtocol, installVueDevtools} from 'vue-cli-plugin-electron-builder/lib'
 import {autoUpdater} from 'electron-updater'
 
@@ -125,19 +125,19 @@ if (isDevelopment) {
   autoUpdater.on('download-progress', function (progressObj) {
     win.webContents.send('downloadProgress', progressObj)
   });
-  /*autoUpdater.on('update-downloaded', function (event, releaseNotes, releaseName, releaseDate, updateUrl, quitAndUpdate) {*/
-  autoUpdater.on('update-downloaded', function () {
-    /*console.log(event);
+  autoUpdater.on('update-downloaded', function (event, releaseNotes, releaseName, releaseDate, updateUrl, quitAndUpdate) {
+    /*autoUpdater.on('update-downloaded', function () {*/
+    console.log(event);
     console.log(releaseNotes);
     console.log(releaseName);
     console.log(releaseDate);
     console.log(updateUrl);
-    console.log(quitAndUpdate);*/
-    ipcMain.on('isUpdateNow', () => {
-      /*ipcMain.on('isUpdateNow', (e, arg) => {
-        console.log(e);
-        console.log(arg);
-        console.log("开始更新");*/
+    console.log(quitAndUpdate);
+    /*ipcMain.on('isUpdateNow', () => {*/
+    ipcMain.on('isUpdateNow', (e, arg) => {
+      console.log(e);
+      console.log(arg);
+      console.log("开始更新");
       //some code here to handle event
       autoUpdater.quitAndInstall();
     });

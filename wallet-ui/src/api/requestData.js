@@ -75,8 +75,9 @@ export async function inputsOrOutputs(transferInfo, balanceInfo, type) {
     newoutputAmount = transferInfo.amount - transferInfo.fee;
     //锁定三天
     let times = (new Date()).valueOf() + 3600000 * 72;
-    //console.log(Number(times.toString().substr(0, times.toString().length - 3)));
+    //let times = (new Date()).valueOf();
     newLockTime = Number(times.toString().substr(0, times.toString().length - 3));
+    //newLockTime = times;
   } else {
     //return {success: false, data: "No transaction type"}
   }

@@ -545,7 +545,7 @@ const cn = {
     "consensus3": "最近一笔共识奖励",
     "consensus4": "所有共识",
     "consensus5": "创建",
-    "consensus6": "共识节点",
+    "consensus6": "共识中节点",
     "consensus7": "总节点数",
     "consensus8": "总委托量",
     "consensus9": "所有节点",

@@ -42,8 +42,8 @@
             {{$t('consensus.consensus8')}}
             <label>{{nulsCount.consensusTotal}}<span class="fCN">{{addressInfo.symbol}}</span></label>
           </li>
-          <li>{{$t('consensus.consensus7')}} <label>{{nodeCount.totalCount}}</label></li>
-          <li>{{$t('consensus.consensus6')}} <label>{{nodeCount.agentCount}}</label></li>
+          <li>{{$t('consensus.consensus7')}} <label>{{nodeCount.agentCount}}</label></li>
+          <li>{{$t('consensus.consensus6')}} <label>{{nodeCount.consensusCount}}</label></li>
         </ul>
       </div>
     </div>
