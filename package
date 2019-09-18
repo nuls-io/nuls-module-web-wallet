@@ -103,5 +103,19 @@ if [ "$1" == "n" ]; then
     cd ..
 fi
 cp -r ./www ./outer/www
+if [ "$1" == "prod" ]; then
+    cd ./wallet-ui
+    yarn
+    npm run build
+    rm -rf ../outer/www
+    mv ./dist ../outer/www
+fi
+if [ "$1" == "beta" ]; then
+    cd ./wallet-ui
+    yarn
+    npm run build-beta
+    rm -rf ../outer/www
+    mv ./dist ../outer/www
+fi
 #cp ./web-config ./outer/www/config.js
 echo "============ PACKAGE FINISH 🍺🍺🍺🎉🎉🎉 ==============="
