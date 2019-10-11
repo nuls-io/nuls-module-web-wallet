@@ -14,7 +14,13 @@
           </el-option>
         </el-select>
         <el-table :data="addressAssetsData" stripe border>
-          <el-table-column prop="account" :label="$t('tab.tab0')" align="center">
+          <el-table-column :label="$t('tab.tab0')" align="center">
+            <template slot-scope="scope">
+            <span>
+              {{ scope.row.account }}
+              <span v-if="scope.row.status ===3" class="gray">{{$t('public.unavailable')}}</span>
+            </span>
+            </template>
           </el-table-column>
           <el-table-column :label="$t('tab.tab1')" align="center" width="150">
             <template slot-scope="scope"><span>{{ $t('assetsType.'+scope.row.type) }}</span></template>
@@ -140,7 +146,7 @@
           this.getAddressInfoByNode(this.addressInfo.address);
           setTimeout(() => {
             this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address)
-          },100);
+          }, 100);
         }, 600);
       } else {
         this.$router.push({
