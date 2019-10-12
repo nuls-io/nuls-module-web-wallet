@@ -281,6 +281,7 @@
               }
 
               this.txInfo = response.result;
+              this.txInfo.txData.resultInfo = this.txInfo.txData.resultInfo.replace(/<[^<>]+>/g, '');
               this.symbol = this.txInfo.fee.symbol;
               this.txInfoLoading = false;
             }
