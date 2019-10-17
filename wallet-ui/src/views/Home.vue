@@ -19,7 +19,7 @@
       <div class="balance fl">
         <p>{{$t('public.usableBalance')}}</p>
         <h6>
-          {{addressNULSAssets.balance}}
+          <font>{{addressNULSAssets.balance}}</font>
           <el-button type="success" @click="toUrl('transfer',addressNULSAssets.account)">{{$t('nav.transfer')}}
           </el-button>
           <el-button @click="showCode(addressInfo.address)">{{$t('tab.tab27')}}</el-button>
@@ -28,7 +28,7 @@
       <div class="locking fl">
         <p>{{$t('tab.tab3')}}</p>
         <h6>
-          {{addressNULSAssets.locking}}
+          <font>{{addressNULSAssets.locking}}</font>
           <span class="font12 click" @click="toUrl('frozenList',addressNULSAssets)">{{$t('tab.tab28')}}</span>
         </h6>
       </div>
@@ -324,6 +324,7 @@
       getNULSUSDT(number) {
         let news = 0.5;
         this.NULSUsdt = Number(Times(news, number)).toFixed(2);
+        axios.defaults.baseURL = '';
         axios.get("/market-api/nuls-price")
           .then((response) => {
             console.log(response);
@@ -495,6 +496,9 @@
         font-weight: 600;
         font-size: 16px;
         padding: 0 30px;
+        font{
+          padding: 0 10px 0 0;
+        }
       }
       .total {
         width: 32%;
