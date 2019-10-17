@@ -237,7 +237,7 @@
         this.txInfoLoading = true;
         this.$post('/', 'getTx', [hash])
           .then((response) => {
-            //console.log(response);
+            console.log(response);
             if (response.hasOwnProperty("result")) {
               response.result.createTime = moment(getLocalTime(response.result.createTime * 1000)).format('YYYY-MM-DD HH:mm:ss');
               response.result.fees = timesDecimals(response.result.fee.value);
@@ -261,7 +261,6 @@
                 this.tokenTransfersData = response.result.txData.resultInfo.tokenTransfers
               }
 
-
               if (response.result.type === 16) {
                 response.result.txData.resultInfo.price = timesDecimals(response.result.txData.resultInfo.price);
                 if (response.result.txData.resultInfo.nulsTransfers.length !== 0) {
@@ -281,7 +280,9 @@
               }
 
               this.txInfo = response.result;
-              this.txInfo.txData.resultInfo = this.txInfo.txData.resultInfo.replace(/<[^<>]+>/g, '');
+              if (this.txInfo.txData) {
+                this.txInfo.txData.resultInfo = this.txInfo.txData.resultInfo.replace(/<[^<>]+>/g, '');
+              }
               this.symbol = this.txInfo.fee.symbol;
               this.txInfoLoading = false;
             }

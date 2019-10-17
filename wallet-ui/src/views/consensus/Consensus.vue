@@ -62,7 +62,7 @@
             <i class="iconfont icon-search_icon fr click"></i>
           </el-input>
         </div>
-        <div class="node">
+        <div class="node" v-loading="allNodeLoading">
           <div class="node_info" v-for="item in searchData" :key="item.agentId">
             <h4 class="bg-gray">
               <i class="iconfont iconwo" v-show="item.isNew"></i>&nbsp;
@@ -144,6 +144,7 @@
 
         searchValue: '',//搜索框
         allNodeData: [],//所有节点信息
+        allNodeLoading:true,//所有节点信息加载动画
         addressInfo: [], //账户信息
         agentAsset: JSON.parse(sessionStorage.getItem('info')),//pocm合约单位等信息
         isRed: false,//地址是否有红牌
@@ -311,6 +312,7 @@
        * @param type
        **/
       getConsensusNodes(pageIndex, pageSize, type) {
+        this.allNodeLoading = true;
         this.$post('/', 'getConsensusNodes', [pageIndex, pageSize, type])
           .then((response) => {
             //console.log(response);
@@ -335,7 +337,8 @@
                   this.isNew = false;
                 }
               }
-              this.allNodeData = response.result.list
+              this.allNodeData = response.result.list;
+              this.allNodeLoading = false;
             }
           })
           .catch((error) => {
