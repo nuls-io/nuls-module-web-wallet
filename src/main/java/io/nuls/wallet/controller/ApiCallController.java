@@ -1,5 +1,6 @@
 package io.nuls.wallet.controller;
 
+import io.nuls.core.parse.JSONUtils;
 import io.nuls.wallet.Config;
 import io.nuls.core.core.annotation.Autowired;
 import io.nuls.core.core.annotation.Component;
@@ -14,6 +15,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -49,6 +51,16 @@ public class ApiCallController
         Log.debug("do POST , path : {},data:{}",path,data);
         Response res = client.target(config.getApiModuleApi()).path(path).request(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(data));
         return Response.fromResponse(res).build();
+    }
+
+    @Path("/market-api/nuls-price")
+    @GET
+    @Consumes(MediaType.APPLICATION_JSON)
+    public String api(@Context HttpServletRequest request,
+                      @Context HttpServletResponse response) throws IOException, InterruptedException {
+        Response res = client.target("https://api.binance.com").path("/api/v3/ticker/price").queryParam("symbol","NULSUSDT").request(MediaType.APPLICATION_JSON_TYPE).get();
+        Map<String,Object> data = res.readEntity(Map.class);
+        return JSONUtils.obj2json(data);
     }
 
 }
