@@ -1,6 +1,7 @@
 package io.nuls.wallet.controller;
 
 import io.nuls.core.core.annotation.Component;
+import io.nuls.core.parse.JSONUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -18,6 +19,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Map;
 
 /**
  * @Author: zhoulijun
@@ -28,23 +30,25 @@ import java.time.Duration;
 @Component
 public class MarketApiController {
 
-    HttpClient client = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofMillis(5000))
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .build();
+    Client client = ClientBuilder.newClient();
+
+
 
     @Path("/nuls-price")
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
-    public Object api(@Context HttpServletRequest request,
+    public String api(@Context HttpServletRequest request,
                       @Context HttpServletResponse response) throws IOException, InterruptedException {
-        HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create("http://binanceapi.zhoulijun.top/api/v3/ticker/price?symbol=NULSUSDT"))
-                .timeout(Duration.ofMillis(5009))
-                .build();
-        HttpResponse<String> res =
-                client.send(req, HttpResponse.BodyHandlers.ofString());
-        return res.body();
+        Response res = client.target("http://binanceapi.zhoulijun.top").path("/api/v3/ticker/price").queryParam("symbol","NULSUSDT").request(MediaType.APPLICATION_JSON_TYPE).get();
+        Map<String,Object> data = res.readEntity(Map.class);
+        return JSONUtils.obj2json(data);
+    }
+
+    public static void main(String[] args) {
+        Client client = ClientBuilder.newClient();
+        Response res = client.target("http://binanceapi.zhoulijun.top").path("/api/v3/ticker/price").queryParam("symbol","NULSUSDT").request(MediaType.APPLICATION_JSON_TYPE).get();
+//        Map<String,Object> data = ;
+//        System.out.println(data);
     }
 
 }
