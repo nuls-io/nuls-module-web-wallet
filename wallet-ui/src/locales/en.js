@@ -71,6 +71,7 @@ const en = {
     "downloadUrl": "Url",
     "checkNetwork": "There is no available service node, please check the network!",
     "resetAddress": "Reset address",
+    "unavailable":"(Unavailable)",
 
     "err": "Verify and broadcast transaction failure:",
     "err0": "Verify and broadcast transaction exceptions:",
@@ -519,7 +520,7 @@ const en = {
     "0": "Uncertificated",
     "1": "Certificating",
     "2": "Certificated",
-    "3": "Deleted"
+    "3": "Unavailable"
   },
 
   "password": {

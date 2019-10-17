@@ -18,7 +18,9 @@
           <p v-else>{{$t('newAddress.newAddress131')}}</p>
         </div>
         <div class="btn mb_20">
-          <el-button type="success" @click="backKeystore" v-if="RUN_PATTERN">{{$t('newAddress.newAddress16')}}
+          <!--<el-button type="success" @click="backKeystore" v-if="RUN_PATTERN">{{$t('newAddress.newAddress16')}}
+          </el-button>-->
+          <el-button type="success" @click="backKeystore">{{$t('newAddress.newAddress16')}}
           </el-button>
           <el-button type="success" @click="backKey">{{$t('newAddress.newAddress17')}}</el-button>
           <el-button @click="toUrl('home')">{{$t('tab.tab24')}}</el-button>
@@ -45,10 +47,9 @@
 </template>
 
 <script>
-  import nuls from 'nuls-sdk-js'
   import Password from '@/components/PasswordBar'
   import BackBar from '@/components/BackBar'
-  import {copys, chainID} from '@/api/util'
+  import {copys, chainID, passwordVerification} from '@/api/util'
   import {RUN_PATTERN} from '@/config.js'
   import {getPrefixByChainId} from '@/api/requestData'
 
@@ -100,8 +101,30 @@
        *  获取密码框的密码
        * @param password
        **/
-      passSubmit(password) {
-        let that = this;
+      async passSubmit(password) {
+        let isPassword = await passwordVerification(this.newAddressInfo, password);
+
+        if (!isPassword.success) {
+          this.$message({message: this.$t('address.address13'), type: 'error', duration: 3000});
+          return;
+        }
+
+        if (this.backType === 0) {
+          let FileSaver = require('file-saver');
+          let fileInfo = {
+            address: isPassword.address,
+            encryptedPrivateKey: isPassword.aesPri,
+            pubKey: isPassword.pub,
+            priKey: null
+          };
+          let blob = new Blob([JSON.stringify(fileInfo)], {type: "text/plain;charset=utf-8"});
+          FileSaver.saveAs(blob, isPassword.address + ".keystore");
+        } else {
+          this.newAddressInfo.pri = isPassword.pri;
+          this.keyDialog = true;
+        }
+
+        /*let that = this;
         const pri = nuls.decrypteOfAES(this.newAddressInfo.aesPri, password);
         const newAddressInfo = nuls.importByKey(chainID(), pri, password, this.prefix);
         if (newAddressInfo.address === this.newAddressInfo.address) {
@@ -148,7 +171,7 @@
           }
         } else {
           this.$message({message: this.$t('address.address13'), type: 'error', duration: 1000});
-        }
+        }*/
       },
 
       /**

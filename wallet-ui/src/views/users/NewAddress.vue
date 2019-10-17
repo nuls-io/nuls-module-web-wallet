@@ -131,6 +131,13 @@
           callback();
         }
       };
+      let validateAgreement = (rule, value, callback) => {
+        if (!value) {
+          callback(new Error(this.$t('newAddress.newAddress29')));
+        }  else {
+          callback();
+        }
+      };
       return {
         activeName: 'keystoreImport',//tab选中
         prefix: '',//地址前缀
@@ -158,7 +165,7 @@
         newAddressForm: {
           pass: '',
           checkPass: '',
-          agreement: ''
+          agreement: false
         },
         newAddressRules: {
           pass: [
@@ -166,7 +173,10 @@
           ],
           checkPass: [
             {validator: validateNewCheckPass, trigger: 'blur'}
-          ]
+          ],
+          agreement: [
+            {validator: validateAgreement, trigger: 'blur'}
+          ],
         },
         newAddressInfo: {},//创建地址信息
       };

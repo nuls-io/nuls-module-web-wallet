@@ -9,7 +9,7 @@
       <el-table :data="addressList" stripe border>
         <el-table-column prop="address" :label="$t('address.address1')" align="center" min-width="330">
         </el-table-column>
-        <el-table-column prop="balance" :label="$t('consensus.consensus2')" align="center">
+        <el-table-column prop="balance" :label="$t('consensus.consensus2')" align="center" min-width="120">
         </el-table-column>
         <el-table-column :label="$t('address.address3')" align="center">
           <template slot-scope="scope">

@@ -76,6 +76,21 @@
     },
     components: {},
     created() {
+      let type = navigator.appName;
+      let langs = '';
+      if (type === "Netscape") {
+        langs = navigator.language;//获取浏览器配置语言，支持非IE浏览器
+      } else {
+        langs = navigator.userLanguage;//获取浏览器配置语言，支持IE5+ == navigator.systemLanguage
+      }
+      let lang = langs.substr(0, 2);//获取浏览器配置语言前两位
+      if (lang === "zh") {
+        this.lang = 'cn';
+      } else {
+        this.lang = 'en';
+      }
+      this.$i18n.locale = this.lang;
+
       this.getAddressList();
     },
     mounted() {
