@@ -409,6 +409,10 @@ const en = {
     "tab22": "Explorer",
     "tab23": "Docs",
     "tab24": "Complete backup",
+    "tab25": "NRC20 Assets",
+    "tab26": "Assets overview",
+    "tab27": "Invest",
+    "tab28": "Detailed",
   },
 
   "type": {

@@ -9,8 +9,12 @@
       <el-table :data="addressList" stripe border>
         <el-table-column prop="address" :label="$t('address.address1')" align="center" min-width="330">
         </el-table-column>
-        <el-table-column prop="balance" :label="$t('consensus.consensus2')" align="center" min-width="120">
+        <el-table-column prop="total" :label="$t('tab.tab2')" align="center" width="140">
         </el-table-column>
+        <el-table-column prop="balance" :label="$t('consensus.consensus2')" align="center" width="140">
+        </el-table-column>
+        <!-- <el-table-column prop="consensusLock" :label="$t('tab.tab3')" align="center" width="140">
+         </el-table-column>-->
         <el-table-column :label="$t('address.address3')" align="center">
           <template slot-scope="scope">
             <span v-show="scope.row.alias">{{scope.row.alias}}</span>
@@ -78,7 +82,7 @@
 <script>
   import nuls from 'nuls-sdk-js'
   import Password from '@/components/PasswordBar'
-  import {timesDecimals, chainIdNumber, addressInfo, chainID} from '@/api/util'
+  import {timesDecimals, chainIdNumber, addressInfo, chainID, Plus} from '@/api/util'
   import {getPrefixByChainId} from '@/api/requestData'
 
   export default {
@@ -115,6 +119,9 @@
        */
       getAddressList() {
         this.addressList = addressInfo(0);
+        for (let item in this.addressList) {
+          this.addressList[item].total = Number(Plus(this.addressList[item].balance, this.addressList[item].consensusLock))
+        }
         //如果没有账户跳转到创建地址界面
         if (this.addressList.length === 0) {
           this.$router.push({
