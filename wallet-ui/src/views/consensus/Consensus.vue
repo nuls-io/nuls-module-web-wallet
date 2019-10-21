@@ -9,24 +9,24 @@
       <div class="card-info left fl">
         <h5 class="card-title font18">
           {{$t('consensus.consensus0')}}
-          <span class="font14 fr">{{addressInfo.totalReward}}<font class="fCN"> {{addressInfo.symbol}}</font></span>
+          <span class="font14 fr">{{Number(addressInfo.totalReward).toFixed(3)}}<font class="fCN"> {{addressInfo.symbol}}</font></span>
         </h5>
         <ul>
           <li>
             {{$t('consensus.consensus1')}}
             <label>
               <u class="click"
-                 @click="toUrl('consensusList',addressInfo.consensusLock)">{{addressInfo.consensusLock}}</u>
+                 @click="toUrl('consensusList',addressInfo.consensusLock)">{{Number(addressInfo.consensusLock).toFixed(3)}}</u>
               <span class="fCN">{{addressInfo.symbol}}</span>
             </label>
           </li>
           <li>
             {{$t('consensus.consensus2')}}
-            <label>{{addressInfo.balance}}<span class="fCN">{{addressInfo.symbol}}</span></label>
+            <label>{{Number(addressInfo.balance).toFixed(3)}}<span class="fCN">{{addressInfo.symbol}}</span></label>
           </li>
           <li>
             {{$t('consensus.consensus3')}}
-            <label>{{addressInfo.lastReward}}<span class="fCN">{{addressInfo.symbol}}</span></label>
+            <label>{{Number(addressInfo.lastReward).toFixed(3)}}<span class="fCN">{{addressInfo.symbol}}</span></label>
           </li>
         </ul>
       </div>
@@ -40,7 +40,8 @@
         <ul>
           <li>
             {{$t('consensus.consensus8')}}
-            <label>{{Number(nulsCount.consensusTotal).toFixed(3)}}<span class="fCN">{{addressInfo.symbol}}</span></label>
+            <label>{{Number(nulsCount.consensusTotal).toFixed(3)}}<span
+                    class="fCN">{{addressInfo.symbol}}</span></label>
           </li>
           <li>{{$t('consensus.consensus7')}} <label>{{nodeCount.agentCount}}</label></li>
           <li>{{$t('consensus.consensus6')}} <label>{{nodeCount.consensusCount}}</label></li>
@@ -237,20 +238,21 @@
               let newAddressInfo = addressInfo(0);
               for (let item of newAddressInfo) {
                 if (item.address === addressInfos.address) {
-                  item.alias = response.result.alias;
-                  item.symbol = response.result.symbol;
-                  item.balance = Number(timesDecimals(response.result.balance)).toFixed(3);
-                  item.consensusLock = Number(timesDecimals(response.result.consensusLock)).toFixed(3);
-                  item.totalReward = Number(timesDecimals(response.result.totalReward)).toFixed(3);
+                  newAddressInfo.alias = response.result.alias;
+                  newAddressInfo.symbol = response.result.symbol;
+                  newAddressInfo.balance = timesDecimals(response.result.balance);
+                  newAddressInfo.consensusLock = timesDecimals(response.result.consensusLock);
+                  newAddressInfo.totalReward = timesDecimals(response.result.totalReward);
                   if (response.result.lastReward) {
-                    item.lastReward = Number(timesDecimals(response.result.lastReward)).toFixed(3);
+                    newAddressInfo.lastReward = timesDecimals(response.result.lastReward);
                   } else {
-                    item.lastReward = 0;
+                    newAddressInfo.lastReward = 0;
                   }
-                  item.totalIn = timesDecimals(response.result.totalIn);
-                  item.totalOut = timesDecimals(response.result.totalOut);
+                  newAddressInfo.totalIn = timesDecimals(response.result.totalIn);
+                  newAddressInfo.totalOut = timesDecimals(response.result.totalOut);
                 }
               }
+              //newAddressInfo =
               localStorage.setItem(chainIdNumber(), JSON.stringify(newAddressInfo));
             }
           })
