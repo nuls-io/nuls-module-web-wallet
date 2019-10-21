@@ -356,7 +356,7 @@
                 itme.total = Number(timesDecimals(itme.balance, itme.decimals)).toFixed(3);
                 itme.locking = '--';
                 itme.balance = Number(timesDecimals(itme.balance, itme.decimals)).toFixed(3);
-                itme.contractAddresss = superLong(itme.contractAddress, 8);
+                itme.contractAddresss = superLong(itme.contractAddress, 6);
               }
               newAssetsList = response.result.list;
             }
