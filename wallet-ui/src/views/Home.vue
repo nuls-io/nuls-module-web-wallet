@@ -137,6 +137,7 @@
   import axios from 'axios'
   import QRCode from 'qrcodejs2'
   import {timesDecimals, copys, addressInfo, Times, superLong, connectToExplorer} from '@/api/util'
+  import {RUN_PATTERN} from '@/config'
 
   export default {
     name: 'home',
@@ -326,10 +327,16 @@
         let news = 0.5;
         this.NULSUsdt = Number(Times(news, number)).toFixed(2);
         axios.defaults.baseURL = '';
-        axios.get("/market-api/nuls-price")
+        let url = '';
+        if (RUN_PATTERN) {
+          url = "http://binanceapi.zhoulijun.top/api/v3/ticker/price?symbol=NULSUSDT"
+        } else {
+          url = "/market-api/nuls-price"
+        }
+        axios.get(url)
           .then((response) => {
             //console.log(response.data);
-            this.NULSUsdt = Number(Times(Number(response.data.price), number)).toFixed(2)
+            this.NULSUsdt = Number(Times(Number(response.data.price), number)).toFixed(3)
           })
           .catch((error) => {
             console.log(error);
