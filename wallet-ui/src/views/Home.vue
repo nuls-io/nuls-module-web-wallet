@@ -14,13 +14,13 @@
       </div>
       <div class="total fl">
         <p>{{$t('tab.tab2')}}</p>
-        <h6>{{addressNULSAssets.total}} <span class="font12"> ≈ $ {{NULSUsdt}}</span></h6>
+        <h6>{{addressNULSAssets.total}} <span class="font16"> ≈ $ {{NULSUsdt}}</span></h6>
       </div>
       <div class="balance fl">
         <p>{{$t('public.usableBalance')}}</p>
         <h6>
           <font>{{addressNULSAssets.balance}}</font>
-          <el-button type="success" @click="toUrl('transfer',addressNULSAssets.account)">{{$t('nav.transfer')}}
+          <el-button type="success" @click="toUrl('transfer',addressNULSAssets.account)">{{$t('tab.tab31')}}
           </el-button>
           <el-button @click="showCode(addressInfo.address)">{{$t('tab.tab27')}}</el-button>
         </h6>
@@ -29,7 +29,7 @@
         <p>{{$t('tab.tab3')}}</p>
         <h6>
           <font>{{addressNULSAssets.locking}}</font>
-          <span class="font12 click" @click="toUrl('frozenList',addressNULSAssets)">{{$t('tab.tab28')}}</span>
+          <span class="font14 click" @click="toUrl('frozenList',addressNULSAssets)">{{$t('tab.tab28')}}</span>
         </h6>
       </div>
     </div>
@@ -179,7 +179,7 @@
           this.getAddressInfoByNode(this.addressInfo.address);
           setTimeout(() => {
             this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address)
-          }, 100);
+          }, 400);
         }, 600);
       } else {
         this.$router.push({
@@ -296,9 +296,9 @@
               newAssetsList.chainId = response.result[0].chainId;
               newAssetsList.assetId = response.result[0].assetId;
               newAssetsList.type = 1;
-              newAssetsList.total = timesDecimals(response.result[0].totalBalance);
-              newAssetsList.locking = timesDecimals(response.result[0].consensusLock + response.result[0].timeLock);
-              newAssetsList.balance = timesDecimals(response.result[0].balance);
+              newAssetsList.total = Number(timesDecimals(response.result[0].totalBalance)).toFixed(3);
+              newAssetsList.locking = Number(timesDecimals(response.result[0].consensusLock + response.result[0].timeLock)).toFixed(3);
+              newAssetsList.balance = Number(timesDecimals(response.result[0].balance)).toFixed(3);
             } else {
               newAssetsList.account = response.result.symbol;
               newAssetsList.chainId = response.result.chainId;
@@ -353,9 +353,9 @@
               for (let itme of response.result.list) {
                 itme.account = itme.tokenSymbol;
                 itme.type = 2;
-                itme.total = timesDecimals(itme.balance, itme.decimals);
+                itme.total = Number(timesDecimals(itme.balance, itme.decimals)).toFixed(3);
                 itme.locking = '--';
-                itme.balance = timesDecimals(itme.balance, itme.decimals);
+                itme.balance = Number(timesDecimals(itme.balance, itme.decimals)).toFixed(3);
                 itme.contractAddresss = superLong(itme.contractAddress, 8);
               }
               newAssetsList = response.result.list;
@@ -366,6 +366,9 @@
             this.addressInfo.tokens = this.addressAssetsData;
             //localStorage.setItem(this.addressInfo.address, JSON.stringify(this.addressInfo));
             this.assetsListLoading = false;
+          }).catch((error) => {
+            this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address)
+            console.log(error);
           })
       },
 
@@ -480,19 +483,18 @@
     .overview {
       border: @BD1;
       margin: -30px auto 0;
-      height: 150px;
+      height: 158px;
       .title {
         text-align: left;
         background-color: #f9fafd;
         line-height: 40px;
         color: #475472;
         height: 40px;
-        font-size: 20px;
+        font-size: 18px;
         padding: 0 30px;
         border-bottom: 1px solid #dfe4ef;
-        font-weight: bold;
         span {
-          font-size: 12px;
+          font-size: 14px;
           font-weight: normal;
         }
       }
@@ -505,19 +507,20 @@
       h6 {
         font-weight: 600;
         font-size: 24px;
-        padding: 0 30px;
         color: #475472;
+        padding: 0 30px;
         font {
           padding: 0 20px 0 0;
-          font-size: 16px;
-          color: #8794b1;
+          font-weight: 600;
+          font-size: 24px;
+          color: #475472;
         }
       }
       .total {
-        width: 360px;
+        width: 441px;
         height: 90px;
         border-right: @BD1;
-        margin: 10px auto;
+        margin: 14px auto;
         h6 {
           span {
             font-weight: normal;
@@ -525,28 +528,35 @@
         }
       }
       .balance {
-        width: 38%;
+        width: 35%;
         p {
-          padding-left: 80px;
+          padding: 34px 0 0 70px;
         }
         h6 {
-          padding-left: 80px;
+          padding: 4px 0 0 70px;
+          font {
+            display: block;
+            float: left;
+          }
           .el-button {
             padding: 5px 15px;
             border-radius: 2px;
+            display: block;
+            float: left;
+            margin-top: 2px;
           }
-          .el-button--default{
+          .el-button--default {
             margin-left: 12px;
           }
         }
       }
       .locking {
-        width: 31%;
+        width: 28%;
         p {
-          padding-left: 80px;
+          padding: 34px 0 0 80px;
         }
         h6 {
-          padding-left: 80px;
+          padding: 4px 0 0 80px;
           span {
             font-weight: normal;
           }

@@ -40,7 +40,7 @@
         <ul>
           <li>
             {{$t('consensus.consensus8')}}
-            <label>{{nulsCount.consensusTotal}}<span class="fCN">{{addressInfo.symbol}}</span></label>
+            <label>{{Number(nulsCount.consensusTotal).toFixed(3)}}<span class="fCN">{{addressInfo.symbol}}</span></label>
           </li>
           <li>{{$t('consensus.consensus7')}} <label>{{nodeCount.agentCount}}</label></li>
           <li>{{$t('consensus.consensus6')}} <label>{{nodeCount.consensusCount}}</label></li>
@@ -144,7 +144,7 @@
 
         searchValue: '',//搜索框
         allNodeData: [],//所有节点信息
-        allNodeLoading:true,//所有节点信息加载动画
+        allNodeLoading: true,//所有节点信息加载动画
         addressInfo: [], //账户信息
         agentAsset: JSON.parse(sessionStorage.getItem('info')),//pocm合约单位等信息
         isRed: false,//地址是否有红牌
@@ -239,11 +239,11 @@
                 if (item.address === addressInfos.address) {
                   item.alias = response.result.alias;
                   item.symbol = response.result.symbol;
-                  item.balance = timesDecimals(response.result.balance);
-                  item.consensusLock = timesDecimals(response.result.consensusLock);
-                  item.totalReward = timesDecimals(response.result.totalReward);
+                  item.balance = Number(timesDecimals(response.result.balance)).toFixed(3);
+                  item.consensusLock = Number(timesDecimals(response.result.consensusLock)).toFixed(3);
+                  item.totalReward = Number(timesDecimals(response.result.totalReward)).toFixed(3);
                   if (response.result.lastReward) {
-                    item.lastReward = timesDecimals(response.result.lastReward);
+                    item.lastReward = Number(timesDecimals(response.result.lastReward)).toFixed(3);
                   } else {
                     item.lastReward = 0;
                   }
@@ -327,10 +327,10 @@
                   itme.isCollect = false;
                 }
                 itme.bozhengjin = itme.deposit;
-                itme.deposit = timesDecimals(itme.deposit);
-                itme.agentReward = timesDecimals(itme.agentReward);
-                itme.totalDeposit = timesDecimals(itme.totalDeposit);
-                itme.totalReward = timesDecimals(itme.totalReward);
+                itme.deposit = Number(timesDecimals(itme.deposit)).toFixed(3);
+                itme.agentReward = Number(timesDecimals(itme.agentReward)).toFixed(3);
+                itme.totalDeposit = Number(timesDecimals(itme.totalDeposit)).toFixed(3);
+                itme.totalReward = Number(timesDecimals(itme.totalReward)).toFixed(3);
                 if (itme.agentAddress === this.addressInfo.address) {
                   this.isNew = true;//创建的节点
                 } else {
@@ -413,9 +413,9 @@
                   item.isCollect = false;
                 }
                 newAgentIdList.push(item.agentId);
-                item.deposit = timesDecimals(item.deposit);
-                item.totalDeposit = timesDecimals(item.totalDeposit);
-                item.totalReward = timesDecimals(item.totalReward);
+                item.deposit = Number(timesDecimals(item.deposit)).toFixed(3);
+                item.totalDeposit = Number(timesDecimals(item.totalDeposit)).toFixed(3);
+                item.totalReward = Number(timesDecimals(item.totalReward)).toFixed(3);
                 if (item.agentAddress === this.addressInfo.address) {
                   item.isNew = true;//创建的节点
                   this.isNew = true;

@@ -25,7 +25,7 @@
         </el-form-item>
         <div class="cross yellow font12" v-show="isCross">{{$t('transfer.transfer15')}}</div>
         <el-form-item :label="$t('transfer.transfer3')" prop="amount">
-          <span class="balance font12 fr">{{$t('public.usableBalance')}}: {{changeAssets.balance}}</span>
+          <span class="balance font12 fr">{{$t('public.usableBalance')}}: {{Number(changeAssets.balance).toFixed(3)}}</span>
           <el-input v-model="transferForm.amount" @change="changeParameter">
           </el-input>
         </el-form-item>
