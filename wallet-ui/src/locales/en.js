@@ -572,6 +572,7 @@ const en = {
     "transfer19": "There is no way to transfer money to this contract address",
     "transfer20": "The main assets of the account chain are insufficient to pay handling fees.",
     "transfer21": " the NRC-20 contract for assets has been cancelled. Please choose other assets!",
+    "transfer22": "Asset validation in progress...",
     "transfer": "transfer",
   },
 

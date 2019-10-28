@@ -103,10 +103,10 @@ export function passwordVerification(accountInfo, password, prefix) {
  * @returns {number}
  */
 export function chainID() {
-  if(localStorage.hasOwnProperty('url') && localStorage.getItem('url') !== 'undefined'){
-    let newUrl =  JSON.parse(localStorage.getItem('url'));
+  if (localStorage.hasOwnProperty('url') && localStorage.getItem('url') !== 'undefined') {
+    let newUrl = JSON.parse(localStorage.getItem('url'));
     return newUrl.chainId
-  }else {
+  } else {
     return RUN_DEV ? 1 : 2;
   }
 }
@@ -272,7 +272,7 @@ export function connectToExplorer(name, parameter) {
   } else if (name === 'nuls') {
     newUrl = parameter
   }
-  console.log(newUrl);
+  //console.log(newUrl);
   openner(newUrl);
 }
 

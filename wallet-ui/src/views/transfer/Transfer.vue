@@ -1,7 +1,7 @@
 <template>
   <div class="transfer bg-gray" v-loading="transferLoading">
     <h3 class="title">{{changeAssets.account}} {{$t('nav.transfer')}}</h3>
-    <div class="w1200 bg-white">
+    <div class="w1200 bg-white" v-loading="loading" :element-loading-text="$t('transfer.transfer22')">
       <el-form :model="transferForm" :rules="transferRules" ref="transferForm" status-icon>
         <el-form-item :label="$t('transfer.transfer0')">
           <el-input v-model.trim="transferForm.fromAddress" disabled>
@@ -226,7 +226,7 @@
         transferForm: {
           fromAddress: '',
           toAddress: '',
-          type: this.$route.query.accountType ? this.$route.query.accountType : 'NULS',
+          type: this.$route.query.accountType ? this.$route.query.accountType.account : 'NULS',
           amount: '',
           senior: false,
           gas: this.gasNumber,
@@ -250,6 +250,7 @@
         bookData: [],//通讯录列表
         aliasToAddress: '',//别名对应的地址
         prefix: '',//地址前缀
+        loading: true,//验证地址效果
       };
     },
     created() {
@@ -264,11 +265,15 @@
       this.addressInfo = addressInfo(1);
       setInterval(() => {
         this.addressInfo = addressInfo(1);
+        if (this.changeAssets.balance) {
+          this.loading = false;
+        }
       }, 500);
       this.transferForm.fromAddress = this.addressInfo.address;
 
       setTimeout(() => {
         this.getCapitalListByAddress(this.transferForm.fromAddress);
+        this.loading = false;
       }, 600);
 
     },
@@ -376,17 +381,19 @@
                   symbol: itme.tokenSymbol,
                   chainId: chainId,
                   assetId: 1,
+                  status: itme.status,
                   balance: timesDecimals(itme.balance, itme.decimals),
                   contractAddress: itme.contractAddress,
                   decimals: itme.decimals
                 })
-
               }
             }
           })
           .catch((error) => {
             console.log("getAccountTokens:" + error);
           });
+
+        const newContractAssets = contractAssets.filter(obj => obj.status !== 3); //隐藏已经删除合约
         //console.log(contractAssets);
 
         //获取跨链的基本资产
@@ -412,7 +419,7 @@
           });
         //console.log(crossAssets);
 
-        this.assetsList = [...basicAssets, ...contractAssets, ...crossAssets];
+        this.assetsList = [...basicAssets, ...newContractAssets, ...crossAssets];
         let isNuls = false; //是否有nuls资产
         for (let item of this.assetsList) {
           if (item.symbol === 'NULS') {
@@ -451,47 +458,6 @@
        * 验证参数
        **/
       async changeParameter() {
-        //console.log(this.changeAssets);
-        /*if (this.transferForm.toAddress && this.transferForm.amount) { //转入地址及金额都有值
-          let fromAddress = nuls.verifyAddress(this.transferForm.fromAddress);
-          let toAddress = {};
-          await this.sleep(500); //休眠500毫秒
-          if (this.aliasToAddress) { //是否为别名转账
-            toAddress = nuls.verifyAddress(this.aliasToAddress);
-          } else {
-            toAddress = nuls.verifyAddress(this.transferForm.toAddress);
-          }
-          console.log(fromAddress);
-          console.log(toAddress);
-          if (fromAddress.chainId === toAddress.chainId && fromAddress.type === toAddress.type) { //from与to的chainId、type 相同: 普通交易及合约交易
-            if (this.changeAssets.type === 1) { //普通NULS转账交易
-              this.isCross = false;
-              this.fee = 0.001;
-              this.getSymbol();
-            } else { //合约转账交易
-              console.log(this.changeAssets.type);
-              console.log("合约转账交易");
-              this.transferForm.gas = sdk.CONTRACT_MAX_GASLIMIT;
-              this.$refs['transferForm'].validate((valid) => {
-                if (valid) {
-                  let gasLimit = sdk.CONTRACT_MAX_GASLIMIT;
-                  let price = this.transferForm.price;
-                  let contractAddress = this.contractInfo.contractAddress;
-                  let methodName = '_payable';
-                  let methodDesc = '';
-                  let args = [];
-                  this.validateContractCall(this.addressInfo.address, Number(Times(this.transferForm.amount, 100000000)), gasLimit, price, contractAddress, methodName, methodDesc, args);
-                } else {
-                  return false;
-                }
-              });
-            }
-          } else if (fromAddress.chainId === toAddress.chainId && fromAddress.type !== toAddress.type) { //from与to的chainId相同，type不相同: 向合约地址转(NULS、token)资产
-            console.log("from与to的chainId相同，type不相同 向合约地址转主网(NULS)资产");
-          } else if (fromAddress.chainId !== toAddress.chainId) { // from与to的chainId不相同:跨链交易
-            console.log("跨链交易")
-          }
-        }*/
         //判断转出地址是否为其他链地址 如果有就为跨链交易
         if (this.transferForm.toAddress) { //转入地址有值
           this.contractInfo = {};
@@ -610,6 +576,7 @@
        * @param type 0: 验证合约是否有_payable方法 1:验证合约是否已经注销
        **/
       async contractInfoByContractAddress(contractAddress, type = 0) {
+        this.loading = true;
         return await this.$post('/', 'getContract', [contractAddress])
           .then((response) => {
             //console.log(response);
@@ -669,13 +636,21 @@
         let defaultType = 'NULS';
         if (type === 0) {
           if (this.$route.query.accountType) {
-            defaultType = this.$route.query.accountType
+            defaultType = this.$route.query.accountType.contractAddress
           }
         }
+        //console.log(this.assetsList);
         for (let item of this.assetsList) {
-          if (item.symbol === defaultType) {
-            this.changeAssets = item;
-            this.transferForm.type = item.symbol;
+          if (defaultType === 'NULS') {
+            if (item.symbol === defaultType) {
+              this.changeAssets = item;
+              this.transferForm.type = item.symbol;
+            }
+          } else {
+            if (item.contractAddress === defaultType) {
+              this.changeAssets = item;
+              this.transferForm.type = item.symbol;
+            }
           }
         }
       },

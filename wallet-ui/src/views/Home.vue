@@ -67,7 +67,7 @@
           </el-table-column>
           <el-table-column fixed="right" :label="$t('public.operation')" align="center" min-width="120">
             <template slot-scope="scope">
-              <label class="click tab_bn" @click="toUrl('transfer',scope.row.account)">{{$t('nav.transfer')}}</label>
+              <label class="click tab_bn" @click="toUrl('transfer',scope.row)">{{$t('nav.transfer')}}</label>
               <span class="tab_line">|</span>
               <label class="click tab_bn" @click="toUrl('txList',scope.row)">{{$t('home.home2')}}</label>
             </template>
@@ -354,7 +354,6 @@
         await this.$post('/', 'getAccountTokens', [pageSize, pageRows, address], 'Home')
           .then((response) => {
             //console.log(response);
-            let newAssetsList = {};
             if (response.hasOwnProperty("result")) {
               this.addressAssetsData = [];
               for (let itme of response.result.list) {
@@ -365,16 +364,16 @@
                 itme.balance = Number(timesDecimals(itme.balance, itme.decimals)).toFixed(3);
                 itme.contractAddresss = superLong(itme.contractAddress, 6);
               }
-              newAssetsList = response.result.list;
             }
-            newAssetsList.splice(newAssetsList.findIndex(item => item.status === 3), 1);//隐藏已经删除合约
+            const newAssetsList = response.result.list.filter(obj => obj.status !== 3); //隐藏已经删除合约
             this.addressAssetsData.push(...newAssetsList);
             this.addressInfo.tokens = [];
             this.addressInfo.tokens = this.addressAssetsData;
+            //console.log(this.addressInfo.tokens);
             //localStorage.setItem(this.addressInfo.address, JSON.stringify(this.addressInfo));
             this.assetsListLoading = false;
           }).catch((error) => {
-            this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address)
+            this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
             console.log(error);
           })
       },
@@ -436,8 +435,7 @@
        * @param type 0:本网站跳转，1：跳转浏览器
        */
       toUrl(name, parms, type = 0) {
-        //console.log(name)
-        //console.log(parms);
+        //console.log(name, parms, type);
         if (type === 1) {
           connectToExplorer(name, parms)
         } else {
