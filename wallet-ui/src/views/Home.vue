@@ -136,7 +136,7 @@
 <script>
   import axios from 'axios'
   import QRCode from 'qrcodejs2'
-  import {timesDecimals, copys, addressInfo, Times, superLong, connectToExplorer} from '@/api/util'
+  import {timesDecimals, copys, addressInfo, Times, superLong, connectToExplorer,Plus} from '@/api/util'
   import {RUN_PATTERN} from '@/config'
 
   export default {
@@ -297,9 +297,9 @@
               newAssetsList.chainId = response.result[0].chainId;
               newAssetsList.assetId = response.result[0].assetId;
               newAssetsList.type = 1;
-              newAssetsList.total = Number(timesDecimals(response.result[0].totalBalance)).toFixed(3);
-              newAssetsList.locking = Number(timesDecimals(response.result[0].consensusLock + response.result[0].timeLock)).toFixed(3);
               newAssetsList.balance = Number(timesDecimals(response.result[0].balance)).toFixed(3);
+              newAssetsList.locking = Number(timesDecimals(Plus(response.result[0].consensusLock,response.result[0].timeLock))).toFixed(3);
+              newAssetsList.total = Number(timesDecimals(response.result[0].totalBalance)).toFixed(3);
             } else {
               newAssetsList.account = response.result.symbol;
               newAssetsList.chainId = response.result.chainId;
@@ -311,6 +311,7 @@
             }
             this.addressInfo.balance = newAssetsList.balance;
             this.addressNULSAssets = newAssetsList;
+            //console.log(this.addressNULSAssets);
             this.getNULSUSDT(Number(newAssetsList.total));
             this.overviewLoading = false;
             //this.addressAssetsData.push(newAssetsList);

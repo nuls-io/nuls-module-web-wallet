@@ -32,7 +32,7 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('address.address5')" align="center" width="360">
+        <el-table-column :label="$t('address.address5')" align="center" width="370">
           <template slot-scope="scope">
             <label class="click tab_bn" @click="editPassword(scope.row)">{{$t('address.address6')}}</label>
             <span class="tab_line">|</span>
