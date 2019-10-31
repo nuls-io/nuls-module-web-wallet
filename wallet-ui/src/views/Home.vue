@@ -34,6 +34,7 @@
       </div>
     </div>
 
+    <div class="cb"></div>
     <el-tabs v-model="homeActive" @tab-click="handleClick" class="w1200 home_tabs">
       <el-tab-pane :label="$t('tab.tab25')" name="homeFirst">
         <el-select v-model="assetsValue" @change="channgeAsesets" v-show="false">
