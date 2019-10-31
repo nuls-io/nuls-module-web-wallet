@@ -34,7 +34,7 @@
       </div>
     </div>
 
-    <el-tabs v-model="homeActive" @tab-click="handleClick" class="w1200 mb_100">
+    <el-tabs v-model="homeActive" @tab-click="handleClick" class="w1200 home_tabs">
       <el-tab-pane :label="$t('tab.tab25')" name="homeFirst">
         <el-select v-model="assetsValue" @change="channgeAsesets" v-show="false">
           <el-option v-for="item in assetsOptions" :key="item.value" :label="$t('assetsType.'+item.value)"
@@ -136,7 +136,7 @@
 <script>
   import axios from 'axios'
   import QRCode from 'qrcodejs2'
-  import {timesDecimals, copys, addressInfo, Times, superLong, connectToExplorer,Plus} from '@/api/util'
+  import {timesDecimals, copys, addressInfo, Times, superLong, connectToExplorer, Plus} from '@/api/util'
   import {RUN_PATTERN} from '@/config'
 
   export default {
@@ -298,7 +298,7 @@
               newAssetsList.assetId = response.result[0].assetId;
               newAssetsList.type = 1;
               newAssetsList.balance = Number(timesDecimals(response.result[0].balance)).toFixed(3);
-              newAssetsList.locking = Number(timesDecimals(Plus(response.result[0].consensusLock,response.result[0].timeLock))).toFixed(3);
+              newAssetsList.locking = Number(timesDecimals(Plus(response.result[0].consensusLock, response.result[0].timeLock))).toFixed(3);
               newAssetsList.total = Number(timesDecimals(response.result[0].totalBalance)).toFixed(3);
             } else {
               newAssetsList.account = response.result.symbol;
@@ -571,11 +571,15 @@
 
     }
 
-    .el-tabs {
-      margin: 30px auto 0;
-      .el-select {
-        margin: 5px 10px 15px 0;
+    .home_tabs {
+      padding-bottom: 100px;
+      .el-tabs {
+        margin: 30px auto 0;
+        .el-select {
+          margin: 5px 10px 15px 0;
+        }
       }
     }
+
   }
 </style>
