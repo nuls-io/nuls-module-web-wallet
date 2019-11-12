@@ -148,7 +148,21 @@
     created() {
       this.loading = true;
       setTimeout(() => {
-        this.nodeServiceData = this.$store.getters.getUrlData;
+        let newInfo = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')) : '';
+        //defaultAsset.symbol
+        if(newInfo){
+          if( newInfo.defaultAsset.symbol === 'NULS'){
+            this.nodeServiceData = this.$store.getters.getUrlData;
+          }else {
+            let newUrlData = this.$store.getters.getUrlData;
+            newUrlData.splice(newUrlData.findIndex(item => item.urls === 'https://wallet.nuls.io/public'), 1);
+            newUrlData.splice(newUrlData.findIndex(item => item.urls === 'https://public1.nuls.io'), 1);
+            newUrlData.splice(newUrlData.findIndex(item => item.urls === 'http://public2.nuls.io'), 1);
+            this.nodeServiceData = newUrlData;
+          }
+        }else {
+          this.nodeServiceData = this.$store.getters.getUrlData;
+        }
       }, 500);
     },
     mounted() {

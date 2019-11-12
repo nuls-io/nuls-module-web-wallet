@@ -3,6 +3,7 @@ import {BigNumber} from 'bignumber.js'
 import copy from 'copy-to-clipboard'
 import {explorerUrl, RUN_DEV} from '@/config.js'
 import openner from "./opener-web";
+
 //import openner from "./opener-desktop";
 
 /**
@@ -67,16 +68,20 @@ export function Division(nu, arg) {
 /**
  * 数字除以精度系数
  */
-export function timesDecimals(nu, decimals = 8) {
-  let newNu = new BigNumber(Division(nu, Power(decimals)).toString());
+export function timesDecimals(nu, decimals) {
+  let newInfo = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')) : '';
+  let newDecimals = decimals ? decimals : newInfo.defaultAsset.decimals;
+  let newNu = new BigNumber(Division(nu, Power(newDecimals)).toString());
   return newNu.toFormat().replace(/[,]/g, '');
 }
 
 /**
  * 数字乘以精度系数
  */
-export function timesDecimals0(nu, decimals = 8) {
-  let newNu = new BigNumber(Times(nu, Power(decimals)).toString());
+export function timesDecimals0(nu, decimals) {
+  let newInfo = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')) : '';
+  let newDecimals = decimals ? decimals : newInfo.defaultAsset.decimals;
+  let newNu = new BigNumber(Times(nu, Power(newDecimals)).toString());
   return Number(newNu);
 }
 

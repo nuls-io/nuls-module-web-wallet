@@ -9,12 +9,14 @@
 
     <div class="w1200 overview bg-white" v-loading="overviewLoading">
       <div class="title">
-        NULS {{$t('tab.tab26')}}
+        {{symbol.toLocaleUpperCase()}} {{$t('tab.tab26')}}
         <span class="fr click" @click="toUrl('txList',addressNULSAssets)">{{$t('home.home2')}}</span>
       </div>
       <div class="total fl">
         <p>{{$t('tab.tab2')}}</p>
-        <h6>{{addressNULSAssets.total}} <span class="font16"> ≈ $ {{NULSUsdt}}</span></h6>
+        <h6>{{addressNULSAssets.total}}
+          <span class="font16" v-show="symbol.toLocaleUpperCase() ==='NULS'"> ≈ $ {{NULSUsdt}}</span>
+        </h6>
       </div>
       <div class="balance fl">
         <p>{{$t('public.usableBalance')}}</p>
@@ -144,6 +146,7 @@
     name: 'home',
     data() {
       return {
+        symbol: 'NULS', //symbol
         homeActive: 'homeFirst',   //tab默认选中
         addressInfo: {},//默认账户信息
         addressNULSAssets: {},//账户NULS资产信息
@@ -191,6 +194,7 @@
 
     },
     mounted() {
+      this.symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
     },
     watch: {
       addressInfo(val, old) {

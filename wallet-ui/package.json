@@ -25,7 +25,7 @@
     "less-loader": "^4.1.0",
     "log4js": "^4.5.1",
     "moment": "^2.24.0",
-    "nuls-sdk-js": "^2.3.0",
+    "nuls-sdk-js": "^2.3.4",
     "qrcodejs2": "^0.0.2",
     "shelljs": "^0.8.3",
     "vue": "^2.6.6",

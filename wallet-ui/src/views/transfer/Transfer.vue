@@ -470,6 +470,10 @@
             toAddress = nuls.verifyAddress(this.transferForm.toAddress);
           }
           //console.log(toAddress);
+          if(!toAddress.right){
+            this.$message({message: this.$t('transfer.transfer23'), type: 'error', duration: 3000});
+            return;
+          }
           //判断toAddress 是什么地址 type 1:普通地址 2：合约地址
           if (toAddress.type === 2) { //向合约地址转账nuls
             this.changeNuls();
