@@ -195,6 +195,7 @@
     },
     mounted() {
       this.symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
+      document.title = this.symbol + " Wallet";
     },
     watch: {
       addressInfo(val, old) {

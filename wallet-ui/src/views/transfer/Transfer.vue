@@ -432,7 +432,7 @@
             type: 1,
             symbol: 'NULS',
             chainId: MAIN_INFO.chainId,
-            assetId: MAIN_INFO.assetsId,
+            assetId: MAIN_INFO.assetId,
             balance: 0
           };
           this.assetsList.unshift(newNulsAssets);
@@ -841,7 +841,7 @@
           amount: transferInfo.amount,
           lockTime: 0
         }];
-        let mainNetBalanceInfo = await getNulsBalance(MAIN_INFO.chainId, MAIN_INFO.assetsId, transferInfo.fromAddress);
+        let mainNetBalanceInfo = await getNulsBalance(MAIN_INFO.chainId, MAIN_INFO.assetId, transferInfo.fromAddress);
         let localBalanceInfo;
         //如果不是主网需要收取NULS手续费
         if (!isMainNet(chainId)) {
@@ -871,7 +871,7 @@
             inputs.push({
               address: transferInfo.fromAddress,
               assetsChainId: MAIN_INFO.chainId,
-              assetsId: MAIN_INFO.assetsId,
+              assetsId: MAIN_INFO.assetId,
               amount: transferInfo.fee,
               locked: 0,
               nonce: mainNetBalanceInfo.data.nonce
@@ -910,7 +910,7 @@
             inputs.push({
               address: transferInfo.fromAddress,
               assetsChainId: MAIN_INFO.chainId,
-              assetsId: MAIN_INFO.assetsId,
+              assetsId: MAIN_INFO.assetId,
               amount: transferInfo.fee,
               locked: 0,
               nonce: mainNetBalanceInfo.data.nonce
@@ -980,7 +980,7 @@
             }, {
               address: transferInfo.fromAddress,
               assetsChainId: MAIN_INFO.chainId,
-              assetsId: MAIN_INFO.assetsId,
+              assetsId: MAIN_INFO.assetId,
               amount: newFee,
               locked: 0,
               nonce: mainNetBalanceInfo.data.nonce
