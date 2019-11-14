@@ -47,7 +47,7 @@
              <el-menu-item index="cn">中文</el-menu-item>
              <el-menu-item index="en">English</el-menu-item>
            </el-submenu>-->
-          <el-submenu index="more">
+          <el-submenu index="more" v-show="symbol ==='NULS'">
             <template slot="title"><i class="el-icon-more"></i></template>
             <el-menu-item index="official">{{$t('tab.tab21')}}</el-menu-item>
             <el-menu-item index="explorer">{{$t('tab.tab22')}}</el-menu-item>
@@ -76,6 +76,7 @@
         addressList: [], //地址列表
         lang: 'cn', //语言选择
         nodeServiceInfo: {},
+        symbol: 'NULS', //symbol
       };
     },
     components: {},
@@ -99,6 +100,7 @@
     },
     mounted() {
       setInterval(() => {
+        this.symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
         this.getAddressList();
         if (sessionStorage.hasOwnProperty('info')) {
           this.nodeServiceInfo = JSON.parse(sessionStorage.getItem('info'));
