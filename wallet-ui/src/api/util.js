@@ -280,7 +280,12 @@ export function connectToExplorer(name, parameter) {
     newUrl = parameter
   }
   //console.log(newUrl);
-  openner(newUrl);
+
+  let symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
+  if (symbol === 'NULS') {
+    openner(newUrl);
+  }
+
 }
 
 //地址必须参数列表

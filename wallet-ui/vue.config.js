@@ -43,7 +43,7 @@ module.exports = {
     open: true, //配置自动启动浏览器
     proxy: {// 配置跨域处理
       '/api': {
-        target: 'http://116.62.135.185:8081/',
+        target: '/',
         changeOrigin: true,  // 是否跨域
         pathRewrite: {
           '^/api': '/'

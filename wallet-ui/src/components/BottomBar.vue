@@ -165,6 +165,7 @@
     bottom: 0;
     background-color: @Bcolour;
     width: 100%;
+    z-index: 99;
     @media screen and (max-width: 1000px) {
       height: 4rem;
       font-size: 0.7rem;

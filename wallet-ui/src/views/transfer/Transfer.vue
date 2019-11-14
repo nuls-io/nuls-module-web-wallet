@@ -89,7 +89,7 @@
         </div>
         <div class="div-data">
           <p>{{$t('tab.tab6')}}:&nbsp;</p>
-          <label class="yellow">{{transferForm.amount}} <span class="fCN">{{changeAssets.account}}</span></label>
+          <label class="yellow">{{transferForm.amount}} <span class="fCN">{{changeAssets.symbol}}</span></label>
         </div>
         <div class="div-data">
           <p>{{$t('transfer.transfer4')}}&nbsp;</p>

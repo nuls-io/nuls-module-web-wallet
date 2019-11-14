@@ -28,7 +28,6 @@
                 <font v-else class="w100">{{item.addresss}}</font> |
                 <span>{{item.balance}}</span>
               </span>
-
             </el-menu-item>
           </el-submenu>
           <el-submenu index="set">
@@ -38,11 +37,16 @@
             <el-menu-item index="contact">{{$t('public.bookList')}}</el-menu-item>
             <el-menu-item index="seting">{{$t('public.about')}}</el-menu-item>
           </el-submenu>
-          <el-submenu index="lang">
-            <template slot="title">{{this.lang ==="en" ? "Eng":"中文"}}</template>
-            <el-menu-item index="cn">中文</el-menu-item>
-            <el-menu-item index="en">English</el-menu-item>
-          </el-submenu>
+
+          <el-menu-item index="lang">
+            <span>{{this.lang ==="en" ? "CN":"EN"}}</span>
+          </el-menu-item>
+
+          <!-- <el-submenu index="lang">
+             <template slot="title">{{this.lang ==="en" ? "Eng":"中文"}}</template>
+             <el-menu-item index="cn">中文</el-menu-item>
+             <el-menu-item index="en">English</el-menu-item>
+           </el-submenu>-->
           <el-submenu index="more">
             <template slot="title"><i class="el-icon-more"></i></template>
             <el-menu-item index="official">{{$t('tab.tab21')}}</el-menu-item>
@@ -129,8 +133,6 @@
             this.$router.push({
               name: keyPath[1]
             })
-          } else if (keyPath[0] === "lang") {
-            this.selectLanguage(key)
           } else if (keyPath[0] === "more") {
             let newUrl = '';
             if (keyPath[1] === 'official') {
@@ -142,6 +144,8 @@
             }
             connectToExplorer('nuls', newUrl);
           }
+        } else if (key === 'lang') {
+          this.selectLanguage()
         } else {
           this.$router.push({
             name: key
@@ -179,10 +183,13 @@
 
       /**
        * 语言切换
-       * @param e
        */
-      selectLanguage(e) {
-        this.lang = e;
+      selectLanguage() {
+        if (this.lang === 'cn') {
+          this.lang = 'en';
+        } else {
+          this.lang = 'cn';
+        }
         this.$i18n.locale = this.lang;
       },
 
@@ -218,6 +225,11 @@
       width: 600px;
       margin: 10px 0 0 0;
       float: left;
+      .el-menu {
+        .el-menu-item {
+          padding: 0 30px;
+        }
+      }
     }
     .tool {
       width: 270px;
