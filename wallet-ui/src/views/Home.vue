@@ -195,7 +195,6 @@
     },
     mounted() {
       this.symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
-      document.title = this.symbol + " Wallet";
     },
     watch: {
       addressInfo(val, old) {
@@ -260,8 +259,12 @@
           this.pageNumber = 1;
           this.pageSize = 10;
           this.pageCount = 0;
+          this.addressAssetsData = [];
           this.getAccountCrossLedgerList(this.addressInfo.address)
         } else {
+          this.pageNumber = 1;
+          this.pageSize = 100;
+          this.pageCount = 0;
           this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address)
         }
       },

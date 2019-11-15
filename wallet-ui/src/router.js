@@ -110,8 +110,11 @@ export default new Router({
       path: '/contact',
       name: 'contact',
       component: resolve => require(['@/views/set/Contact.vue'], resolve)
+    },
+    {
+      path: '/application',
+      name: 'application',
+      component: resolve => require(['@/views/application/Application.vue'], resolve)
     }
-
-
   ]
 })

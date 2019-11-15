@@ -327,17 +327,6 @@
       },
 
       /**
-       * 获取收付费单位
-       **/
-      getSymbol() {
-        for (let item of this.assetsList) {
-          if (item.chainId === chainID() && item.type === 1) {
-            this.feeSymbol = item.symbol;
-          }
-        }
-      },
-
-      /**
        * 获取地址的资金列表
        * @param address
        **/
@@ -357,7 +346,7 @@
                   chainId: item.chainId,
                   assetId: item.assetId,
                   balance: timesDecimals(item.balance),
-                  decimals: 8,
+                  decimals: item.decimals,
                 });
                 chainId = item.chainId;
               }
@@ -420,23 +409,6 @@
         //console.log(crossAssets);
 
         this.assetsList = [...basicAssets, ...newContractAssets, ...crossAssets];
-        let isNuls = false; //是否有nuls资产
-        for (let item of this.assetsList) {
-          if (item.symbol === 'NULS') {
-            isNuls = true
-          }
-        }
-        //没有nuls 资产 添加一个为nuls资产
-        if (!isNuls) {
-          let newNulsAssets = {
-            type: 1,
-            symbol: 'NULS',
-            chainId: MAIN_INFO.chainId,
-            assetId: MAIN_INFO.assetId,
-            balance: 0
-          };
-          this.assetsList.unshift(newNulsAssets);
-        }
         //console.log(this.assetsList);
         this.changeNuls(0);
         this.getSymbol();
@@ -470,13 +442,13 @@
             toAddress = nuls.verifyAddress(this.transferForm.toAddress);
           }
           //console.log(toAddress);
-          if(!toAddress.right){
+          if (!toAddress.right) {
             this.$message({message: this.$t('transfer.transfer23'), type: 'error', duration: 3000});
             return;
           }
           //判断toAddress 是什么地址 type 1:普通地址 2：合约地址
           if (toAddress.type === 2) { //向合约地址转账nuls
-            this.changeNuls();
+            //this.changeNuls();
             let methodsList = await this.contractInfoByContractAddress(this.transferForm.toAddress);
             if (methodsList.length !== 0) {
               let ifPayable = false;
@@ -615,6 +587,17 @@
       },
 
       /**
+       * 获取收付费单位
+       **/
+      getSymbol() {
+        for (let item of this.assetsList) {
+          if (item.chainId === chainID() && item.type === 1) {
+            this.feeSymbol = item.symbol;
+          }
+        }
+      },
+
+      /**
        * 资产类型选择
        * @param type
        **/
@@ -637,7 +620,7 @@
        * @param type 0：首次进入加载 1：填写地址以后判断默认为nuls
        **/
       changeNuls(type = 1) {
-        let defaultType = 'NULS';
+        let defaultType = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
         if (type === 0) {
           if (this.$route.query.accountType) {
             defaultType = this.$route.query.accountType.contractAddress

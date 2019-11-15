@@ -14,6 +14,7 @@
           <el-menu-item index="contract" :disabled="addressList.length === 0 || !nodeServiceInfo.isRunSmartContract">
             {{$t('nav.contracts')}}
           </el-menu-item>
+          <el-menu-item index="application" v-if="false">应用</el-menu-item>
         </el-menu>
       </div>
       <div class="tool">
@@ -101,6 +102,7 @@
     mounted() {
       setInterval(() => {
         this.symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
+        document.title = this.symbol + " Wallet";
         this.getAddressList();
         if (sessionStorage.hasOwnProperty('info')) {
           this.nodeServiceInfo = JSON.parse(sessionStorage.getItem('info'));
