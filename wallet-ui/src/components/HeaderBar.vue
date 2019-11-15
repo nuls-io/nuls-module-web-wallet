@@ -222,7 +222,8 @@
       float: left;
       img {
         margin: 20px 0 0 0;
-        width: 100%;
+        width: 100px;
+        height: 40px;
       }
     }
     .nav {
@@ -231,7 +232,7 @@
       float: left;
       .el-menu {
         .el-menu-item {
-          padding: 0 30px;
+          padding: 0 15px;
         }
       }
     }
