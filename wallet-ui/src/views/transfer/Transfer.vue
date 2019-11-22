@@ -1,7 +1,7 @@
 <template>
   <div class="transfer bg-gray" v-loading="transferLoading">
     <h3 class="title">{{changeAssets.account}} {{$t('nav.transfer')}}</h3>
-    <div class="w1200 bg-white">
+    <div class="w1200 bg-white" v-loading="loading" :element-loading-text="$t('transfer.transfer22')">
       <el-form :model="transferForm" :rules="transferRules" ref="transferForm" status-icon>
         <el-form-item :label="$t('transfer.transfer0')">
           <el-input v-model.trim="transferForm.fromAddress" disabled>
@@ -25,7 +25,7 @@
         </el-form-item>
         <div class="cross yellow font12" v-show="isCross">{{$t('transfer.transfer15')}}</div>
         <el-form-item :label="$t('transfer.transfer3')" prop="amount">
-          <span class="balance font12 fr">{{$t('public.usableBalance')}}: {{changeAssets.balance}}</span>
+          <span class="balance font12 fr">{{$t('public.usableBalance')}}: {{Number(changeAssets.balance).toFixed(3)}}</span>
           <el-input v-model="transferForm.amount" @change="changeParameter">
           </el-input>
         </el-form-item>
@@ -89,7 +89,7 @@
         </div>
         <div class="div-data">
           <p>{{$t('tab.tab6')}}:&nbsp;</p>
-          <label class="yellow">{{transferForm.amount}} <span class="fCN">{{changeAssets.account}}</span></label>
+          <label class="yellow">{{transferForm.amount}} <span class="fCN">{{changeAssets.symbol}}</span></label>
         </div>
         <div class="div-data">
           <p>{{$t('transfer.transfer4')}}&nbsp;</p>
@@ -226,7 +226,7 @@
         transferForm: {
           fromAddress: '',
           toAddress: '',
-          type: this.$route.query.accountType ? this.$route.query.accountType : 'NULS',
+          type: this.$route.query.accountType ? this.$route.query.accountType.account : 'NULS',
           amount: '',
           senior: false,
           gas: this.gasNumber,
@@ -250,6 +250,7 @@
         bookData: [],//通讯录列表
         aliasToAddress: '',//别名对应的地址
         prefix: '',//地址前缀
+        loading: true,//验证地址效果
       };
     },
     created() {
@@ -264,11 +265,15 @@
       this.addressInfo = addressInfo(1);
       setInterval(() => {
         this.addressInfo = addressInfo(1);
+        if (this.changeAssets.balance) {
+          this.loading = false;
+        }
       }, 500);
       this.transferForm.fromAddress = this.addressInfo.address;
 
       setTimeout(() => {
         this.getCapitalListByAddress(this.transferForm.fromAddress);
+        this.loading = false;
       }, 600);
 
     },
@@ -322,17 +327,6 @@
       },
 
       /**
-       * 获取收付费单位
-       **/
-      getSymbol() {
-        for (let item of this.assetsList) {
-          if (item.chainId === chainID() && item.type === 1) {
-            this.feeSymbol = item.symbol;
-          }
-        }
-      },
-
-      /**
        * 获取地址的资金列表
        * @param address
        **/
@@ -352,7 +346,7 @@
                   chainId: item.chainId,
                   assetId: item.assetId,
                   balance: timesDecimals(item.balance),
-                  decimals: 8,
+                  decimals: item.decimals,
                 });
                 chainId = item.chainId;
               }
@@ -376,17 +370,19 @@
                   symbol: itme.tokenSymbol,
                   chainId: chainId,
                   assetId: 1,
+                  status: itme.status,
                   balance: timesDecimals(itme.balance, itme.decimals),
                   contractAddress: itme.contractAddress,
                   decimals: itme.decimals
                 })
-
               }
             }
           })
           .catch((error) => {
             console.log("getAccountTokens:" + error);
           });
+
+        const newContractAssets = contractAssets.filter(obj => obj.status !== 3); //隐藏已经删除合约
         //console.log(contractAssets);
 
         //获取跨链的基本资产
@@ -412,24 +408,7 @@
           });
         //console.log(crossAssets);
 
-        this.assetsList = [...basicAssets, ...contractAssets, ...crossAssets];
-        let isNuls = false; //是否有nuls资产
-        for (let item of this.assetsList) {
-          if (item.symbol === 'NULS') {
-            isNuls = true
-          }
-        }
-        //没有nuls 资产 添加一个为nuls资产
-        if (!isNuls) {
-          let newNulsAssets = {
-            type: 1,
-            symbol: 'NULS',
-            chainId: MAIN_INFO.chainId,
-            assetId: MAIN_INFO.assetsId,
-            balance: 0
-          };
-          this.assetsList.unshift(newNulsAssets);
-        }
+        this.assetsList = [...basicAssets, ...newContractAssets, ...crossAssets];
         //console.log(this.assetsList);
         this.changeNuls(0);
         this.getSymbol();
@@ -451,47 +430,6 @@
        * 验证参数
        **/
       async changeParameter() {
-        //console.log(this.changeAssets);
-        /*if (this.transferForm.toAddress && this.transferForm.amount) { //转入地址及金额都有值
-          let fromAddress = nuls.verifyAddress(this.transferForm.fromAddress);
-          let toAddress = {};
-          await this.sleep(500); //休眠500毫秒
-          if (this.aliasToAddress) { //是否为别名转账
-            toAddress = nuls.verifyAddress(this.aliasToAddress);
-          } else {
-            toAddress = nuls.verifyAddress(this.transferForm.toAddress);
-          }
-          console.log(fromAddress);
-          console.log(toAddress);
-          if (fromAddress.chainId === toAddress.chainId && fromAddress.type === toAddress.type) { //from与to的chainId、type 相同: 普通交易及合约交易
-            if (this.changeAssets.type === 1) { //普通NULS转账交易
-              this.isCross = false;
-              this.fee = 0.001;
-              this.getSymbol();
-            } else { //合约转账交易
-              console.log(this.changeAssets.type);
-              console.log("合约转账交易");
-              this.transferForm.gas = sdk.CONTRACT_MAX_GASLIMIT;
-              this.$refs['transferForm'].validate((valid) => {
-                if (valid) {
-                  let gasLimit = sdk.CONTRACT_MAX_GASLIMIT;
-                  let price = this.transferForm.price;
-                  let contractAddress = this.contractInfo.contractAddress;
-                  let methodName = '_payable';
-                  let methodDesc = '';
-                  let args = [];
-                  this.validateContractCall(this.addressInfo.address, Number(Times(this.transferForm.amount, 100000000)), gasLimit, price, contractAddress, methodName, methodDesc, args);
-                } else {
-                  return false;
-                }
-              });
-            }
-          } else if (fromAddress.chainId === toAddress.chainId && fromAddress.type !== toAddress.type) { //from与to的chainId相同，type不相同: 向合约地址转(NULS、token)资产
-            console.log("from与to的chainId相同，type不相同 向合约地址转主网(NULS)资产");
-          } else if (fromAddress.chainId !== toAddress.chainId) { // from与to的chainId不相同:跨链交易
-            console.log("跨链交易")
-          }
-        }*/
         //判断转出地址是否为其他链地址 如果有就为跨链交易
         if (this.transferForm.toAddress) { //转入地址有值
           this.contractInfo = {};
@@ -504,9 +442,13 @@
             toAddress = nuls.verifyAddress(this.transferForm.toAddress);
           }
           //console.log(toAddress);
+          if (!toAddress.right) {
+            this.$message({message: this.$t('transfer.transfer23'), type: 'error', duration: 3000});
+            return;
+          }
           //判断toAddress 是什么地址 type 1:普通地址 2：合约地址
           if (toAddress.type === 2) { //向合约地址转账nuls
-            this.changeNuls();
+            //this.changeNuls();
             let methodsList = await this.contractInfoByContractAddress(this.transferForm.toAddress);
             if (methodsList.length !== 0) {
               let ifPayable = false;
@@ -610,6 +552,7 @@
        * @param type 0: 验证合约是否有_payable方法 1:验证合约是否已经注销
        **/
       async contractInfoByContractAddress(contractAddress, type = 0) {
+        this.loading = true;
         return await this.$post('/', 'getContract', [contractAddress])
           .then((response) => {
             //console.log(response);
@@ -644,6 +587,17 @@
       },
 
       /**
+       * 获取收付费单位
+       **/
+      getSymbol() {
+        for (let item of this.assetsList) {
+          if (item.chainId === chainID() && item.type === 1) {
+            this.feeSymbol = item.symbol;
+          }
+        }
+      },
+
+      /**
        * 资产类型选择
        * @param type
        **/
@@ -666,16 +620,24 @@
        * @param type 0：首次进入加载 1：填写地址以后判断默认为nuls
        **/
       changeNuls(type = 1) {
-        let defaultType = 'NULS';
+        let defaultType = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
         if (type === 0) {
           if (this.$route.query.accountType) {
-            defaultType = this.$route.query.accountType
+            defaultType = this.$route.query.accountType.contractAddress
           }
         }
+        //console.log(this.assetsList);
         for (let item of this.assetsList) {
-          if (item.symbol === defaultType) {
-            this.changeAssets = item;
-            this.transferForm.type = item.symbol;
+          if (defaultType === 'NULS') {
+            if (item.symbol === defaultType) {
+              this.changeAssets = item;
+              this.transferForm.type = item.symbol;
+            }
+          } else {
+            if (item.contractAddress === defaultType) {
+              this.changeAssets = item;
+              this.transferForm.type = item.symbol;
+            }
           }
         }
       },
@@ -862,7 +824,7 @@
           amount: transferInfo.amount,
           lockTime: 0
         }];
-        let mainNetBalanceInfo = await getNulsBalance(MAIN_INFO.chainId, MAIN_INFO.assetsId, transferInfo.fromAddress);
+        let mainNetBalanceInfo = await getNulsBalance(MAIN_INFO.chainId, MAIN_INFO.assetId, transferInfo.fromAddress);
         let localBalanceInfo;
         //如果不是主网需要收取NULS手续费
         if (!isMainNet(chainId)) {
@@ -892,7 +854,7 @@
             inputs.push({
               address: transferInfo.fromAddress,
               assetsChainId: MAIN_INFO.chainId,
-              assetsId: MAIN_INFO.assetsId,
+              assetsId: MAIN_INFO.assetId,
               amount: transferInfo.fee,
               locked: 0,
               nonce: mainNetBalanceInfo.data.nonce
@@ -931,7 +893,7 @@
             inputs.push({
               address: transferInfo.fromAddress,
               assetsChainId: MAIN_INFO.chainId,
-              assetsId: MAIN_INFO.assetsId,
+              assetsId: MAIN_INFO.assetId,
               amount: transferInfo.fee,
               locked: 0,
               nonce: mainNetBalanceInfo.data.nonce
@@ -1001,7 +963,7 @@
             }, {
               address: transferInfo.fromAddress,
               assetsChainId: MAIN_INFO.chainId,
-              assetsId: MAIN_INFO.assetsId,
+              assetsId: MAIN_INFO.assetId,
               amount: newFee,
               locked: 0,
               nonce: mainNetBalanceInfo.data.nonce

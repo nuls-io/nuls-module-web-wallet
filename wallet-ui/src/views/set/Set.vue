@@ -9,7 +9,7 @@
     </div>
     <div class="w1200 mt_20 bg-white set_info">
       <div class="tc mzt_20">
-        <h4 class="font24 mb_20">NULS Wallet</h4>
+        <h4 class="font24 mb_20">{{symbol}} Wallet</h4>
         <!--<p class="font16">{{$t('public.logInfo')}}: <span class="click" @click="seeLog">{{$t('public.see')}}</span></p>-->
         <ul>
           <li v-show="RUN_PATTERN"><span>{{$t('public.operatingSystem')}}:</span>{{system}}</li>
@@ -61,6 +61,7 @@
   export default {
     data() {
       return {
+        symbol:sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS',
         updateDialogVisible: false,//更新弹框
         tips: {},//提示信息
         downloadPercent: 0,//下载进度

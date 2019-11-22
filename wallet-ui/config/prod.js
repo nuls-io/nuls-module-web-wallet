@@ -3,14 +3,12 @@
  */
 "use strict";
 
-//链ID
-export const API_CHAIN_ID = localStorage.hasOwnProperty('chainID') ? Number(localStorage.getItem('chainID')) : 1;
 //燃烧地址的公钥
 export const API_BURNING_ADDRESS_PUB = '000000000000000000000000000000000000000000000000000000000000000000';
 //运行环境（true:正式环境，false:测试环境）
 export const RUN_DEV = true;
 //ChainId和资产ID
-export const MAIN_INFO = {chainId: 1, assetsId: 1};
+export const MAIN_INFO = {chainId: 1, assetId: 1};
 //运行模式（true:electron窗体模式，false:浏览器模式）
 export const RUN_PATTERN = false;
 //桌面程序下载路径（main：http://file.wallet.nuls.io/download/main  test：http://file.wallet.nuls.io/download/test）background.js package 手动修改
@@ -27,7 +25,7 @@ export const API_TIME = '8000';
 const electronData = [
   {
     name: 'Official',
-    chainId: MAIN_INFO.assetsId,
+    chainId: MAIN_INFO.chainId,
     assetId: MAIN_INFO.assetId,
     decimals: 8,
     chainName: RUN_DEV ? 'NULS' : 'tNULS',
@@ -38,7 +36,7 @@ const electronData = [
   },
   {
     name: 'Official',
-    chainId: MAIN_INFO.assetsId,
+    chainId: MAIN_INFO.chainId,
     assetId: MAIN_INFO.assetId,
     decimals: 8,
     chainName: RUN_DEV ? 'NULS' : 'tNULS',
@@ -49,7 +47,7 @@ const electronData = [
   },
   {
     name: 'Official',
-    chainId: MAIN_INFO.assetsId,
+    chainId: MAIN_INFO.chainId,
     assetId: MAIN_INFO.assetId,
     decimals: 8,
     chainName: RUN_DEV ? 'NULS' : 'tNULS',
@@ -62,7 +60,7 @@ const electronData = [
 const explorerData = [
   {
     name: 'Official',
-    chainId: MAIN_INFO.assetsId,
+    chainId: MAIN_INFO.chainId,
     assetId: MAIN_INFO.assetId,
     decimals: 8,
     chainName: RUN_DEV ? 'NULS' : 'tNULS',
@@ -73,7 +71,7 @@ const explorerData = [
   },
   {
     name: 'Official',
-    chainId: MAIN_INFO.assetsId,
+    chainId: MAIN_INFO.chainId,
     assetId: MAIN_INFO.assetId,
     decimals: 8,
     chainName: RUN_DEV ? 'NULS' : 'tNULS',
@@ -84,7 +82,7 @@ const explorerData = [
   },
   {
     name: 'Official',
-    chainId: MAIN_INFO.assetsId,
+    chainId: MAIN_INFO.chainId,
     assetId: MAIN_INFO.assetId,
     decimals: 8,
     chainName: RUN_DEV ? 'NULS' : 'tNULS',
@@ -95,7 +93,7 @@ const explorerData = [
   },
   {
     name: 'Official',
-    chainId: MAIN_INFO.assetsId,
+    chainId: MAIN_INFO.chainId,
     assetId: MAIN_INFO.assetId,
     decimals: 8,
     chainName: RUN_DEV ? 'NULS' : 'tNULS',

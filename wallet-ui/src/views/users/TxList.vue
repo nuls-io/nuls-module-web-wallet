@@ -180,11 +180,11 @@
               for (let item of response.result.list) {
                 item.createTime = moment(getLocalTime(item.createTime * 1000)).format('YYYY-MM-DD HH:mm:ss');
                 item.txid = superLong(item.txHash, 8);
-                item.balance = timesDecimals(item.balance);
+                item.balance = Number(timesDecimals(item.balance)).toFixed(3);
                 if (item.type === 16) {
-                  item.amount = timesDecimals(item.fee.value);
+                  item.amount = Number(timesDecimals(item.fee.value)).toFixed(3);
                 } else {
-                  item.amount = timesDecimals(item.values);
+                  item.amount = Number(timesDecimals(item.values)).toFixed(3);
                 }
 
               }

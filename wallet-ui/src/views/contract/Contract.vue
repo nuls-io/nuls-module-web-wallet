@@ -182,7 +182,7 @@
                   myContractList.push(item.contractAddress)
                 }
                 let newContractList = [...myContractList, ...this.addressInfo.contractList];
-                this.getContractListById(this.pageIndex, this.pageSize, newContractList.length, newContractList);
+                this.getContractListById(this.pageIndex, this.pageSize, this.addressInfo.contractList.length + response.result.totalCount, newContractList);
               } else {
                 this.getContractListById(this.pageIndex, this.pageSize, this.addressInfo.contractList.length, this.addressInfo.contractList);
               }
@@ -198,6 +198,15 @@
           .catch((error) => {
             this.$message({message: this.$t('contract.contract12') + error, type: 'error', duration: 1000});
           });
+      },
+
+      /**
+       * 合约列表分页
+       * @param val
+       **/
+      myContractPages(val) {
+        this.pageIndex = val;
+        this.getMyContractByAddress(this.addressInfo.address)
       },
 
       /**
@@ -224,15 +233,6 @@
           .catch((error) => {
             this.$message({message: this.$t('contract.contract12') + error, type: 'error', duration: 1000});
           });
-      },
-
-      /**
-       * 合约列表分页
-       * @param val
-       **/
-      myContractPages(val) {
-        this.pageIndex = val;
-        this.getMyContractByAddress()
       },
 
       /**
@@ -362,6 +362,9 @@
     background-color: @Bcolour1;
     .el-tabs {
       margin: 30px auto 0;
+      .my_contract {
+        margin: 0 0 100px 0;
+      }
       .search {
         min-height: 500px;
         border: @BD1;
@@ -406,7 +409,6 @@
           }
         }
       }
-
     }
   }
 </style>

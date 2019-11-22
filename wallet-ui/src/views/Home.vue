@@ -9,18 +9,20 @@
 
     <div class="w1200 overview bg-white" v-loading="overviewLoading">
       <div class="title">
-        NULS {{$t('tab.tab26')}}
+        {{symbol.toLocaleUpperCase()}} {{$t('tab.tab26')}}
         <span class="fr click" @click="toUrl('txList',addressNULSAssets)">{{$t('home.home2')}}</span>
       </div>
       <div class="total fl">
         <p>{{$t('tab.tab2')}}</p>
-        <h6>{{addressNULSAssets.total}} <span class="font12"> ≈ $ {{NULSUsdt}}</span></h6>
+        <h6>{{addressNULSAssets.total}}
+          <span class="font16" v-show="symbol.toLocaleUpperCase() ==='NULS'"> ≈ $ {{NULSUsdt}}</span>
+        </h6>
       </div>
       <div class="balance fl">
         <p>{{$t('public.usableBalance')}}</p>
         <h6>
           <font>{{addressNULSAssets.balance}}</font>
-          <el-button type="success" @click="toUrl('transfer',addressNULSAssets.account)">{{$t('nav.transfer')}}
+          <el-button type="success" @click="toUrl('transfer',addressNULSAssets.account)">{{$t('tab.tab31')}}
           </el-button>
           <el-button @click="showCode(addressInfo.address)">{{$t('tab.tab27')}}</el-button>
         </h6>
@@ -29,12 +31,13 @@
         <p>{{$t('tab.tab3')}}</p>
         <h6>
           <font>{{addressNULSAssets.locking}}</font>
-          <span class="font12 click" @click="toUrl('frozenList',addressNULSAssets)">{{$t('tab.tab28')}}</span>
+          <span class="font14 click" @click="toUrl('frozenList',addressNULSAssets)">{{$t('tab.tab28')}}</span>
         </h6>
       </div>
     </div>
 
-    <el-tabs v-model="homeActive" @tab-click="handleClick" class="w1200 mb_100">
+    <div class="cb"></div>
+    <el-tabs v-model="homeActive" @tab-click="handleClick" class="w1200 home_tabs">
       <el-tab-pane :label="$t('tab.tab25')" name="homeFirst">
         <el-select v-model="assetsValue" @change="channgeAsesets" v-show="false">
           <el-option v-for="item in assetsOptions" :key="item.value" :label="$t('assetsType.'+item.value)"
@@ -42,16 +45,17 @@
           </el-option>
         </el-select>
         <el-table :data="addressAssetsData" stripe border v-loading="assetsListLoading">
-          <el-table-column :label="$t('tab.tab0')" align="center">
+          <el-table-column :label="$t('nodeService.nodeService2')" align="center">
             <template slot-scope="scope">
             <span>
               {{ scope.row.account }}
-              <span v-if="scope.row.status ===3" class="gray">{{$t('public.unavailable')}}</span>
             </span>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('tab.tab1')" align="center" width="150">
-            <template slot-scope="scope"><span>{{ $t('assetsType.'+scope.row.type) }}</span></template>
+          <el-table-column :label="$t('contract.contract9')" align="center" width="180">
+            <template slot-scope="scope">
+              <span class="click td" @click="toUrl('contractsInfo',scope.row.contractAddress,1)">{{ scope.row.contractAddresss }}</span>
+            </template>
           </el-table-column>
           <el-table-column prop="balance" :label="$t('tab.tab4')">
           </el-table-column>
@@ -66,7 +70,7 @@
           </el-table-column>
           <el-table-column fixed="right" :label="$t('public.operation')" align="center" min-width="120">
             <template slot-scope="scope">
-              <label class="click tab_bn" @click="toUrl('transfer',scope.row.account)">{{$t('nav.transfer')}}</label>
+              <label class="click tab_bn" @click="toUrl('transfer',scope.row)">{{$t('nav.transfer')}}</label>
               <span class="tab_line">|</span>
               <label class="click tab_bn" @click="toUrl('txList',scope.row)">{{$t('home.home2')}}</label>
             </template>
@@ -135,12 +139,14 @@
 <script>
   import axios from 'axios'
   import QRCode from 'qrcodejs2'
-  import {timesDecimals, copys, addressInfo, Times} from '@/api/util'
+  import {timesDecimals, copys, addressInfo, Times, superLong, connectToExplorer, Plus} from '@/api/util'
+  import {RUN_PATTERN} from '@/config'
 
   export default {
     name: 'home',
     data() {
       return {
+        symbol: 'NULS', //symbol
         homeActive: 'homeFirst',   //tab默认选中
         addressInfo: {},//默认账户信息
         addressNULSAssets: {},//账户NULS资产信息
@@ -178,7 +184,7 @@
           this.getAddressInfoByNode(this.addressInfo.address);
           setTimeout(() => {
             this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address)
-          }, 100);
+          }, 400);
         }, 600);
       } else {
         this.$router.push({
@@ -188,6 +194,7 @@
 
     },
     mounted() {
+      this.symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
     },
     watch: {
       addressInfo(val, old) {
@@ -252,8 +259,12 @@
           this.pageNumber = 1;
           this.pageSize = 10;
           this.pageCount = 0;
+          this.addressAssetsData = [];
           this.getAccountCrossLedgerList(this.addressInfo.address)
         } else {
+          this.pageNumber = 1;
+          this.pageSize = 100;
+          this.pageCount = 0;
           this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address)
         }
       },
@@ -295,9 +306,9 @@
               newAssetsList.chainId = response.result[0].chainId;
               newAssetsList.assetId = response.result[0].assetId;
               newAssetsList.type = 1;
-              newAssetsList.total = timesDecimals(response.result[0].totalBalance);
-              newAssetsList.locking = timesDecimals(response.result[0].consensusLock + response.result[0].timeLock);
-              newAssetsList.balance = timesDecimals(response.result[0].balance);
+              newAssetsList.balance = Number(timesDecimals(response.result[0].balance)).toFixed(3);
+              newAssetsList.locking = Number(timesDecimals(Plus(response.result[0].consensusLock, response.result[0].timeLock))).toFixed(3);
+              newAssetsList.total = Number(timesDecimals(response.result[0].totalBalance)).toFixed(3);
             } else {
               newAssetsList.account = response.result.symbol;
               newAssetsList.chainId = response.result.chainId;
@@ -309,7 +320,8 @@
             }
             this.addressInfo.balance = newAssetsList.balance;
             this.addressNULSAssets = newAssetsList;
-            this.getNULSUSDT(newAssetsList.total);
+            //console.log(this.addressNULSAssets);
+            this.getNULSUSDT(Number(newAssetsList.total));
             this.overviewLoading = false;
             //this.addressAssetsData.push(newAssetsList);
             this.assetsListLoading = false;
@@ -325,10 +337,16 @@
         let news = 0.5;
         this.NULSUsdt = Number(Times(news, number)).toFixed(2);
         axios.defaults.baseURL = '';
-        axios.get("/market-api/nuls-price")
+        let url = '';
+        if (RUN_PATTERN) {
+          url = "http://binanceapi.zhoulijun.top/api/v3/ticker/price?symbol=NULSUSDT"
+        } else {
+          url = "/market-api/nuls-price"
+        }
+        axios.get(url)
           .then((response) => {
-            console.log(response);
-            this.NULSUsdt = Number(Times(response.price, number)).toFixed(2)
+            //console.log(response.data);
+            this.NULSUsdt = Number(Times(Number(response.data.price), number)).toFixed(3)
           })
           .catch((error) => {
             console.log(error);
@@ -346,24 +364,27 @@
         await this.$post('/', 'getAccountTokens', [pageSize, pageRows, address], 'Home')
           .then((response) => {
             //console.log(response);
-            let newAssetsList = {};
             if (response.hasOwnProperty("result")) {
               this.addressAssetsData = [];
               for (let itme of response.result.list) {
                 itme.account = itme.tokenSymbol;
                 itme.type = 2;
-                itme.total = timesDecimals(itme.balance, itme.decimals);
+                itme.total = Number(timesDecimals(itme.balance, itme.decimals)).toFixed(3);
                 itme.locking = '--';
-                itme.balance = timesDecimals(itme.balance, itme.decimals);
+                itme.balance = Number(timesDecimals(itme.balance, itme.decimals)).toFixed(3);
+                itme.contractAddresss = superLong(itme.contractAddress, 6);
               }
-              newAssetsList = response.result.list;
             }
-            newAssetsList.splice(newAssetsList.findIndex(item => item.status === 3), 1);//隐藏已经删除合约
+            const newAssetsList = response.result.list.filter(obj => obj.status !== 3); //隐藏已经删除合约
             this.addressAssetsData.push(...newAssetsList);
             this.addressInfo.tokens = [];
             this.addressInfo.tokens = this.addressAssetsData;
+            //console.log(this.addressInfo.tokens);
             //localStorage.setItem(this.addressInfo.address, JSON.stringify(this.addressInfo));
             this.assetsListLoading = false;
+          }).catch((error) => {
+            this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
+            console.log(error);
           })
       },
 
@@ -421,31 +442,35 @@
        * 连接跳转
        * @param name
        * @param parms
+       * @param type 0:本网站跳转，1：跳转浏览器
        */
-      toUrl(name, parms) {
-        //console.log(name)
-        //console.log(parms);
-        let newParms = {accountType: parms};
-        if (name === 'transfer') {
-          this.$router.push({
-            name: name,
-            query: newParms
-          })
-        } else if (name === 'frozenList') {
-          newParms = {accountInfo: parms};
-          this.$router.push({
-            name: name,
-            query: newParms
-          })
+      toUrl(name, parms, type = 0) {
+        //console.log(name, parms, type);
+        if (type === 1) {
+          connectToExplorer(name, parms)
         } else {
-          if (parms.type === 2) {
-            this.$router.push({
-              name: 'tokenTxList'
-            })
-          } else {
+          let newParms = {accountType: parms};
+          if (name === 'transfer') {
             this.$router.push({
               name: name,
+              query: newParms
             })
+          } else if (name === 'frozenList') {
+            newParms = {accountInfo: parms};
+            this.$router.push({
+              name: name,
+              query: newParms
+            })
+          } else {
+            if (parms.type === 2) {
+              this.$router.push({
+                name: 'tokenTxList'
+              })
+            } else {
+              this.$router.push({
+                name: name,
+              })
+            }
           }
         }
       },
@@ -473,38 +498,44 @@
     .overview {
       border: @BD1;
       margin: -30px auto 0;
-      height: 150px;
+      height: 158px;
       .title {
         text-align: left;
         background-color: #f9fafd;
         line-height: 40px;
+        color: #475472;
         height: 40px;
-        font-size: 14px;
+        font-size: 18px;
         padding: 0 30px;
-        font-weight: bold;
+        border-bottom: 1px solid #dfe4ef;
         span {
-          font-size: 12px;
+          font-size: 14px;
           font-weight: normal;
         }
       }
       p {
-        font-size: 14px;
+        font-size: 16px;
         font-weight: 600;
+        color: #8794b1;
         padding: 20px 30px 5px;
       }
       h6 {
         font-weight: 600;
-        font-size: 16px;
+        font-size: 24px;
+        color: #475472;
         padding: 0 30px;
-        font{
-          padding: 0 10px 0 0;
+        font {
+          padding: 0 20px 0 0;
+          font-weight: 600;
+          font-size: 24px;
+          color: #475472;
         }
       }
       .total {
-        width: 32%;
+        width: 441px;
         height: 90px;
         border-right: @BD1;
-        margin: 10px auto;
+        margin: 14px auto;
         h6 {
           span {
             font-weight: normal;
@@ -512,25 +543,35 @@
         }
       }
       .balance {
-        width: 33%;
+        width: 35%;
         p {
-          padding-left: 80px;
+          padding: 34px 0 0 70px;
         }
         h6 {
-          padding-left: 80px;
+          padding: 4px 0 0 70px;
+          font {
+            display: block;
+            float: left;
+          }
           .el-button {
-            padding: 5px 8px;
+            padding: 5px 15px;
             border-radius: 2px;
+            display: block;
+            float: left;
+            margin-top: 2px;
+          }
+          .el-button--default {
+            margin-left: 12px;
           }
         }
       }
       .locking {
-        width: 33%;
+        width: 28%;
         p {
-          padding-left: 80px;
+          padding: 34px 0 0 80px;
         }
         h6 {
-          padding-left: 80px;
+          padding: 4px 0 0 80px;
           span {
             font-weight: normal;
           }
@@ -539,11 +580,15 @@
 
     }
 
-    .el-tabs {
-      margin: 30px auto 0;
-      .el-select {
-        margin: 5px 10px 15px 0;
+    .home_tabs {
+      padding-bottom: 100px;
+      .el-tabs {
+        margin: 30px auto 0;
+        .el-select {
+          margin: 5px 10px 15px 0;
+        }
       }
     }
+
   }
 </style>

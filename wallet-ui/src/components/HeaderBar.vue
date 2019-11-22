@@ -14,6 +14,7 @@
           <el-menu-item index="contract" :disabled="addressList.length === 0 || !nodeServiceInfo.isRunSmartContract">
             {{$t('nav.contracts')}}
           </el-menu-item>
+          <el-menu-item index="application" v-if="false">应用</el-menu-item>
         </el-menu>
       </div>
       <div class="tool">
@@ -28,7 +29,6 @@
                 <font v-else class="w100">{{item.addresss}}</font> |
                 <span>{{item.balance}}</span>
               </span>
-
             </el-menu-item>
           </el-submenu>
           <el-submenu index="set">
@@ -38,12 +38,17 @@
             <el-menu-item index="contact">{{$t('public.bookList')}}</el-menu-item>
             <el-menu-item index="seting">{{$t('public.about')}}</el-menu-item>
           </el-submenu>
-          <el-submenu index="lang">
-            <template slot="title">{{this.lang ==="en" ? "Eng":"中文"}}</template>
-            <el-menu-item index="cn">中文</el-menu-item>
-            <el-menu-item index="en">English</el-menu-item>
-          </el-submenu>
-          <el-submenu index="more">
+
+          <el-menu-item index="lang">
+            <span>{{this.lang ==="en" ? "CN":"EN"}}</span>
+          </el-menu-item>
+
+          <!-- <el-submenu index="lang">
+             <template slot="title">{{this.lang ==="en" ? "Eng":"中文"}}</template>
+             <el-menu-item index="cn">中文</el-menu-item>
+             <el-menu-item index="en">English</el-menu-item>
+           </el-submenu>-->
+          <el-submenu index="more" v-show="symbol ==='NULS'">
             <template slot="title"><i class="el-icon-more"></i></template>
             <el-menu-item index="official">{{$t('tab.tab21')}}</el-menu-item>
             <el-menu-item index="explorer">{{$t('tab.tab22')}}</el-menu-item>
@@ -72,6 +77,7 @@
         addressList: [], //地址列表
         lang: 'cn', //语言选择
         nodeServiceInfo: {},
+        symbol: 'NULS', //symbol
       };
     },
     components: {},
@@ -95,6 +101,8 @@
     },
     mounted() {
       setInterval(() => {
+        this.symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
+        document.title = this.symbol + " Wallet";
         this.getAddressList();
         if (sessionStorage.hasOwnProperty('info')) {
           this.nodeServiceInfo = JSON.parse(sessionStorage.getItem('info'));
@@ -129,8 +137,6 @@
             this.$router.push({
               name: keyPath[1]
             })
-          } else if (keyPath[0] === "lang") {
-            this.selectLanguage(key)
           } else if (keyPath[0] === "more") {
             let newUrl = '';
             if (keyPath[1] === 'official') {
@@ -142,6 +148,8 @@
             }
             connectToExplorer('nuls', newUrl);
           }
+        } else if (key === 'lang') {
+          this.selectLanguage()
         } else {
           this.$router.push({
             name: key
@@ -179,10 +187,13 @@
 
       /**
        * 语言切换
-       * @param e
        */
-      selectLanguage(e) {
-        this.lang = e;
+      selectLanguage() {
+        if (this.lang === 'cn') {
+          this.lang = 'en';
+        } else {
+          this.lang = 'cn';
+        }
         this.$i18n.locale = this.lang;
       },
 
@@ -211,13 +222,19 @@
       float: left;
       img {
         margin: 20px 0 0 0;
-        width: 100%;
+        width: 100px;
+        height: 40px;
       }
     }
     .nav {
       width: 600px;
       margin: 10px 0 0 0;
       float: left;
+      .el-menu {
+        .el-menu-item {
+          padding: 0 15px;
+        }
+      }
     }
     .tool {
       width: 270px;

@@ -14,8 +14,8 @@
     <div class="new w1200 mt_20 bg-white">
       <div class="step_tow w630">
         <div class="tip bg-gray">
-          <p v-if="RUN_PATTERN">{{$t('newAddress.newAddress13')}}</p>
-          <p v-else>{{$t('newAddress.newAddress131')}}</p>
+          <p class="tc" v-if="RUN_PATTERN">{{$t('newAddress.newAddress13')}}</p>
+          <p class="tc" v-else>{{$t('newAddress.newAddress131')}}</p>
         </div>
         <div class="btn mb_20">
           <!--<el-button type="success" @click="backKeystore" v-if="RUN_PATTERN">{{$t('newAddress.newAddress16')}}
@@ -102,13 +102,11 @@
        * @param password
        **/
       async passSubmit(password) {
-        let isPassword = await passwordVerification(this.newAddressInfo, password);
-
+        let isPassword = await passwordVerification(this.newAddressInfo, password,this.prefix);
         if (!isPassword.success) {
           this.$message({message: this.$t('address.address13'), type: 'error', duration: 3000});
           return;
         }
-
         if (this.backType === 0) {
           let FileSaver = require('file-saver');
           let fileInfo = {
@@ -123,55 +121,6 @@
           this.newAddressInfo.pri = isPassword.pri;
           this.keyDialog = true;
         }
-
-        /*let that = this;
-        const pri = nuls.decrypteOfAES(this.newAddressInfo.aesPri, password);
-        const newAddressInfo = nuls.importByKey(chainID(), pri, password, this.prefix);
-        if (newAddressInfo.address === this.newAddressInfo.address) {
-          if (this.backType === 0) {
-            const {dialog} = require('electron').remote;
-            //console.log(dialog);
-            dialog.showOpenDialog({
-              title: that.$t('newAddress.newAddress28'),
-              properties: ['openFile', 'openDirectory']
-            }, function (files) {
-              //console.log(files);
-              if (files) {
-                let fileName = files + '/' + newAddressInfo.address + '.keystore';
-                let fileInfo = {
-                  address: newAddressInfo.address,
-                  encryptedPrivateKey: newAddressInfo.aesPri,
-                  pubKey: that.newAddressInfo.pub,
-                  priKey: null
-                };
-                if (RUN_PATTERN) {
-                  //console.log(JSON.stringify(fileInfo));
-                  let fs = require("fs");
-                  fs.writeFile(fileName, JSON.stringify(fileInfo), 'utf8', function (error) {
-                    if (error) {
-                      that.$message({
-                        message: that.$t('newAddress.newAddress26') + error,
-                        type: 'error',
-                        duration: 1000
-                      });
-                      return false;
-                    }
-                    that.$message({
-                      message: that.$t('newAddress.newAddress27') + files,
-                      type: 'success',
-                      duration: 3000
-                    });
-                  })
-                }
-              }
-            });
-          } else {
-            this.newAddressInfo.pri = pri;
-            this.keyDialog = true;
-          }
-        } else {
-          this.$message({message: this.$t('address.address13'), type: 'error', duration: 1000});
-        }*/
       },
 
       /**

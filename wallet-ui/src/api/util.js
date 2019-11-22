@@ -3,6 +3,7 @@ import {BigNumber} from 'bignumber.js'
 import copy from 'copy-to-clipboard'
 import {explorerUrl, RUN_DEV} from '@/config.js'
 import openner from "./opener-web";
+
 //import openner from "./opener-desktop";
 
 /**
@@ -67,16 +68,22 @@ export function Division(nu, arg) {
 /**
  * 数字除以精度系数
  */
-export function timesDecimals(nu, decimals = 8) {
-  let newNu = new BigNumber(Division(nu, Power(decimals)).toString());
+export function timesDecimals(nu, decimals) {
+  let newInfo = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')) : '';
+  let newDecimals = decimals ? decimals : newInfo.defaultAsset.decimals;
+  //let newDecimals = 8;
+  //console.log(newDecimals);
+  let newNu = new BigNumber(Division(nu, Power(newDecimals)).toString());
   return newNu.toFormat().replace(/[,]/g, '');
 }
 
 /**
  * 数字乘以精度系数
  */
-export function timesDecimals0(nu, decimals = 8) {
-  let newNu = new BigNumber(Times(nu, Power(decimals)).toString());
+export function timesDecimals0(nu, decimals) {
+  let newInfo = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')) : '';
+  let newDecimals = decimals ? decimals : newInfo.defaultAsset.decimals;
+  let newNu = new BigNumber(Times(nu, Power(newDecimals)).toString());
   return Number(newNu);
 }
 
@@ -103,10 +110,10 @@ export function passwordVerification(accountInfo, password, prefix) {
  * @returns {number}
  */
 export function chainID() {
-  if(localStorage.hasOwnProperty('url') && localStorage.getItem('url') !== 'undefined'){
-    let newUrl =  JSON.parse(localStorage.getItem('url'));
+  if (localStorage.hasOwnProperty('url') && localStorage.getItem('url') !== 'undefined') {
+    let newUrl = JSON.parse(localStorage.getItem('url'));
     return newUrl.chainId
-  }else {
+  } else {
     return RUN_DEV ? 1 : 2;
   }
 }
@@ -272,8 +279,13 @@ export function connectToExplorer(name, parameter) {
   } else if (name === 'nuls') {
     newUrl = parameter
   }
-  console.log(newUrl);
-  openner(newUrl);
+  //console.log(newUrl);
+
+  let symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
+  if (symbol === 'NULS') {
+    openner(newUrl);
+  }
+
 }
 
 //地址必须参数列表

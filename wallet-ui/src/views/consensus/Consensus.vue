@@ -9,24 +9,24 @@
       <div class="card-info left fl">
         <h5 class="card-title font18">
           {{$t('consensus.consensus0')}}
-          <span class="font14 fr">{{addressInfo.totalReward}}<font class="fCN"> {{addressInfo.symbol}}</font></span>
+          <span class="font14 fr">{{Number(addressInfo.totalReward).toFixed(3)}}<font class="fCN"> {{addressInfo.symbol}}</font></span>
         </h5>
         <ul>
           <li>
             {{$t('consensus.consensus1')}}
             <label>
               <u class="click"
-                 @click="toUrl('consensusList',addressInfo.consensusLock)">{{addressInfo.consensusLock}}</u>
+                 @click="toUrl('consensusList',addressInfo.consensusLock)">{{Number(addressInfo.consensusLock).toFixed(3)}}</u>
               <span class="fCN">{{addressInfo.symbol}}</span>
             </label>
           </li>
           <li>
             {{$t('consensus.consensus2')}}
-            <label>{{addressInfo.balance}}<span class="fCN">{{addressInfo.symbol}}</span></label>
+            <label>{{Number(addressInfo.balance).toFixed(3)}}<span class="fCN">{{addressInfo.symbol}}</span></label>
           </li>
           <li>
             {{$t('consensus.consensus3')}}
-            <label>{{addressInfo.lastReward}}<span class="fCN">{{addressInfo.symbol}}</span></label>
+            <label>{{Number(addressInfo.lastReward).toFixed(3)}}<span class="fCN">{{addressInfo.symbol}}</span></label>
           </li>
         </ul>
       </div>
@@ -40,7 +40,8 @@
         <ul>
           <li>
             {{$t('consensus.consensus8')}}
-            <label>{{nulsCount.consensusTotal}}<span class="fCN">{{addressInfo.symbol}}</span></label>
+            <label>{{Number(nulsCount.consensusTotal).toFixed(3)}}<span
+                    class="fCN">{{addressInfo.symbol}}</span></label>
           </li>
           <li>{{$t('consensus.consensus7')}} <label>{{nodeCount.agentCount}}</label></li>
           <li>{{$t('consensus.consensus6')}} <label>{{nodeCount.consensusCount}}</label></li>
@@ -144,7 +145,7 @@
 
         searchValue: '',//搜索框
         allNodeData: [],//所有节点信息
-        allNodeLoading:true,//所有节点信息加载动画
+        allNodeLoading: true,//所有节点信息加载动画
         addressInfo: [], //账户信息
         agentAsset: JSON.parse(sessionStorage.getItem('info')),//pocm合约单位等信息
         isRed: false,//地址是否有红牌
@@ -237,20 +238,21 @@
               let newAddressInfo = addressInfo(0);
               for (let item of newAddressInfo) {
                 if (item.address === addressInfos.address) {
-                  item.alias = response.result.alias;
-                  item.symbol = response.result.symbol;
-                  item.balance = timesDecimals(response.result.balance);
-                  item.consensusLock = timesDecimals(response.result.consensusLock);
-                  item.totalReward = timesDecimals(response.result.totalReward);
+                  newAddressInfo.alias = response.result.alias;
+                  newAddressInfo.symbol = response.result.symbol;
+                  newAddressInfo.balance = timesDecimals(response.result.balance);
+                  newAddressInfo.consensusLock = timesDecimals(response.result.consensusLock);
+                  newAddressInfo.totalReward = timesDecimals(response.result.totalReward);
                   if (response.result.lastReward) {
-                    item.lastReward = timesDecimals(response.result.lastReward);
+                    newAddressInfo.lastReward = timesDecimals(response.result.lastReward);
                   } else {
-                    item.lastReward = 0;
+                    newAddressInfo.lastReward = 0;
                   }
-                  item.totalIn = timesDecimals(response.result.totalIn);
-                  item.totalOut = timesDecimals(response.result.totalOut);
+                  newAddressInfo.totalIn = timesDecimals(response.result.totalIn);
+                  newAddressInfo.totalOut = timesDecimals(response.result.totalOut);
                 }
               }
+              //newAddressInfo =
               localStorage.setItem(chainIdNumber(), JSON.stringify(newAddressInfo));
             }
           })
@@ -327,10 +329,10 @@
                   itme.isCollect = false;
                 }
                 itme.bozhengjin = itme.deposit;
-                itme.deposit = timesDecimals(itme.deposit);
-                itme.agentReward = timesDecimals(itme.agentReward);
-                itme.totalDeposit = timesDecimals(itme.totalDeposit);
-                itme.totalReward = timesDecimals(itme.totalReward);
+                itme.deposit = Number(timesDecimals(itme.deposit)).toFixed(3);
+                itme.agentReward = Number(timesDecimals(itme.agentReward)).toFixed(3);
+                itme.totalDeposit = Number(timesDecimals(itme.totalDeposit)).toFixed(3);
+                itme.totalReward = Number(timesDecimals(itme.totalReward)).toFixed(3);
                 if (itme.agentAddress === this.addressInfo.address) {
                   this.isNew = true;//创建的节点
                 } else {
@@ -413,9 +415,9 @@
                   item.isCollect = false;
                 }
                 newAgentIdList.push(item.agentId);
-                item.deposit = timesDecimals(item.deposit);
-                item.totalDeposit = timesDecimals(item.totalDeposit);
-                item.totalReward = timesDecimals(item.totalReward);
+                item.deposit = Number(timesDecimals(item.deposit)).toFixed(3);
+                item.totalDeposit = Number(timesDecimals(item.totalDeposit)).toFixed(3);
+                item.totalReward = Number(timesDecimals(item.totalReward)).toFixed(3);
                 if (item.agentAddress === this.addressInfo.address) {
                   item.isNew = true;//创建的节点
                   this.isNew = true;

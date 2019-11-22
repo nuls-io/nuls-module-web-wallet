@@ -149,11 +149,28 @@
       this.loading = true;
       setTimeout(() => {
         this.nodeServiceData = this.$store.getters.getUrlData;
+        let newInfo = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')) : '';
+        if (newInfo) {
+          let newUrlsList = ['https://wallet.nuls.io/public', 'https://public1.nuls.io', 'https://public1.nuls.io', 'https://beta.wallet.nuls.io/api', 'http://beta.public1.nuls.io/', 'http://beta.public2.nuls.io/']
+          let newUrlData = this.$store.getters.getUrlData;
+          if (newInfo.defaultAsset.symbol !== 'NULS') {
+            for (let item of newUrlsList) {
+              if (newUrlData.findIndex(o => o.urls === item) !== -1) {
+                newUrlData.splice(newUrlData.findIndex(o => o.urls === item), 1);
+              }
+            }
+            this.nodeServiceData = newUrlData;
+          }
+        } else {
+          this.nodeServiceData = this.$store.getters.getUrlData;
+        }
       }, 500);
     },
     mounted() {
       setTimeout(() => {
         this.getDelay();
+        /*this.symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
+        document.title = this.symbol + " wallet";*/
       }, 500);
     },
     methods: {

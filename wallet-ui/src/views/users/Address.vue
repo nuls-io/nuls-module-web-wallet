@@ -9,9 +9,9 @@
       <el-table :data="addressList" stripe border>
         <el-table-column prop="address" :label="$t('address.address1')" align="center" min-width="330">
         </el-table-column>
-        <el-table-column prop="total" :label="$t('tab.tab2')" align="center" width="140">
+        <el-table-column prop="total" :label="$t('tab.tab2')" align="center" width="150">
         </el-table-column>
-        <el-table-column prop="balance" :label="$t('consensus.consensus2')" align="center" width="140">
+        <el-table-column prop="balance" :label="$t('consensus.consensus2')" align="center" width="150">
         </el-table-column>
         <!-- <el-table-column prop="consensusLock" :label="$t('tab.tab3')" align="center" width="140">
          </el-table-column>-->
@@ -32,7 +32,7 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('address.address5')" align="center" min-width="300">
+        <el-table-column :label="$t('address.address5')" align="center" width="370">
           <template slot-scope="scope">
             <label class="click tab_bn" @click="editPassword(scope.row)">{{$t('address.address6')}}</label>
             <span class="tab_line">|</span>
@@ -207,8 +207,21 @@
        * @param rowInfo
        **/
       deleteAddress(rowInfo) {
-        this.selectAddressInfo = rowInfo;
-        this.$refs.password.showPassword(true)
+        this.$confirm(this.$t('tab.tab29'), this.$t('tab.tab32'), {
+          confirmButtonText: this.$t('tab.tab30'),
+          cancelButtonText: this.$t('nodeService.nodeService8'),
+          type: 'warning',
+          showClose: false,
+          closeOnClickModal: false,
+          closeOnPressEscape: false,
+          center: true
+        }).then(() => {
+          this.backAddress(rowInfo);
+        }).catch(() => {
+          this.selectAddressInfo = rowInfo;
+          this.$refs.password.showPassword(true)
+        });
+
       },
 
       /**
@@ -315,6 +328,16 @@
               color: white;
             }
           }
+        }
+      }
+    }
+  }
+
+  .el-message-box__wrapper{
+    .el-message-box__content{
+      .el-message-box__message{
+        p{
+          color: red;
         }
       }
     }
