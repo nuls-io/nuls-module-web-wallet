@@ -3,8 +3,6 @@
  */
 "use strict";
 
-//链ID
-export const API_CHAIN_ID = localStorage.hasOwnProperty('chainID') ? Number(localStorage.getItem('chainID')) : 1;
 //燃烧地址的公钥
 export const API_BURNING_ADDRESS_PUB = '000000000000000000000000000000000000000000000000000000000000000000';
 //运行环境（true:正式环境，false:测试环境）
