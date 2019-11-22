@@ -37,7 +37,7 @@ export const defaultData = RUN_PATTERN ? electronData : explorerData;
 export const defaultUrl = RUN_PATTERN ? electronData[0] : explorerData[0];
 
 //默认浏览器地址（跳转地址）
-export const explorerUrl = 'http://www.nulscan.io/';
+export const explorerUrl = ''; //请填写正确的浏览器地址
 //ChainId和资产ID
-export const MAIN_INFO = {chainId: 1, assetId: 1};
+export const MAIN_INFO = {chainId: 1, assetId: 1};  //连接不到服务器会取这个
 
