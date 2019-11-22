@@ -5,7 +5,9 @@
   "scripts": {
     "serve": "cross-env NULS_ENV=prod vue-cli-service serve src/main-web",
     "serve-beta": "cross-env NULS_ENV=beta vue-cli-service serve src/main-web",
+    "serve-other": "cross-env NULS_ENV=other vue-cli-service serve src/main-web",
     "build": "cross-env NULS_ENV=prod vue-cli-service build src/main-web",
+    "build-other": "cross-env NULS_ENV=other vue-cli-service build src/main-web",
     "build-beta": "cross-env NULS_ENV=beta vue-cli-service build src/main-web",
     "lint": "vue-cli-service lint",
     "electron:build": "cross-env NULS_ENV=electron-prod vue-cli-service electron:build",

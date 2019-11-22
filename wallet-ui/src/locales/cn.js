@@ -744,7 +744,7 @@ const cn = {
   },
 
   "address": {
-    "address0": "地址管理",
+    "address0": "账户管理",
     "address1": "账户",
     "address2": "余额",
     "address3": "别名",
