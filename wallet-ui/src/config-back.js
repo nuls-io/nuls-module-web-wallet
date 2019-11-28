@@ -67,40 +67,7 @@ const explorerData = [
     delay: '10ms',
     selection: true,
     isDelete: false
-  },
-  {
-    name: 'Official',
-    chainId: MAIN_INFO.assetsId,
-    assetId: MAIN_INFO.assetId,
-    decimals: 8,
-    chainName: RUN_DEV ? 'NULS' : 'tNULS',
-    urls: RUN_DEV ? 'https://wallet.nuls.io/public' : 'https://beta.wallet.nuls.io/api',
-    delay: '10ms',
-    selection: false,
-    isDelete: false
-  },
-  {
-    name: 'Official',
-    chainId: MAIN_INFO.assetsId,
-    assetId: MAIN_INFO.assetId,
-    decimals: 8,
-    chainName: RUN_DEV ? 'NULS' : 'tNULS',
-    urls: RUN_DEV ? 'https://public1.nuls.io' : 'http://apitn1.nulscan.io',
-    delay: '10ms',
-    selection: false,
-    isDelete: false
-  },
-  {
-    name: 'Official',
-    chainId: MAIN_INFO.assetsId,
-    assetId: MAIN_INFO.assetId,
-    decimals: 8,
-    chainName: RUN_DEV ? 'NULS' : 'tNULS',
-    urls: RUN_DEV ? 'http://public2.nuls.io' : 'http://apitn2.nulscan.io',
-    delay: '10ms',
-    selection: false,
-    isDelete: false
-  },
+  }
 ];
 export const defaultData = RUN_PATTERN ? electronData : explorerData;
 
