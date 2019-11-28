@@ -29,8 +29,19 @@ const explorerData = [
     chainId: MAIN_INFO.chainId,
     assetId: MAIN_INFO.assetId,
     decimals: 8,
-    chainName: RUN_DEV ? 'NULS' : 'tNULS',
+    chainName: RUN_DEV ? 'BBAI' : 'BBAI',
     urls: '/api',
+    delay: '10ms',
+    selection: true,
+    isDelete: false
+  },
+  {
+    name: 'Official',
+    chainId: MAIN_INFO.chainId,
+    assetId: MAIN_INFO.assetId,
+    decimals: 8,
+    chainName: RUN_DEV ? 'BBAI' : 'BBAI',
+    urls: 'http://wallet.bbai.io:8003',
     delay: '10ms',
     selection: true,
     isDelete: false
