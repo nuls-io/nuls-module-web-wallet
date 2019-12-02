@@ -273,7 +273,9 @@
 
       setTimeout(() => {
         this.getCapitalListByAddress(this.transferForm.fromAddress);
-        this.loading = false;
+        setTimeout(() => {
+          this.loading = false;
+        }, 1500);
       }, 600);
 
     },
@@ -626,7 +628,6 @@
             defaultType = this.$route.query.accountType.contractAddress
           }
         }
-        //console.log(this.assetsList);
         for (let item of this.assetsList) {
           if (defaultType === 'NULS') {
             if (item.symbol === defaultType) {
@@ -634,7 +635,7 @@
               this.transferForm.type = item.symbol;
             }
           } else {
-            if (item.contractAddress === defaultType) {
+            if (item.symbol === defaultType) {
               this.changeAssets = item;
               this.transferForm.type = item.symbol;
             }
