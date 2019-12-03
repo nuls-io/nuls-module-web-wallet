@@ -94,28 +94,45 @@ cd $ROOT_PATH
 mvn package -Dmaven.test.skip=true
 mv "target/${APP_NAME}.jar" ${OUT_PATH}/${APP_NAME}-${version}.jar
 cp -r "target/libs" "${OUT_PATH}/lib"
-if [ "$1" == "n" ]; then
-    cd ./wallet-ui
-    yarn
-    npm run build
-    rm -rf ../www
-    mv ./dist ../www
-    cd ..
-fi
-cp -r ./www ./outer/www
-if [ "$1" == "prod" ]; then
+#if [ "$1" == "n" ]; then
+#    cd ./wallet-ui
+#    yarn
+#    npm run build
+#    rm -rf ../www
+#    mv ./dist ../www
+#    cd ..
+#fi
+#cp -r ./www ./outer/www
+#if [ "$1" == "prod" ]; then
+#    cd ./wallet-ui
+#    yarn
+#    npm run build
+#    rm -rf ../outer/www
+#    mv ./dist ../outer/www
+#fi
+#if [ "$1" == "beta" ]; then
+#    cd ./wallet-ui
+#    yarn
+#    npm run build-beta
+#    rm -rf ../outer/www
+#    mv ./dist ../outer/www
+#fi
+if [ "$1" == "n" ];
+then
     cd ./wallet-ui
     yarn
     npm run build
     rm -rf ../outer/www
     mv ./dist ../outer/www
-fi
-if [ "$1" == "beta" ]; then
-    cd ./wallet-ui
-    yarn
-    npm run build-beta
-    rm -rf ../outer/www
-    mv ./dist ../outer/www
+else
+     if [ "$1" != "" ]; then
+         echo $1
+         cd ./wallet-ui
+         yarn
+         npm run build-$1
+         rm -rf ../outer/www
+         mv ./dist ../outer/www
+     fi
 fi
 #cp ./web-config ./outer/www/config.js
 echo "============ PACKAGE FINISH 🍺🍺🍺🎉🎉🎉 ==============="
