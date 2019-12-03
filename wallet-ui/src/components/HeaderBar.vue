@@ -221,9 +221,9 @@
       width: 120px;
       float: left;
       img {
-        margin: 20px 0 0 0;
+        margin: -5px 0 0 0;
         width: 100px;
-        height: 40px;
+        height: 84px;
       }
     }
     .nav {

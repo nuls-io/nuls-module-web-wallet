@@ -1,18 +1,13 @@
 {
-  "name": "NULS-Wallet",
-  "version": "2.1.0",
+  "name": "BBAI-Wallet",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "serve": "cross-env NULS_ENV=prod vue-cli-service serve src/main-web",
-    "serve-beta": "cross-env NULS_ENV=beta vue-cli-service serve src/main-web",
-    "serve-other": "cross-env NULS_ENV=other vue-cli-service serve src/main-web",
     "build": "cross-env NULS_ENV=prod vue-cli-service build src/main-web",
-    "build-other": "cross-env NULS_ENV=other vue-cli-service build src/main-web",
-    "build-beta": "cross-env NULS_ENV=beta vue-cli-service build src/main-web",
     "lint": "vue-cli-service lint",
-    "electron:build": "cross-env NULS_ENV=electron-prod vue-cli-service electron:build",
     "electron:serve": "cross-env NULS_ENV=electron-prod vue-cli-service electron:serve",
-    "electron:serve-beta": "cross-env NULS_ENV=electron-beta vue-cli-service electron:serve",
+    "electron:build": "cross-env NULS_ENV=electron-prod vue-cli-service electron:build",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps"
   },

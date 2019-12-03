@@ -134,7 +134,7 @@
       let validateAgreement = (rule, value, callback) => {
         if (!value) {
           callback(new Error(this.$t('newAddress.newAddress29')));
-        }  else {
+        } else {
           callback();
         }
       };
@@ -244,7 +244,7 @@
        * @author: Wave
        */
       async keystoreImportPassSubmit(password) {
-        let isPassword = passwordVerification(this.keystoreInfo, password);
+        let isPassword = passwordVerification(this.keystoreInfo, password, this.prefix);
         if (isPassword.success) {
           let keystoreAddressInfo = defaultAddressInfo;
           keystoreAddressInfo.address = isPassword.address;
