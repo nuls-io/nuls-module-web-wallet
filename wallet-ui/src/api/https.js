@@ -9,6 +9,7 @@ setInterval(() => {
 }, 500);
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 import logger from "./logger-web"
+
 // import logger from "./logger-desktop"
 
 /**
@@ -21,8 +22,10 @@ import logger from "./logger-web"
  */
 export function post(url, methodName, data = [], templateName = '') {
   return new Promise((resolve, reject) => {
-    data.unshift(chainID());
-    const params = {"jsonrpc": "2.0", "method": methodName, "params": data, "id": Math.floor(Math.random()*1000)};
+    if (methodName !== 'getMsg' && methodName !== 'commitMsg') {
+      data.unshift(chainID());
+    }
+    const params = {"jsonrpc": "2.0", "method": methodName, "params": data, "id": Math.floor(Math.random() * 1000)};
     //console.log(params);
     axios.post(url, params)
       .then(response => {

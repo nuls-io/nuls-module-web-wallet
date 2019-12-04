@@ -302,3 +302,28 @@ export async function getPrefixByChainId(chainId) {
     return '';
   }
 }
+
+/**
+ * @disc: 获取扫描后签名信息
+ * @params: importRandomString
+ * @date: 2019-12-02 16:39
+ * @author: Wave
+ */
+export async function getScanAutograph(randomString) {
+  return await post('/', 'getMsg', [randomString])
+    .then(async (response) => {
+      console.log(response);
+      if (response.hasOwnProperty("result") && response.result.pub) {
+        if (response.result.pub && response.result.signValue) {
+          return {success: true, data: {signValue: response.result.signValue, pub: response.result.pub}}
+        } else {
+          return {success: true, data: {}}
+        }
+      } else {
+        return {success: false, data: response}
+      }
+    })
+    .catch((error) => {
+      return {success: false, data: error}
+    });
+}

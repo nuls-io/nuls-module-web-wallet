@@ -273,19 +273,16 @@ export function connectToExplorer(name, parameter) {
     newUrl = explorerUrl + 'contracts'
   } else if (name === 'consensusInfo') {
     newUrl = explorerUrl + 'consensus/info?hash=' + parameter
-  }
-  else if (name === 'transactionInfo') {
+  } else if (name === 'transactionInfo') {
     newUrl = explorerUrl + 'transaction/info?hash=' + parameter
   } else if (name === 'nuls') {
     newUrl = parameter
   }
   //console.log(newUrl);
-
   let symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
   if (symbol === 'NULS') {
     openner(newUrl);
   }
-
 }
 
 //地址必须参数列表
@@ -381,4 +378,20 @@ function isObject(obj) {
  */
 function isArray(arr) {
   return Object.prototype.toString.call(arr) === '[object Array]';
+}
+
+/**
+ * @disc: 随机数
+ * @params: len
+ * @date: 2019-12-02 14:43
+ * @author: Wave
+ */
+export function getRamNumber(len) {
+  let chars = 'ABCDEFGHJKLMNOPQRSVTWXYIUZabcdefhijkmnprstwxyzovu0123456789';
+  let maxPos = chars.length;
+  let ramNumber = '';
+  for (let i = 0; i < len; i++) {
+    ramNumber += chars.charAt(Math.floor(Math.random() * maxPos));
+  }
+  return ramNumber;
 }

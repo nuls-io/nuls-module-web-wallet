@@ -20,8 +20,8 @@
         <div class="btn mb_20">
           <!--<el-button type="success" @click="backKeystore" v-if="RUN_PATTERN">{{$t('newAddress.newAddress16')}}
           </el-button>-->
-          <el-button type="success" @click="backKeystore">{{$t('newAddress.newAddress16')}}
-          </el-button>
+          <el-button type="success" @click="backKeystore">{{$t('newAddress.newAddress16')}}</el-button>
+          <el-button type="success" @click="backScan">二维码备份</el-button>
           <el-button type="success" @click="backKey">{{$t('newAddress.newAddress17')}}</el-button>
           <el-button @click="toUrl('home')">{{$t('tab.tab24')}}</el-button>
         </div>
@@ -43,10 +43,17 @@
         <el-button type="success" @click="copy(newAddressInfo.pri)">{{$t('newAddress.newAddress21')}}</el-button>
       </span>
     </el-dialog>
+
+    <el-dialog title="备份二维码" :visible.sync="scanDialog" width="450px" center @close="scanDialogClose">
+      <div>
+        <div id="qrcode" class="qrcode"></div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
+  import QRCode from 'qrcodejs2'
   import Password from '@/components/PasswordBar'
   import BackBar from '@/components/BackBar'
   import {copys, chainID, passwordVerification} from '@/api/util'
@@ -59,8 +66,9 @@
         prefix: '',//地址前缀
         newAddressInfo: {},//备份账户信息
         keyDialog: false, //key弹框
-        backType: 0,//备份类型 0：keystore备份 1：明文私钥备份
+        backType: 0,//备份类型 0：keystore备份 1：明文私钥备份 2:二维码备份
         RUN_PATTERN: RUN_PATTERN,//运行模式
+        scanDialog: false,//二维码显示框
       };
     },
     created() {
@@ -90,6 +98,23 @@
       },
 
       /**
+       * @disc: 二维码备份
+       * @date: 2019-12-03 9:55
+       * @author: Wave
+       */
+      backScan() {
+        this.$confirm('二维码显示以后容易被拍照和摄像请确保环境周边的安全', '安全警告', {
+          confirmButtonText: '确定安全查看',
+          cancelButtonText: '不安全',
+          type: 'warning'
+        }).then(() => {
+          this.backType = 2;
+          this.$refs.password.showPassword(true);
+        }).catch(() => {
+        });
+      },
+
+      /**
        * 备份私钥
        **/
       backKey() {
@@ -102,7 +127,7 @@
        * @param password
        **/
       async passSubmit(password) {
-        let isPassword = await passwordVerification(this.newAddressInfo, password,this.prefix);
+        let isPassword = await passwordVerification(this.newAddressInfo, password, this.prefix);
         if (!isPassword.success) {
           this.$message({message: this.$t('address.address13'), type: 'error', duration: 3000});
           return;
@@ -117,10 +142,44 @@
           };
           let blob = new Blob([JSON.stringify(fileInfo)], {type: "text/plain;charset=utf-8"});
           FileSaver.saveAs(blob, isPassword.address + ".keystore");
-        } else {
+        } else if (this.backType === 1) {
           this.newAddressInfo.pri = isPassword.pri;
           this.keyDialog = true;
+        } else {
+          this.scanDialog = true;
+          let scanInfo = {
+            address: isPassword.address,
+            encryptedPrivateKey: isPassword.aesPri,
+            pubKey: isPassword.pub,
+          };
+          setTimeout(() => {
+            this.createScan(scanInfo);
+          }, 300);
         }
+      },
+
+      /**
+       * @disc: 生成备份二维码
+       * @date: 2019-12-02 16:38
+       * @author: Wave
+       */
+      async createScan(scanInfo) {
+        let qrcode = new QRCode('qrcode', {
+          width: 400,
+          height: 400,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+        });
+        qrcode.makeCode(JSON.stringify(scanInfo));
+      },
+
+      /**
+       * @disc: 关闭二维码备份弹框
+       * @date: 2019-12-03 10:32
+       * @author: Wave
+       */
+      scanDialogClose() {
+        document.getElementById('qrcode').innerHTML = ''
       },
 
       /**

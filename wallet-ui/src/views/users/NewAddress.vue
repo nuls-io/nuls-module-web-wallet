@@ -17,7 +17,6 @@
           </div>
         </el-tab-pane>
         <el-tab-pane :label="$t('importAddress.importAddress3')" name="keyImport">
-
           <div class="tab w1200 mt_30">
             <div class="tc font18 mzt_20" v-if="resetAddress !=='0'">
               {{$t('public.resetAddress')}}: {{resetAddress}}
@@ -37,6 +36,14 @@
                 </el-button>
               </el-form-item>
             </el-form>
+          </div>
+        </el-tab-pane>
+        <el-tab-pane label="扫描导入" name="scanImport">
+          <div class="scan tc">
+            <div id="qrcode" class="qrcode"></div>
+            <div class="font12" style="margin: 5px 0 0 0">
+              (<span class="click td" @click="toUrl('https://www.denglu1.cn/',1)">登录易</span>)
+            </div>
           </div>
         </el-tab-pane>
         <el-tab-pane :label="$t('importAddress.importAddress0')" name="newAddress" :disabled="resetAddress !=='0'">
@@ -71,7 +78,17 @@
 
 <script>
   import nuls from 'nuls-sdk-js'
-  import {chainID, defaultAddressInfo, localStorageByAddressInfo, passwordVerification} from '@/api/util'
+  import QRCode from 'qrcodejs2'
+  import {
+    chainID,
+    defaultAddressInfo,
+    localStorageByAddressInfo,
+    passwordVerification,
+    getRamNumber,
+    timesDecimals,
+    Plus,
+    connectToExplorer
+  } from '@/api/util'
   import {getPrefixByChainId} from '@/api/requestData'
   import Password from '@/components/PasswordBar'
 
@@ -134,7 +151,7 @@
       let validateAgreement = (rule, value, callback) => {
         if (!value) {
           callback(new Error(this.$t('newAddress.newAddress29')));
-        }  else {
+        } else {
           callback();
         }
       };
@@ -162,6 +179,8 @@
           ]
         },
         importAddressInfo: {},//私钥导入地址信息
+        importRandomString: '',//扫描导入随机字符串
+
         newAddressForm: {
           pass: '',
           checkPass: '',
@@ -179,6 +198,7 @@
           ],
         },
         newAddressInfo: {},//创建地址信息
+        scanImportInterval: null,
       };
     },
     components: {
@@ -192,9 +212,37 @@
         this.prefix = '';
       });
       this.activeName = this.resetAddress !== '0' ? 'keyImport' : 'keystoreImport';
-
+    },
+    mounted() {
+      this.ramNumber();
+    },
+    beforeDestroy() {
+      clearInterval(this.scanImportInterval);
     },
     methods: {
+
+      /**
+       * @disc: 生成扫描登录的二维码
+       * @date: 2019-12-02 16:38
+       * @author: Wave
+       */
+      async ramNumber() {
+        if (!this.importRandomString) {
+          this.importRandomString = await getRamNumber(16);
+        }
+        let scanInfo = {
+          url: "http://192.168.1.68:18003/",
+          send: this.importRandomString,//字符串，随机生成，作为应用发送数据的标识
+        };
+        console.log(this.importRandomString);
+        let qrcode = new QRCode('qrcode', {
+          width: 300,
+          height: 300,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+        });
+        qrcode.makeCode(JSON.stringify(scanInfo))
+      },
 
       /**
        * @disc: tab选择
@@ -212,11 +260,71 @@
           this.keystoreInfo = {};
           this.newAddressInfo = {};
           this.$refs['newAddressForm'].resetFields();
+        } else if (tab.name === 'scanImport') {
+          this.scanImportInterval = setInterval(() => {
+            this.getScanImport(this.importRandomString);
+          }, 3000);
         } else {
           this.keystoreInfo = {};
           this.importAddressInfo = {};
           this.$refs['importForm'].resetFields();
         }
+      },
+
+      /**
+       * @disc: 获取扫描导入后的信息
+       * @params: importRandomString
+       * @date: 2019-12-02 16:39
+       * @author: Wave
+       */
+      async getScanImport(importRandomString) {
+        await this.$post('/', 'getMsg', [importRandomString])
+          .then((response) => {
+            //console.log(response);
+            if (response.hasOwnProperty("result")) {
+              let addressInfo = {address: response.result.address, aesPri: '', pub: ''};
+              this.getAddressInfo(addressInfo);
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      },
+
+      /**
+       * 获取地址NULS资产信息
+       * @param addressInfo
+       **/
+      async getAddressInfo(addressInfo) {
+        await this.$post('/', 'getAccountLedgerList', [addressInfo.address])
+          .then((response) => {
+            //console.log(response);
+            let newAssetsList = {
+              address: addressInfo.address,
+              aesPri: addressInfo.aesPri,
+              pub: addressInfo.pub,
+              remark: ''
+            };
+            if (response.hasOwnProperty("result")) {
+              newAssetsList.account = response.result[0].symbol;
+              newAssetsList.chainId = response.result[0].chainId;
+              newAssetsList.assetId = response.result[0].assetId;
+              newAssetsList.type = 1;
+              newAssetsList.balance = Number(timesDecimals(response.result[0].balance)).toFixed(3);
+              newAssetsList.locking = Number(timesDecimals(Plus(response.result[0].consensusLock, response.result[0].timeLock))).toFixed(3);
+              newAssetsList.total = response.result[0].totalBalance !== 0 ? Number(timesDecimals(response.result[0].totalBalance)).toFixed(3) : 0;
+            } else {
+              newAssetsList.account = response.result.symbol;
+              newAssetsList.chainId = response.result.chainId;
+              newAssetsList.assetId = response.result.assetId;
+              newAssetsList.type = 1;
+              newAssetsList.total = 0;
+              newAssetsList.locking = 0;
+              newAssetsList.balance = 0;
+            }
+            localStorageByAddressInfo(newAssetsList);
+            this.toUrl('address')
+          })
       },
 
       /**
@@ -244,7 +352,7 @@
        * @author: Wave
        */
       async keystoreImportPassSubmit(password) {
-        let isPassword = passwordVerification(this.keystoreInfo, password);
+        let isPassword = passwordVerification(this.keystoreInfo, password, this.prefix);
         if (isPassword.success) {
           let keystoreAddressInfo = defaultAddressInfo;
           keystoreAddressInfo.address = isPassword.address;
@@ -253,7 +361,7 @@
           localStorageByAddressInfo(keystoreAddressInfo);
           this.toUrl('address')
         } else {
-          this.$message({message: "密码错误，请输入正确的密码!", type: 'error', duration: 2000});
+          this.$message({message: this.$t('address.address13'), type: 'error', duration: 3000});
         }
       },
 
@@ -310,10 +418,14 @@
        * @date: 2019-09-02 11:12
        * @author: Wave
        */
-      toUrl(name) {
-        this.$router.push({
-          name: name
-        })
+      toUrl(name, type = 0) {
+        if (type === 0) {
+          this.$router.push({
+            name: name
+          })
+        } else {
+          connectToExplorer('nuls', name);
+        }
       },
     }
   }
@@ -363,18 +475,27 @@
           padding: 100px 0 100px 0;
           border: 1px solid #E4E7ED;
         }
-
         .form-bnt {
           text-align: center;
           .el-button--success {
             width: 190px;
           }
         }
-
         .tab {
           border: 1px solid #E4E7ED;
           .import-form {
             margin: 60px auto 100px;
+          }
+        }
+        .scan {
+          width: 100%;
+          min-height: 500px;
+          margin: 0 auto;
+          padding: 80px 0 0 0;
+          border: 1px solid #E4E7ED;
+          .qrcode {
+            width: 300px;
+            margin: 0 auto;
           }
         }
         .new_address {

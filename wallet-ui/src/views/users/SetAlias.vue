@@ -10,22 +10,22 @@
       <div class="w630">
         <h3 class="tc mzt_20">{{this.$route.query.address}}</h3>
         <div class="tip bg-gray">
-          <p>• {{$t('setAlias.setAlias1')}}{{addressInfo.symbol}}{{$t('setAlias.setAlias11')}}</p>
-          <p>• {{$t('setAlias.setAlias2')}}{{addressInfo.symbol}}</p>
+          <p>• {{$t('setAlias.setAlias1')}}{{symbol}}{{$t('setAlias.setAlias11')}}</p>
+          <p>• {{$t('setAlias.setAlias2')}}{{symbol}}</p>
         </div>
         <el-form :model="aliasForm" status-icon :rules="aliasRules" ref="aliasForm" class="mb_20">
           <el-form-item :label="$t('public.alias')" prop="alias">
-            <span class="balance font12 fr">{{$t('public.usableBalance')}}：{{addressInfo.balance}}</span>
+            <span class="balance font12 fr">{{$t('public.usableBalance')}}：{{addressInfo.balance}} <font class="fCN">{{symbol}}</font></span>
             <el-input type="text" v-model="aliasForm.alias" maxlength="20" autocomplete="off"></el-input>
           </el-form-item>
           <div class="div-data font14">
-            {{$t('public.fee')}}: <label>0.001 <span class="fCN">{{addressInfo.symbol}}</span></label>
+            {{$t('public.fee')}}: <label>0.001 <span class="fCN">{{symbol}}</span></label>
           </div>
           <el-form-item class="form-next">
             <el-button type="success" @click="submitAliasForm('aliasForm')"> {{$t('public.next')}}</el-button>
           </el-form-item>
           <div class="tc font18 mzt_20">
-            {{$t('setAlias.setAlias3')}}: 1.001
+            {{$t('setAlias.setAlias3')}}: 1.001 <span class="fCN">{{symbol}}</span>
           </div>
         </el-form>
       </div>
@@ -37,11 +37,11 @@
 
 <script>
   import nuls from 'nuls-sdk-js'
-  import {inputsOrOutputs, validateAndBroadcast,getPrefixByChainId} from '@/api/requestData'
+  import {inputsOrOutputs, validateAndBroadcast, getPrefixByChainId} from '@/api/requestData'
   import Password from '@/components/PasswordBar'
   import BackBar from '@/components/BackBar'
   import * as config from '@/config.js'
-  import {addressInfo, chainID} from '@/api/util'
+  import {addressInfo, chainID, getRamNumber} from '@/api/util'
 
   export default {
     data() {
@@ -67,6 +67,9 @@
         addressInfo: '', //默认账户信息
         balanceInfo: '',//账户余额信息
         prefix: '',//地址前缀
+        symbol: sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS', //symbol
+        getSetAliasRandomString: '',
+        sendSetAliasRandomString: '',
       };
     },
     created() {
@@ -80,7 +83,8 @@
 
       for (let item of addressInfo(0)) {
         if (item.address === this.$route.query.address) {
-          this.addressInfo = item
+          this.addressInfo = item;
+          //console.log(this.addressInfo)
         }
       }
 
@@ -108,9 +112,22 @@
        * @param formName
        */
       submitAliasForm(formName) {
-        this.$refs[formName].validate((valid) => {
+        this.$refs[formName].validate(async (valid) => {
           if (valid) {
             if (this.balanceInfo.balance > 100100000) {
+              let address = this.$route.query.address;
+              let addressList = addressInfo(0);
+              for (let item of addressList) {
+                if (item.address === address && item.aesPri === '') {
+                  this.getSetAliasRandomString = await getRamNumber(16);
+                  this.sendSetAliasRandomString = await getRamNumber(16);
+                  let setAliasHex = await this.setAliasAssemble();
+                  let hash = setAliasHex.getHash();
+                  console.log(hash.toString('hex'));
+                  this.commitData(this.sendSetAliasRandomString, setAliasHex);
+                  return
+                }
+              }
               this.$refs.password.showPassword(true);
             } else {
               this.$message({message: this.$t('newConsensus.newConsensus7'), type: 'error', duration: 1000});
@@ -119,6 +136,31 @@
             return false;
           }
         });
+      },
+
+      /**
+       * @disc: 发送消息到后台
+       * @params: key,value
+       * @date: 2019-12-02 16:39
+       * @author: Wave
+       */
+      async commitData(key, value) {
+        await this.$post('/', 'commitMsg', [key, value])
+          .then((response) => {
+            //console.log(response);
+            if (response.hasOwnProperty("result")) {
+              let txInfo = {
+                url: "http://192.168.1.68:18003/",
+                get: this.getSetAliasRandomString,//字符串，随机生成，作为应用获取数据的标识
+                send: this.sendSetAliasRandomString,//字符串，随机生成，作为应用发送数据的标识
+              };
+              console.log(txInfo);
+              this.$refs.password.showScan(txInfo,value);
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       },
 
       /**
@@ -148,27 +190,10 @@
        * @param password
        **/
       async passSubmit(password) {
-
         const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password);
-        const newAddressInfo = nuls.importByKey(chainID(), pri, password,this.prefix);
+        const newAddressInfo = nuls.importByKey(chainID(), pri, password, this.prefix);
         if (newAddressInfo.address === this.addressInfo.address) {
-          //根据公钥获取地址
-          let burningAddress = nuls.getAddressByPub(chainID(), 1, config.API_BURNING_ADDRESS_PUB,this.prefix);
-          //console.log(burningAddress);
-          let transferInfo = {
-            fromAddress: this.addressInfo.address,
-            toAddress: burningAddress,
-            assetsChainId: chainID(),
-            assetsId: 1,
-            amount: 100000000,
-            fee: 100000
-          };
-          let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 3);
-          let aliasInfo = {
-            fromAddress: this.addressInfo.address,
-            alias: this.aliasForm.alias
-          };
-          let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, '', 3, aliasInfo);
+          let tAssemble = await this.setAliasAssemble();
           let txhex = await nuls.transactionSerialize(nuls.decrypteOfAES(this.addressInfo.aesPri, password), this.addressInfo.pub, tAssemble);
           //console.log(txhex);
           //验证并广播交易
@@ -185,6 +210,32 @@
         } else {
           this.$message({message: this.$t('address.address13'), type: 'error', duration: 1000});
         }
+      },
+
+      /**
+       * @disc: 设置别名交易组装
+       * @params:
+       * @date: 2019-12-03 14:52
+       * @author: Wave
+       */
+      async setAliasAssemble() {
+        //根据燃烧地址公钥获取地址
+        let burningAddress = nuls.getAddressByPub(chainID(), 1, config.API_BURNING_ADDRESS_PUB, this.prefix);
+        //console.log(burningAddress);
+        let transferInfo = {
+          fromAddress: this.addressInfo.address,
+          toAddress: burningAddress,
+          assetsChainId: chainID(),
+          assetsId: 1,
+          amount: 100000000,
+          fee: 100000
+        };
+        let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 3);
+        let aliasInfo = {
+          fromAddress: this.addressInfo.address,
+          alias: this.aliasForm.alias
+        };
+        return await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, '', 3, aliasInfo);
       },
 
       /**

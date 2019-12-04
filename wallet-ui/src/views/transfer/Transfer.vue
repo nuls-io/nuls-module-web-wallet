@@ -138,7 +138,17 @@
     getPrefixByChainId
   } from '@/api/requestData'
   import {MAIN_INFO} from '@/config.js'
-  import {Times, Power, Plus, Minus, timesDecimals, timesDecimals0, chainID, addressInfo} from '@/api/util'
+  import {
+    Times,
+    Power,
+    Plus,
+    Minus,
+    timesDecimals,
+    timesDecimals0,
+    chainID,
+    addressInfo,
+    getRamNumber
+  } from '@/api/util'
   import Password from '@/components/PasswordBar'
 
   export default {
@@ -251,6 +261,8 @@
         aliasToAddress: '',//别名对应的地址
         prefix: '',//地址前缀
         loading: true,//验证地址效果
+        getTransferRandomString: '',
+        sendTransferRandomString: '',
       };
     },
     created() {
@@ -660,8 +672,78 @@
        * 弹框确认提交
        **/
       async confirmTraanser() {
-        this.getNulsBalance(this.changeAssets.chainId, 1, this.transferForm.fromAddress);
-        this.$refs.password.showPassword(true);
+        let nulsBalance = await this.getNulsBalance(this.changeAssets.chainId, 1, this.transferForm.fromAddress);
+        if (!nulsBalance.success) {
+          return;
+        }
+        if (this.addressInfo.aesPri === '') {
+          this.getTransferRandomString = await getRamNumber(16);
+          this.sendTransferRandomString = await getRamNumber(16);
+          let assembleHex = await this.transferAssemble();
+          if (!assembleHex.success) {
+            return;
+          }
+          let txHex = assembleHex.data.getHash().toString('hex');
+          console.log(txHex);
+          this.commitData(this.sendTransferRandomString, assembleHex.data);
+        } else {
+          this.$refs.password.showPassword(true);
+        }
+      },
+
+      /**
+       * @disc: 发送消息到后台
+       * @params: key,value
+       * @date: 2019-12-02 16:39
+       * @author: Wave
+       */
+      async commitData(key, assembleHex) {
+        await this.$post('/', 'commitMsg', [key, assembleHex])
+          .then((response) => {
+            //console.log(response);
+            if (response.hasOwnProperty("result")) {
+              let txInfo = {
+                url: "http://192.168.1.68:18003/",
+                get: this.getTransferRandomString,//字符串，随机生成，作为应用获取数据的标识
+                send: this.sendTransferRandomString,//字符串，随机生成，作为应用发送数据的标识
+              };
+              console.log(txInfo);
+              this.$refs.password.showScan(txInfo, assembleHex);
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      },
+
+      /**
+       * @disc: 普通转账交易组装
+       * @date: 2019-12-04 17:27
+       * @author: Wave
+       */
+      async transferAssemble() {
+        let transferInfo = {
+          fromAddress: this.transferForm.fromAddress,
+          assetsChainId: this.changeAssets.chainId,
+          assetsId: this.changeAssets.assetId,
+          fee: 100000,
+          toAddress: this.aliasToAddress ? this.aliasToAddress : this.transferForm.toAddress,
+          amount: Number(Times(this.transferForm.amount, 100000000).toString()),
+        };
+        let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 2);
+        if (!inOrOutputs.success) {
+          this.$message({
+            message: this.$t('public.err1') + JSON.stringify(inOrOutputs.data),
+            type: 'error',
+            duration: 3000
+          });
+          return {success: false}
+        }
+        let data = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, this.transferForm.remarks, 2);
+        return {
+          success: true,
+          data: data
+        };
       },
 
       /**
@@ -671,15 +753,18 @@
        *  @param address
        **/
       async getNulsBalance(assetChainId, assetId, address) {
-        await getNulsBalance(assetChainId, assetId, address).then((response) => {
+        return await getNulsBalance(assetChainId, assetId, address).then((response) => {
           //console.log(response);
           if (response.success) {
             this.balanceInfo = response.data;
+            return {success: true}
           } else {
             this.$message({message: this.$t('public.err') + response, type: 'error', duration: 1000});
+            return {success: false}
           }
         }).catch((error) => {
           this.$message({message: this.$t('public.err0') + error, type: 'error', duration: 1000});
+          return {success: false}
         });
       },
 
@@ -718,7 +803,7 @@
             if (this.changeAssets.type === 1 && !this.isCross) { //NULS普通转账交易
               transferInfo['toAddress'] = this.aliasToAddress ? this.aliasToAddress : this.transferForm.toAddress;
               transferInfo['amount'] = Number(Times(this.transferForm.amount, 100000000).toString());
-              //console.log(transferInfo);
+              console.log(transferInfo);
               inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 2);
               //交易组装
               tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, this.transferForm.remarks, 2);
