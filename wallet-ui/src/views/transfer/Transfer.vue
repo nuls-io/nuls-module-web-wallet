@@ -1,5 +1,5 @@
 <template>
-  <div class="transfer bg-gray" v-loading="transferLoading">
+  <div class="transfer bg-gray cb" v-loading="transferLoading">
     <h3 class="title">{{changeAssets.account}} {{$t('nav.transfer')}}</h3>
     <div class="w1200 bg-white" v-loading="loading" :element-loading-text="$t('transfer.transfer22')">
       <el-form :model="transferForm" :rules="transferRules" ref="transferForm" status-icon>

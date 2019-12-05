@@ -1,5 +1,5 @@
 <template>
-  <div class="set bg-gray">
+  <div class="set bg-gray cb">
     <div class="bg-white">
       <div class="w1200">
         <h3 class="title">

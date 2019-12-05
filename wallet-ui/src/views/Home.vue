@@ -1,5 +1,5 @@
 <template>
-  <div class="home">
+  <div class="home cb">
     <h3 class="title" v-if="addressInfo">
       {{addressInfo.address}}
       <span v-show="addressInfo.alias"> ({{addressInfo.alias}})</span>

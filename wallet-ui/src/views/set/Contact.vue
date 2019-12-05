@@ -1,5 +1,5 @@
 <template>
-  <div class="contact bg-gray">
+  <div class="contact bg-gray cb">
     <h3 class="title">{{$t('tab.tab12')}}</h3>
     <div class="w1200 mt_20">
       <div class="top_ico">

@@ -1,5 +1,5 @@
 <template>
-  <div class="contract">
+  <div class="contract cb">
     <h3 class="title">
       {{addressInfo.address}}
       <span v-show="addressInfo.alias"> | {{addressInfo.alias}}</span>

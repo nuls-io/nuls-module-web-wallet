@@ -1,5 +1,5 @@
 <template>
-  <div class="address bg-gray">
+  <div class="address bg-gray cb">
     <h3 class="title">{{$t('address.address0')}}</h3>
 
     <div class="w1200 mt_20">

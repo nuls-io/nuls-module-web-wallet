@@ -1,5 +1,5 @@
 <template>
-  <div class="consensus bg-gray">
+  <div class="consensus bg-gray cb">
     <h3 class="title">
       {{addressInfo.address}}
       <span v-show="addressInfo.alias"> | {{addressInfo.alias}}</span>
