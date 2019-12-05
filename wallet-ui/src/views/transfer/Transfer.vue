@@ -685,7 +685,7 @@
           }
           let txHex = assembleHex.data.getHash().toString('hex');
           console.log(txHex);
-          this.commitData(this.sendTransferRandomString, assembleHex.data);
+          this.commitData(this.getTransferRandomString, assembleHex.data);
         } else {
           this.$refs.password.showPassword(true);
         }
@@ -698,7 +698,7 @@
        * @author: Wave
        */
       async commitData(key, assembleHex) {
-        await this.$post('/', 'commitMsg', [key, assembleHex])
+        await this.$post('/', 'commitMsg', [key, assembleHex.getHash().toString('hex')])
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {

@@ -101,7 +101,7 @@
         }, 500);
 
         this.scanInterval = setInterval(() => {
-          this.scanAutograph(txInfo.send, setAliasHex);
+          this.scanAutograph(txInfo.get, setAliasHex);
         }, 3000);
       },
 

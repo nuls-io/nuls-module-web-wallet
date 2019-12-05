@@ -124,7 +124,7 @@
                   let setAliasHex = await this.setAliasAssemble();
                   let hash = setAliasHex.getHash();
                   console.log(hash.toString('hex'));
-                  this.commitData(this.sendSetAliasRandomString, setAliasHex);
+                  this.commitData(this.getSetAliasRandomString, setAliasHex);
                   return
                 }
               }
@@ -140,12 +140,12 @@
 
       /**
        * @disc: 发送消息到后台
-       * @params: key,value
+       * @params: key,assembleHex
        * @date: 2019-12-02 16:39
        * @author: Wave
        */
-      async commitData(key, value) {
-        await this.$post('/', 'commitMsg', [key, value])
+      async commitData(key, assembleHex) {
+        await this.$post('/', 'commitMsg', [key, assembleHex.getHash().toString('hex')])
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
@@ -155,7 +155,7 @@
                 send: this.sendSetAliasRandomString,//字符串，随机生成，作为应用发送数据的标识
               };
               console.log(txInfo);
-              this.$refs.password.showScan(txInfo,value);
+              this.$refs.password.showScan(txInfo,assembleHex);
             }
           })
           .catch((error) => {
