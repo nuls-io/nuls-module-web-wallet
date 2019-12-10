@@ -124,14 +124,14 @@
       let checkAmount = (rule, value, callback) => {
         let re = /^\d+(?=\.{0,1}\d+$|$)/;
         let res = /^\d{1,8}(\.\d{1,8})?$/;
-        let balance = this.balanceInfo.balance - value * 100000000;
+        let balance = this.balanceInfo.balance - value * 1000000000;
         if (!value) {
           return callback(new Error(this.$t('newConsensus.newConsensus5')));
         } else if (!re.exec(value) || !res.exec(value)) {
           callback(new Error(this.$t('newConsensus.newConsensus6')));
         } else if (balance < 0.001) {
           callback(new Error(this.$t('newConsensus.newConsensus7')));
-        } else if (value < 20000 || value > 200000) {
+        } else if (value < 200000 || value > 2000000) {
           callback(new Error(this.$t('newConsensus.newConsensus8')));
         } else {
           callback();

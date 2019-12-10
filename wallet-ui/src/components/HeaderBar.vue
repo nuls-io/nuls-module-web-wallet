@@ -223,7 +223,7 @@
       img {
         margin: -5px 0 0 0;
         width: 100px;
-        height: 84px;
+        height: 81px;
       }
     }
     .nav {

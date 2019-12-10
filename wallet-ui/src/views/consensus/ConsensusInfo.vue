@@ -130,15 +130,15 @@
   export default {
     data() {
       let checkAmount = (rule, value, callback) => {
-        let usable = Number(Minus(500000, Number(this.nodeInfo.totalDeposit)));
-        let balance = Number(Minus(this.balanceInfo.balance, Number(Times(value, 100000000))));
+        let usable = Number(Minus(5000000, Number(this.nodeInfo.totalDeposit)));
+        let balance = Number(Minus(this.balanceInfo.balance, Number(Times(value, 1000000000))));
         let re = /^\d+(?=\.{0,1}\d+$|$)/;
         let res = /^\d{1,8}(\.\d{1,8})?$/;
         if (!value) {
           return callback(new Error(this.$t('consensusInfo.consensusInfo2')));
         } else if (!re.exec(value) || !res.exec(value)) {
           callback(new Error(this.$t('consensusInfo.consensusInfo3')))
-        } else if (value < 2000) {
+        } else if (value < 20000) {
           return callback(new Error(this.$t('consensusInfo.consensusInfo43')));
         } else if (value > usable) {
           return callback(new Error(this.$t('consensusInfo.consensusInfo41') + usable + this.$t('consensusInfo.consensusInfo42')));
