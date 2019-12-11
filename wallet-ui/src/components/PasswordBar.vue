@@ -1,7 +1,7 @@
 <template>
   <div class="password">
     <div class="scan">
-      <el-dialog title="扫描签名" :visible.sync="scanDialog" width="500px" center @close="scanDialogClose">
+      <el-dialog title="扫描签名" :visible.sync="scanDialog" width="500px" center @close="scanDialogClose" >
         <div class="tc">
           <div id="qrcode" class="qrcode"></div>
           <div class="font12 tc" style="margin: 5px 0 0 0">
@@ -124,8 +124,9 @@
        */
       async scanAutograph(randomString, setAliasHex) {
         let scanAutographInfo = await getScanAutograph(randomString);
-        if (scanAutographInfo.success && scanAutographInfo.data.pub) {
-          setAliasHex.signatures = await nuls.appSplicingPub(scanAutographInfo.data.signValue, scanAutographInfo.data.pub);
+        //console.log(scanAutographInfo);
+        if (scanAutographInfo.success && scanAutographInfo.data.pubkey) {
+          setAliasHex.signatures = await nuls.appSplicingPub(scanAutographInfo.data.signData, scanAutographInfo.data.pubkey);
           let txhex = setAliasHex.txSerialize().toString("hex");
           //console.log(txhex);
           let broadcastInfo = await validateAndBroadcast(txhex);
@@ -136,7 +137,11 @@
             this.scanDialogClose();
             this.toUrl("txList");
           } else {
-            this.$message({message:  this.$t('tips.tips1') + JSON.stringify(broadcastInfo.data), type: 'error', duration: 3000});
+            this.$message({
+              message: this.$t('tips.tips1') + JSON.stringify(broadcastInfo.data),
+              type: 'error',
+              duration: 3000
+            });
             this.scanDialog = false;
             this.scanDialogClose();
           }
@@ -213,34 +218,44 @@
 </script>
 
 <style lang="less">
-  .password-dialog {
-    .el-dialog {
-      width: 370px;
-      .el-dialog__body {
-        background-color: #F5F6F9 !important;
-        padding: 30px 20px 30px 20px !important;
-        .el-form {
-          .el-form-item {
-            .el-form-item__label {
-              line-height: 0;
-              padding: 28px 0 20px 0;
+  .password{
+    .password-dialog {
+      .el-dialog {
+        width: 370px;
+        .el-dialog__body {
+          background-color: #F5F6F9 !important;
+          padding: 30px 20px 30px 20px !important;
+          .el-form {
+            .el-form-item {
+              .el-form-item__label {
+                line-height: 0;
+                padding: 28px 0 20px 0;
+              }
             }
           }
         }
-      }
-      .el-dialog__footer {
-        .dialog-footer {
-          padding: 1rem 1rem 0.1rem;
-          .el-button {
-            width: 9.5rem;
-          }
-          .el-button--success {
-            span {
-              color: white;
+        .el-dialog__footer {
+          .dialog-footer {
+            padding: 1rem 1rem 0.1rem;
+            .el-button {
+              width: 9.5rem;
+            }
+            .el-button--success {
+              span {
+                color: white;
+              }
             }
           }
         }
       }
     }
+    .scan{
+      .el-dialog {
+        .el-dialog__body {
+          height: 480px;
+        }
+      }
+    }
   }
+
 </style>

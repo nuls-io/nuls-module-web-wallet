@@ -262,8 +262,8 @@
         aliasToAddress: '',//别名对应的地址
         prefix: '',//地址前缀
         loading: true,//验证地址效果
-        getTransferRandomString: '',
-        sendTransferRandomString: '',
+        txHexKey: '',
+        signDataKey: '',
       };
     },
     created() {
@@ -682,14 +682,14 @@
             this.$message({message: this.$t('tips.tips2'), type: 'warning', duration: 2000});
             return;
           }
-          this.getTransferRandomString = await getRamNumber(16);
-          this.sendTransferRandomString = await getRamNumber(16);
+          this.txHexKey = await getRamNumber(16);
+          this.signDataKey = await getRamNumber(16);
           let assembleHex = await this.transferAssemble();
           if (!assembleHex.success) {
             this.$message({message: this.$t('tips.tips3'), type: 'error', duration: 3000});
             return;
           }
-          let commitDatas = await commitData(this.getTransferRandomString, this.sendTransferRandomString, this.addressInfo.address, assembleHex.data);
+          let commitDatas = await commitData(this.txHexKey, this.signDataKey, this.addressInfo.address, assembleHex.data);
           if (!commitDatas.success) {
             this.$message({
               message: this.$t('tips.tips4') + JSON.stringify(commitDatas.data),
