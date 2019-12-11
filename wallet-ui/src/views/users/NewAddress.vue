@@ -231,8 +231,8 @@
           this.importRandomString = await getRamNumber(16);
         }
         let scanInfo = {
-          url: "http://192.168.1.68:18003/",
-          send: this.importRandomString,//字符串，随机生成，作为应用发送数据的标识
+          url: localStorage.hasOwnProperty('url') ? JSON.parse(localStorage.getItem('url')).urls : 'https://beta.wallet.nuls.io/api',
+          send: this.importRandomString,
         };
         console.log(this.importRandomString);
         let qrcode = new QRCode('qrcode', {

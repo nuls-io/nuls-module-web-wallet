@@ -965,6 +965,21 @@ const cn = {
     "3": "检测到新版本，正在下载…",
     "4": "现在使用的就是最新版本，不用更新",
   },
+
+  "tips":{
+    "tips0":"交易已发出，等待区块确认",
+    "tips1":"扫码签名广播交易错误:",
+    "tips2":"暂不支持扫码合约转账、跨链交易",
+    "tips3":"扫码签名组装交易错误",
+    "tips4":"扫码签名发送消息到后台错误:",
+    "tips5":"tips",
+    "tips6":"tips",
+    "tips7":"tips",
+    "tips8":"tips",
+    "tips9":"tips",
+    "tips10":"tips",
+    "tips":"tips",
+  },
   ...zhLocale
 };
 export default cn

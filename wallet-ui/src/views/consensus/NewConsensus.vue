@@ -85,7 +85,13 @@
 
 <script>
   import nuls from 'nuls-sdk-js'
-  import {getNulsBalance, inputsOrOutputs, validateAndBroadcast, getPrefixByChainId} from '@/api/requestData'
+  import {
+    getNulsBalance,
+    inputsOrOutputs,
+    validateAndBroadcast,
+    getPrefixByChainId,
+    commitData
+  } from '@/api/requestData'
   import {Times, addressInfo, chainID, getRamNumber} from '@/api/util'
   import Password from '@/components/PasswordBar'
   import BackBar from '@/components/BackBar'
@@ -276,39 +282,22 @@
           this.sendNewConsensusRandomString = await getRamNumber(16);
           let assembleHex = await this.newConsensusAssemble();
           if (!assembleHex.success) {
+            this.$message({message: this.$t('tips.tips3'), type: 'error', duration: 3000});
             return;
           }
-          let txHex = assembleHex.data.getHash().toString('hex');
-          console.log(txHex);
-          this.commitData(this.getNewConsensusRandomString, assembleHex.data);
+          let commitDatas = await commitData(this.getNewConsensusRandomString, this.sendNewConsensusRandomString, assembleHex.data);
+          if (!commitDatas.success) {
+            this.$message({
+              message: this.$t('tips.tips4') + JSON.stringify(commitDatas.data),
+              type: 'error',
+              duration: 3000
+            });
+            return;
+          }
+          this.$refs.password.showScan(commitDatas.data.txInfo, commitDatas.data.assembleHex);
         } else {
           this.$refs.password.showPassword(true);
         }
-      },
-
-      /**
-       * @disc: 发送消息到后台
-       * @params: key,value
-       * @date: 2019-12-02 16:39
-       * @author: Wave
-       */
-      async commitData(key, assembleHex) {
-        await this.$post('/', 'commitMsg', [key, assembleHex.getHash().toString('hex')])
-          .then((response) => {
-            //console.log(response);
-            if (response.hasOwnProperty("result")) {
-              let txInfo = {
-                url: "http://192.168.1.68:18003/",
-                get: this.getNewConsensusRandomString,//字符串，随机生成，作为应用获取数据的标识
-                send: this.sendNewConsensusRandomString,//字符串，随机生成，作为应用发送数据的标识
-              };
-              console.log(txInfo);
-              this.$refs.password.showScan(txInfo, assembleHex);
-            }
-          })
-          .catch((error) => {
-            console.log(error);
-          });
       },
 
       /**

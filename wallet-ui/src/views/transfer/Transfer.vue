@@ -135,7 +135,8 @@
     countFee,
     inputsOrOutputs,
     validateAndBroadcast,
-    getPrefixByChainId
+    getPrefixByChainId,
+    commitData
   } from '@/api/requestData'
   import {MAIN_INFO} from '@/config.js'
   import {
@@ -677,43 +678,30 @@
           return;
         }
         if (this.addressInfo.aesPri === '') {
+          if (this.contractInfo.success || this.isCross) {
+            this.$message({message: this.$t('tips.tips2'), type: 'warning', duration: 2000});
+            return;
+          }
           this.getTransferRandomString = await getRamNumber(16);
           this.sendTransferRandomString = await getRamNumber(16);
           let assembleHex = await this.transferAssemble();
           if (!assembleHex.success) {
+            this.$message({message: this.$t('tips.tips3'), type: 'error', duration: 3000});
             return;
           }
-          let txHex = assembleHex.data.getHash().toString('hex');
-          console.log(txHex);
-          this.commitData(this.getTransferRandomString, assembleHex.data);
+          let commitDatas = await commitData(this.getTransferRandomString, this.sendTransferRandomString, assembleHex.data);
+          if (!commitDatas.success) {
+            this.$message({
+              message: this.$t('tips.tips4') + JSON.stringify(commitDatas.data),
+              type: 'error',
+              duration: 3000
+            });
+            return;
+          }
+          this.$refs.password.showScan(commitDatas.data.txInfo, commitDatas.data.assembleHex);
         } else {
           this.$refs.password.showPassword(true);
         }
-      },
-
-      /**
-       * @disc: 发送消息到后台
-       * @params: key,value
-       * @date: 2019-12-02 16:39
-       * @author: Wave
-       */
-      async commitData(key, assembleHex) {
-        await this.$post('/', 'commitMsg', [key, assembleHex.getHash().toString('hex')])
-          .then((response) => {
-            //console.log(response);
-            if (response.hasOwnProperty("result")) {
-              let txInfo = {
-                url: "http://192.168.1.68:18003/",
-                get: this.getTransferRandomString,//字符串，随机生成，作为应用获取数据的标识
-                send: this.sendTransferRandomString,//字符串，随机生成，作为应用发送数据的标识
-              };
-              console.log(txInfo);
-              this.$refs.password.showScan(txInfo, assembleHex);
-            }
-          })
-          .catch((error) => {
-            console.log(error);
-          });
       },
 
       /**
@@ -726,23 +714,41 @@
           fromAddress: this.transferForm.fromAddress,
           assetsChainId: this.changeAssets.chainId,
           assetsId: this.changeAssets.assetId,
-          fee: 100000,
-          toAddress: this.aliasToAddress ? this.aliasToAddress : this.transferForm.toAddress,
-          amount: Number(Times(this.transferForm.amount, 100000000).toString()),
+          fee: 100000
         };
-        let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 2);
-        if (!inOrOutputs.success) {
-          this.$message({
-            message: this.$t('public.err1') + JSON.stringify(inOrOutputs.data),
-            type: 'error',
-            duration: 3000
-          });
-          return {success: false}
+        let inOrOutputs = {};
+        let tAssemble = [];
+        if (!this.contractInfo.success) {
+          /*this.contractCallData.chainId = MAIN_INFO.chainId;
+          transferInfo['amount'] = Number(Plus(transferInfo.fee, Number(Times(this.transferForm.gas, this.transferForm.price))));
+          transferInfo.value = Number(timesDecimals0(this.transferForm.amount, this.changeAssets.decimals));
+          inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
+          if (!inOrOutputs.success) {
+            this.$message({
+              message: this.$t('public.err1') + JSON.stringify(inOrOutputs.data),
+              type: 'error',
+              duration: 3000
+            });
+            return {success: false}
+          }
+          tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, this.transferForm.remarks, 16, this.contractCallData);
+        } else {*/
+          transferInfo['toAddress'] = this.aliasToAddress ? this.aliasToAddress : this.transferForm.toAddress;
+          transferInfo['amount'] = Number(Times(this.transferForm.amount, 100000000).toString());
+          inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 2);
+          if (!inOrOutputs.success) {
+            this.$message({
+              message: this.$t('public.err1') + JSON.stringify(inOrOutputs.data),
+              type: 'error',
+              duration: 3000
+            });
+            return {success: false}
+          }
+          tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, this.transferForm.remarks, 2);
         }
-        let data = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, this.transferForm.remarks, 2);
         return {
           success: true,
-          data: data
+          data: tAssemble
         };
       },
 
@@ -791,29 +797,21 @@
           if (this.contractInfo.success) { //合约转账
             this.contractCallData.chainId = MAIN_INFO.chainId;
             transferInfo['amount'] = Number(Plus(transferInfo.fee, Number(Times(this.transferForm.gas, this.transferForm.price))));
-            //transferInfo['fee'] = transferInfo.fee;
-            //transferInfo.toAddress = this.contractInfo.contractAddress;
             transferInfo.value = Number(timesDecimals0(this.transferForm.amount, this.changeAssets.decimals));
-            //console.log(transferInfo);
             inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
-            //console.log(inOrOutputs);
-            //console.log(this.contractCallData);
             tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, this.transferForm.remarks, 16, this.contractCallData);
           } else {
             if (this.changeAssets.type === 1 && !this.isCross) { //NULS普通转账交易
               transferInfo['toAddress'] = this.aliasToAddress ? this.aliasToAddress : this.transferForm.toAddress;
               transferInfo['amount'] = Number(Times(this.transferForm.amount, 100000000).toString());
-              console.log(transferInfo);
               inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 2);
               //交易组装
               tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, this.transferForm.remarks, 2);
             } else if (this.changeAssets.type === 1 && this.isCross) { //跨链转账交易
-              //console.log("跨链交易");
               transferInfo['toAddress'] = this.transferForm.toAddress;
               transferInfo['amount'] = Number(Times(this.transferForm.amount, 100000000).toString());
               transferInfo['remark'] = this.transferForm.remarks;
               transferInfo.fee = 1000000;
-              //console.log(transferInfo);
               crossTxHex = await this.crossTxhexs(pri, this.addressInfo.pub, this.addressInfo.chainId, transferInfo);
               //console.log(crossTxHex);
             } else {
@@ -849,9 +847,7 @@
               txhex = await nuls.transactionSerialize(nuls.decrypteOfAES(this.addressInfo.aesPri, password), this.addressInfo.pub, tAssemble);
             }
           }
-          //console.log(txhex);
           if (this.isCross) { //跨链交易
-            //console.log("跨链交易");
             await this.$post('/', 'sendCrossTx', [txhex])
               .then((response) => {
                 //console.log(response);
@@ -869,7 +865,7 @@
               .catch((error) => {
                 console.log(error);
                 this.transferLoading = false;
-                this.$message({message: this.$t('public.err4') + error, type: 'error', duration: 5000});
+                this.$message({message: this.$t('public.err4') + error, type: 'error', duration: 3000});
               });
           } else { //其他交易验证并广播交易
             //console.log("其他交易");
@@ -889,6 +885,7 @@
         } else {
           this.$message({message: this.$t('address.address13'), type: 'error', duration: 1000});
         }
+
       },
 
       /**

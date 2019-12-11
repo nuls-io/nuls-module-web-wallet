@@ -123,20 +123,20 @@
        * @author: Wave
        */
       async scanAutograph(randomString, setAliasHex) {
-        let scanAutographInfo = await  getScanAutograph(randomString);
+        let scanAutographInfo = await getScanAutograph(randomString);
         if (scanAutographInfo.success && scanAutographInfo.data.pub) {
           setAliasHex.signatures = await nuls.appSplicingPub(scanAutographInfo.data.signValue, scanAutographInfo.data.pub);
           let txhex = setAliasHex.txSerialize().toString("hex");
-          console.log(txhex);
+          //console.log(txhex);
           let broadcastInfo = await validateAndBroadcast(txhex);
-          console.log(broadcastInfo);
+          //console.log(broadcastInfo);
           if (broadcastInfo.success) {
-            this.$message({message: "交易已发出，等待区块确认", type: 'success', duration: 1000});
+            this.$message({message: this.$t('tips.tips0'), type: 'success', duration: 1000});
             this.scanDialog = false;
             this.scanDialogClose();
             this.toUrl("txList");
           } else {
-            this.$message({message: "交易错误:" + JSON.stringify(broadcastInfo.data), type: 'error', duration: 3000});
+            this.$message({message:  this.$t('tips.tips1') + JSON.stringify(broadcastInfo.data), type: 'error', duration: 3000});
             this.scanDialog = false;
             this.scanDialogClose();
           }

@@ -37,7 +37,7 @@
 
 <script>
   import nuls from 'nuls-sdk-js'
-  import {inputsOrOutputs, validateAndBroadcast, getPrefixByChainId} from '@/api/requestData'
+  import {inputsOrOutputs, validateAndBroadcast, getPrefixByChainId, commitData} from '@/api/requestData'
   import Password from '@/components/PasswordBar'
   import BackBar from '@/components/BackBar'
   import * as config from '@/config.js'
@@ -118,17 +118,30 @@
               let address = this.$route.query.address;
               let addressList = addressInfo(0);
               for (let item of addressList) {
-                if (item.address === address && item.aesPri === '') {
-                  this.getSetAliasRandomString = await getRamNumber(16);
-                  this.sendSetAliasRandomString = await getRamNumber(16);
-                  let setAliasHex = await this.setAliasAssemble();
-                  let hash = setAliasHex.getHash();
-                  console.log(hash.toString('hex'));
-                  this.commitData(this.getSetAliasRandomString, setAliasHex);
-                  return
+                if (item.address === address) {
+                  if (item.aesPri === '') {
+                    this.getSetAliasRandomString = await getRamNumber(16);
+                    this.sendSetAliasRandomString = await getRamNumber(16);
+                    let setAliasHex = await this.setAliasAssemble();
+                    if (!setAliasHex.success) {
+                      this.$message({message: this.$t('tips.tips3'), type: 'error', duration: 3000});
+                      return;
+                    }
+                    let commitDatas = await commitData(this.getSetAliasRandomString, this.sendSetAliasRandomString, setAliasHex.data);
+                    if (!commitDatas.success) {
+                      this.$message({
+                        message: this.$t('tips.tips4') + JSON.stringify(commitDatas.data),
+                        type: 'error',
+                        duration: 3000
+                      });
+                      return;
+                    }
+                    this.$refs.password.showScan(commitDatas.data.txInfo, commitDatas.data.assembleHex);
+                  } else {
+                    this.$refs.password.showPassword(true);
+                  }
                 }
               }
-              this.$refs.password.showPassword(true);
             } else {
               this.$message({message: this.$t('newConsensus.newConsensus7'), type: 'error', duration: 1000});
             }
@@ -136,31 +149,6 @@
             return false;
           }
         });
-      },
-
-      /**
-       * @disc: 发送消息到后台
-       * @params: key,assembleHex
-       * @date: 2019-12-02 16:39
-       * @author: Wave
-       */
-      async commitData(key, assembleHex) {
-        await this.$post('/', 'commitMsg', [key, assembleHex.getHash().toString('hex')])
-          .then((response) => {
-            //console.log(response);
-            if (response.hasOwnProperty("result")) {
-              let txInfo = {
-                url: "http://192.168.1.68:18003/",
-                get: this.getSetAliasRandomString,//字符串，随机生成，作为应用获取数据的标识
-                send: this.sendSetAliasRandomString,//字符串，随机生成，作为应用发送数据的标识
-              };
-              console.log(txInfo);
-              this.$refs.password.showScan(txInfo,assembleHex);
-            }
-          })
-          .catch((error) => {
-            console.log(error);
-          });
       },
 
       /**
