@@ -961,6 +961,21 @@ const en = {
     "3": "A new version has been detected and is being downloaded...",
     "4": "Now the latest version is in use, no updates are needed.",
   },
+
+  "tips":{
+    "tips0":"Transaction has been sent, waiting for block confirmation",
+    "tips1":"Scan signature broadcast transaction error:",
+    "tips2":"Scan code contract transfer and cross chain transaction are not supported temporarily",
+    "tips3":"Scanning signature assembly transaction error",
+    "tips4":"Error sending message to background by scanning code signature:",
+    "tips5":"tips",
+    "tips6":"tips",
+    "tips7":"tips",
+    "tips8":"tips",
+    "tips9":"tips",
+    "tips10":"tips",
+    "tips":"tips",
+  },
   ...enLocale
 
 };

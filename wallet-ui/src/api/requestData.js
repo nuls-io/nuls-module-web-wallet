@@ -312,13 +312,42 @@ export async function getPrefixByChainId(chainId) {
 export async function getScanAutograph(randomString) {
   return await post('/', 'getMsg', [randomString])
     .then(async (response) => {
-      console.log(response);
+      //console.log(response);
       if (response.hasOwnProperty("result") && response.result.pub) {
         if (response.result.pub && response.result.signValue) {
           return {success: true, data: {signValue: response.result.signValue, pub: response.result.pub}}
         } else {
           return {success: true, data: {}}
         }
+      } else {
+        return {success: false, data: response}
+      }
+    })
+    .catch((error) => {
+      return {success: false, data: error}
+    });
+}
+
+/**
+ * @disc: 发送消息到后台
+ * @params: key,value
+ * @date: 2019-12-02 16:39
+ * @author: Wave
+ */
+export async function commitData(getRandomString, sendRandomString, assembleHex) {
+  return await post('/', 'commitMsg', [getRandomString, assembleHex.getHash().toString('hex')])
+    .then((response) => {
+      //console.log(response);
+      if (response.hasOwnProperty("result")) {
+        let txInfo = {
+          url: localStorage.hasOwnProperty('url') ? JSON.parse(localStorage.getItem('url')).urls : 'https://beta.wallet.nuls.io/api',
+          get: getRandomString,
+          send: sendRandomString,
+        };
+        console.log(txInfo);
+        let txHex = assembleHex.getHash().toString('hex');
+        console.log(txHex);
+        return {success: true, data: {txInfo: txInfo, assembleHex: assembleHex}}
       } else {
         return {success: false, data: response}
       }

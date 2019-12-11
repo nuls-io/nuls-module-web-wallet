@@ -4,7 +4,7 @@
       {{addressInfo.address}}
       <span v-show="addressInfo.alias"> ({{addressInfo.alias}})</span>
       <i class="iconfont iconfuzhi clicks" @click="copy(addressInfo.address)"></i>
-      <i class="iconfont iconerweima clicks" @click="showCode(addressInfo.address)"></i>
+      <i class="iconfont iconerweima clicks" @click="showCode"></i>
     </h3>
 
     <div class="w1200 overview bg-white" v-loading="overviewLoading">
@@ -24,7 +24,7 @@
           <font>{{addressNULSAssets.balance}}</font>
           <el-button type="success" @click="toUrl('transfer',addressNULSAssets.account)">{{$t('tab.tab31')}}
           </el-button>
-          <el-button @click="showCode(addressInfo.address)">{{$t('tab.tab27')}}</el-button>
+          <el-button @click="showCode">{{$t('tab.tab27')}}</el-button>
         </h6>
       </div>
       <div class="locking fl">
@@ -138,20 +138,19 @@
             <el-form-item label="">
               <el-select v-model="payeeForm.currency" placeholder="请选择币种">
                 <el-option label="NULS" value="NULS"></el-option>
-                <el-option label="BTC" value="BTC"></el-option>
-                <el-option label="ETH" value="ETH"></el-option>
               </el-select>
             </el-form-item>
             <div class="tc ">
-              <el-button @click="activeName = 'payeeScan'">跳过</el-button>
-              <el-button type="success" @click="activeName = 'payeeScan'">下一步</el-button>
+              <el-button @click="payeeNext(0)">跳过</el-button>
+              <el-button type="success" @click="payeeNext(1)">下一步</el-button>
             </div>
           </el-form>
         </el-tab-pane>
         <el-tab-pane label="生成二维码" name="payeeScan">
           <div id="qrcode" class="qrcode"></div>
           <div class="font12 tc" style="margin: 5px 0 0 0">
-            (<span class="click td" style="color: #608fff; font-size: 12px" @click="toUrl('nuls','https://www.denglu1.cn/',1)">
+            (<span class="click td" style="color: #608fff; font-size: 12px"
+                   @click="toUrl('nuls','https://www.denglu1.cn/',1)">
             登录易
           </span>)
           </div>
@@ -197,8 +196,9 @@
 
         activeName: 'payeeInfo', //tab
         payeeForm: {
-          amount: '',
-          currency: '',
+          amount: 100,
+          currency: 'NULS',
+          decimals: 8
         }
 
       };
@@ -252,18 +252,29 @@
 
       /**
        * @disc: 显示二维码
-       * @params:  address
        * @date: 2019-08-27 11:12
        * @author: Wave
        */
-      showCode(address) {
+      showCode() {
+        this.activeName = 'payeeInfo';
         this.qrcodeDialog = true;
         if (document.getElementById('qrcode')) {
           document.getElementById('qrcode').innerHTML = '';
         }
-        setTimeout(() => {
-          this.qrcode(address);
-        }, 200);
+      },
+
+      /**
+       * @disc:
+       * @params:
+       * @date: 2019-12-11 13:44
+       * @author: Wave
+       */
+      payeeNext(type){
+        if(type ===1){
+          console.log(type)
+        }
+        this.activeName = 'payeeScan';
+        this.qrcode(this.addressInfo.address);
       },
 
       /**
@@ -279,7 +290,11 @@
           colorDark: "#000000",
           colorLight: "#ffffff",
         });
-        qrcode.makeCode(address) //生成另一个新的二维码
+        //地址，金额，资产，精度系数，合约地址
+        console.log(this.payeeForm.amount);
+        let qrcodeInfo = address + ',' + this.payeeForm.amount + ',' + this.payeeForm.currency + ',' + this.payeeForm.decimals + ',';
+        console.log(qrcodeInfo);
+        qrcode.makeCode(qrcodeInfo)
       },
 
       /**
