@@ -127,7 +127,7 @@
                       this.$message({message: this.$t('tips.tips3'), type: 'error', duration: 3000});
                       return;
                     }
-                    let commitDatas = await commitData(this.getSetAliasRandomString, this.sendSetAliasRandomString, setAliasHex.data);
+                    let commitDatas = await commitData(this.getSetAliasRandomString, this.sendSetAliasRandomString, item.address, setAliasHex.data);
                     if (!commitDatas.success) {
                       this.$message({
                         message: this.$t('tips.tips4') + JSON.stringify(commitDatas.data),

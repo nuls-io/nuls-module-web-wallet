@@ -401,7 +401,7 @@
                 this.$message({message: this.$t('tips.tips3'), type: 'error', duration: 3000});
                 return;
               }
-              let commitDatas = await commitData(this.txHexRandom, this.signDataKeyRandom, assembleHex.data);
+              let commitDatas = await commitData(this.txHexRandom, this.signDataKeyRandom,this.addressInfo.address, assembleHex.data);
               if (!commitDatas.success) {
                 this.$message({
                   message: this.$t('tips.tips4') + JSON.stringify(commitDatas.data),

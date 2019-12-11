@@ -334,19 +334,24 @@ export async function getScanAutograph(randomString) {
  * @date: 2019-12-02 16:39
  * @author: Wave
  */
-export async function commitData(getRandomString, sendRandomString, assembleHex) {
-  return await post('/', 'commitMsg', [getRandomString, assembleHex.getHash().toString('hex')])
+export async function commitData(getRandomString, sendRandomString, address, assembleHex) {
+  let parameterValue = {
+    address: address,
+    hash: assembleHex.getHash().toString('hex'),
+    txHex: assembleHex.txSerialize().toString("hex")
+  };
+  return await post('/', 'commitMsg', [getRandomString, parameterValue])
     .then((response) => {
       //console.log(response);
       if (response.hasOwnProperty("result")) {
         let txInfo = {
           url: localStorage.hasOwnProperty('url') ? JSON.parse(localStorage.getItem('url')).urls : 'https://beta.wallet.nuls.io/api',
-          get: getRandomString,
-          send: sendRandomString,
+          txHexKey: getRandomString,
+          signDataKey: sendRandomString,
         };
         console.log(txInfo);
-        let txHex = assembleHex.getHash().toString('hex');
-        console.log(txHex);
+        console.log(parameterValue.hash);
+        console.log(parameterValue.txHex);
         return {success: true, data: {txInfo: txInfo, assembleHex: assembleHex}}
       } else {
         return {success: false, data: response}

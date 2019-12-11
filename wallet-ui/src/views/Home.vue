@@ -290,11 +290,17 @@
           colorDark: "#000000",
           colorLight: "#ffffff",
         });
-        //地址，金额，资产，精度系数，合约地址
-        console.log(this.payeeForm.amount);
-        let qrcodeInfo = address + ',' + this.payeeForm.amount + ',' + this.payeeForm.currency + ',' + this.payeeForm.decimals + ',';
+
+        let qrcodeInfo = {
+          "address":address,
+          "chainId":1,
+          "assetId":1,
+          "contractAddress":"",
+          "amount":this.payeeForm.amount,
+          "payer":""
+        };
         console.log(qrcodeInfo);
-        qrcode.makeCode(qrcodeInfo)
+        qrcode.makeCode(JSON.stringify(qrcodeInfo))
       },
 
       /**

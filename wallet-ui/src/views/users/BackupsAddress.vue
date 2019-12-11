@@ -44,7 +44,8 @@
       </span>
     </el-dialog>
 
-    <el-dialog title="备份二维码" :visible.sync="scanDialog" width="450px" center @close="scanDialogClose">
+    <el-dialog title="备份二维码" :visible.sync="scanDialog" width="450px" center @close="scanDialogClose"
+               class="scan_dialog">
       <div>
         <div id="qrcode" class="qrcode"></div>
       </div>
@@ -103,9 +104,9 @@
        * @author: Wave
        */
       backScan() {
-        this.$confirm('二维码显示以后容易被拍照和摄像请确保环境周边的安全', '安全警告', {
-          confirmButtonText: '确定安全查看',
-          cancelButtonText: '不安全',
+        this.$confirm(this.$t('tips.tips5'), this.$t('tab.tab32'), {
+          confirmButtonText: this.$t('tips.tips6'),
+          cancelButtonText: this.$t('tips.tips7'),
           type: 'warning'
         }).then(() => {
           this.backType = 2;
@@ -270,6 +271,13 @@
           .mt_20 {
             margin: 100px auto 30px !important;
           }
+        }
+      }
+    }
+    .scan_dialog {
+      .el-dialog {
+        .el-dialog__body {
+          height: 480px;
         }
       }
     }
