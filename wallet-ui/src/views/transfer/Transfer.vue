@@ -125,6 +125,7 @@
 </template>
 
 <script>
+  //import axios from 'axios'
   import nuls from 'nuls-sdk-js'
   import sdk from 'nuls-sdk-js/lib/api/sdk'
   import utils from 'nuls-sdk-js/lib/utils/utils'
@@ -803,7 +804,7 @@
             });
           }
         } else {
-          this.$message({message: this.$t('address.address13'), type: 'error', duration: 1000});
+          this.$message({message: this.$t('address.address13'), type: 'error', duration: 3000});
         }
       },
 

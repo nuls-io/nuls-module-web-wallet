@@ -131,7 +131,7 @@
     data() {
       let checkAmount = (rule, value, callback) => {
         let usable = Number(Minus(5000000, Number(this.nodeInfo.totalDeposit)));
-        let balance = Number(Minus(this.balanceInfo.balance, Number(Times(value, 1000000000))));
+        let balance = Number(Minus(this.balanceInfo.balance, Number(Times(value, 100000000))));
         let re = /^\d+(?=\.{0,1}\d+$|$)/;
         let res = /^\d{1,8}(\.\d{1,8})?$/;
         if (!value) {

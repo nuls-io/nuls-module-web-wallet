@@ -321,7 +321,7 @@
             this.addressInfo.balance = newAssetsList.balance;
             this.addressNULSAssets = newAssetsList;
             //console.log(this.addressNULSAssets);
-            this.getNULSUSDT(Number(newAssetsList.total));
+            //this.getNULSUSDT(Number(newAssetsList.total));
             this.overviewLoading = false;
             //this.addressAssetsData.push(newAssetsList);
             this.assetsListLoading = false;
@@ -445,7 +445,7 @@
        * @param type 0:本网站跳转，1：跳转浏览器
        */
       toUrl(name, parms, type = 0) {
-        //console.log(name, parms, type);
+        console.log(name, parms, type);
         if (type === 1) {
           connectToExplorer(name, parms)
         } else {

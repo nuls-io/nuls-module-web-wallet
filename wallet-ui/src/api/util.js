@@ -3,6 +3,7 @@ import {BigNumber} from 'bignumber.js'
 import copy from 'copy-to-clipboard'
 import {explorerUrl, RUN_DEV} from '@/config.js'
 import openner from "./opener-web";
+
 //import openner from "./opener-desktop";
 
 /**
@@ -279,11 +280,7 @@ export function connectToExplorer(name, parameter) {
     newUrl = parameter
   }
   //console.log(newUrl);
-
-  let symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
-  if (symbol === 'NULS') {
-    openner(newUrl);
-  }
+  openner(newUrl);
 
 }
 
