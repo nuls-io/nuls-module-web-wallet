@@ -71,20 +71,27 @@ export function Division(nu, arg) {
 export function timesDecimals(nu, decimals) {
   let newInfo = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')) : '';
   let newDecimals = decimals ? decimals : newInfo.defaultAsset.decimals;
-  //let newDecimals = 8;
-  //console.log(newDecimals);
-  let newNu = new BigNumber(Division(nu, Power(newDecimals)).toString());
-  return newNu.toFormat().replace(/[,]/g, '');
+  if (decimals === 0) {
+    return nu
+  } else {
+    let newNu = new BigNumber(Division(nu, Power(newDecimals)).toString());
+    return newNu.toFormat().replace(/[,]/g, '');
+  }
 }
 
 /**
  * 数字乘以精度系数
  */
 export function timesDecimals0(nu, decimals) {
+  decimals = decimals === 0 ? 1 : decimals;
   let newInfo = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')) : '';
   let newDecimals = decimals ? decimals : newInfo.defaultAsset.decimals;
-  let newNu = new BigNumber(Times(nu, Power(newDecimals)).toString());
-  return Number(newNu);
+  if (decimals === 0) {
+    return nu
+  } else {
+    let newNu = new BigNumber(Times(nu, Power(newDecimals)).toString());
+    return Number(newNu);
+  }
 }
 
 /**

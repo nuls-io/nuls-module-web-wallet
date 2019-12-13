@@ -125,7 +125,7 @@
 </template>
 
 <script>
-  //import axios from 'axios'
+  import axios from 'axios'
   import nuls from 'nuls-sdk-js'
   import sdk from 'nuls-sdk-js/lib/api/sdk'
   import utils from 'nuls-sdk-js/lib/utils/utils'
