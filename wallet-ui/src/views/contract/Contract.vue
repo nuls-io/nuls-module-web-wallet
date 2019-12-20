@@ -175,14 +175,14 @@
         await this.$post('/', 'getAccountContractList', [this.pageIndex, this.pageSize, address, -1, false])
           .then((response) => {
             //console.log(response);
-            if (!this.addressInfo.contractList) {
-              this.addressInfo.contractList = [];
-            }
             if (response.hasOwnProperty("result")) {
               if (response.result.list.length !== 0) {
                 let myContractList = [];
                 for (let item of response.result.list) {
                   myContractList.push(item.contractAddress)
+                }
+                if (!this.addressInfo.contractList) {
+                  this.addressInfo.contractList = [];
                 }
                 let newContractList = [...myContractList, ...this.addressInfo.contractList];
                 this.getContractListById(this.pageIndex, this.pageSize, this.addressInfo.contractList.length + response.result.totalCount, newContractList);
@@ -230,11 +230,11 @@
               this.myContractData = response.result.list;
               this.pageTotal = response.result.totalCount;
             } else {
-              this.$message({message: this.$t('contract.contract11') + response.error, type: 'error', duration: 3000});
+              this.$message({message: this.$t('contract.contract11') + response.error, type: 'error', duration: 1000});
             }
           })
           .catch((error) => {
-            this.$message({message: this.$t('contract.contract12') + error, type: 'error', duration: 3000});
+            this.$message({message: this.$t('contract.contract12') + error, type: 'error', duration: 1000});
           });
       },
 
@@ -278,7 +278,7 @@
        **/
       collection(contractAddress) {
         this.isCollection = !this.isCollection;
-        let contractList = this.addressInfo.contractList;
+        let contractList = this.addressInfo.contractList ? this.addressInfo.contractList : [];
         if (contractList.length !== 0) {
           if (contractList.includes(contractAddress)) {
             for (let [index, elem] of contractList.entries()) {
@@ -296,6 +296,9 @@
         let addressList = addressInfo(0);
         for (let item of addressList) {
           if (item.address === this.addressInfo.address) {
+            if (!item.contractList) {
+              item.contractList = [];
+            }
             item.contractList.length = 0;
             let newArr = [...contractList, ...item.contractList];
             let oldArr = Array.from(new Set(newArr));

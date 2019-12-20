@@ -273,16 +273,19 @@ export function connectToExplorer(name, parameter) {
     newUrl = explorerUrl + 'contracts'
   } else if (name === 'consensusInfo') {
     newUrl = explorerUrl + 'consensus/info?hash=' + parameter
-  } else if (name === 'transactionInfo') {
+  }
+  else if (name === 'transactionInfo') {
     newUrl = explorerUrl + 'transaction/info?hash=' + parameter
   } else if (name === 'nuls') {
     newUrl = parameter
   }
   //console.log(newUrl);
+
   let symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
   if (symbol === 'NULS') {
     openner(newUrl);
   }
+
 }
 
 //地址必须参数列表

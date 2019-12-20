@@ -22,11 +22,10 @@ import logger from "./logger-web"
  */
 export function post(url, methodName, data = [], templateName = '') {
   return new Promise((resolve, reject) => {
-    if (methodName !== 'getMsg' && methodName !== 'commitMsg') {
+    if (methodName !== 'getMsg') {
       data.unshift(chainID());
     }
     const params = {"jsonrpc": "2.0", "method": methodName, "params": data, "id": Math.floor(Math.random() * 1000)};
-    //console.log(params);
     axios.post(url, params)
       .then(response => {
         //console.log(response);

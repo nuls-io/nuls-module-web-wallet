@@ -4,7 +4,7 @@
       {{addressInfo.address}}
       <span v-show="addressInfo.alias"> ({{addressInfo.alias}})</span>
       <i class="iconfont iconfuzhi clicks" @click="copy(addressInfo.address)"></i>
-      <i class="iconfont iconerweima clicks" @click="showCode"></i>
+      <i class="iconfont iconerweima clicks" @click="showCode(addressInfo.address)"></i>
     </h3>
 
     <div class="w1200 overview bg-white" v-loading="overviewLoading">
@@ -24,7 +24,7 @@
           <font>{{addressNULSAssets.balance}}</font>
           <el-button type="success" @click="toUrl('transfer',addressNULSAssets.account)">{{$t('tab.tab31')}}
           </el-button>
-          <el-button @click="showCode">{{$t('tab.tab27')}}</el-button>
+          <el-button @click="showCode(addressInfo.address)">{{$t('tab.tab27')}}</el-button>
         </h6>
       </div>
       <div class="locking fl">
@@ -128,34 +128,10 @@
       </el-tab-pane>
     </el-tabs>
 
-    <el-dialog title="" :visible.sync="qrcodeDialog" width="22.5rem" center class="payee_dialog">
-      <el-tabs v-model="activeName" @tab-click="payeeHandleClick">
-        <el-tab-pane label="收款信息" name="payeeInfo">
-          <el-form :model="payeeForm" class="payee_form">
-            <el-form-item label="">
-              <el-input v-model="payeeForm.amount" autocomplete="off" placeholder="请填写收款金额"></el-input>
-            </el-form-item>
-            <el-form-item label="">
-              <el-select v-model="payeeForm.currency" placeholder="请选择币种">
-                <el-option label="NULS" value="NULS"></el-option>
-              </el-select>
-            </el-form-item>
-            <div class="tc ">
-              <el-button @click="payeeNext(0)">跳过</el-button>
-              <el-button type="success" @click="payeeNext(1)">下一步</el-button>
-            </div>
-          </el-form>
-        </el-tab-pane>
-        <el-tab-pane label="生成二维码" name="payeeScan">
-          <div id="qrcode" class="qrcode"></div>
-          <div class="font12 tc" style="margin: 5px 0 0 0">
-            (<span class="click td" style="color: #608fff; font-size: 12px"
-                   @click="toUrl('nuls','https://www.denglu1.cn/',1)">
-            登录易
-          </span>)
-          </div>
-        </el-tab-pane>
-      </el-tabs>
+    <el-dialog :title="$t('tab.tab19')" :visible.sync="qrcodeDialog" width="20rem" center>
+      <div class="tc" style="width: 150px;margin: 0 auto;height: 180px">
+        <div id="qrcode" class="qrcode"></div>
+      </div>
     </el-dialog>
   </div>
 </template>
@@ -193,14 +169,6 @@
         crossLinkData: [],//跨链资产
         crossLinkDataLoading: true, //资产加载动画
         qrcodeDialog: false,//二维码弹框
-
-        activeName: 'payeeInfo', //tab
-        payeeForm: {
-          amount: 100,
-          currency: 'NULS',
-          decimals: 8
-        }
-
       };
     },
     components: {},
@@ -252,29 +220,18 @@
 
       /**
        * @disc: 显示二维码
+       * @params:  address
        * @date: 2019-08-27 11:12
        * @author: Wave
        */
-      showCode() {
-        this.activeName = 'payeeInfo';
+      showCode(address) {
         this.qrcodeDialog = true;
         if (document.getElementById('qrcode')) {
           document.getElementById('qrcode').innerHTML = '';
         }
-      },
-
-      /**
-       * @disc:
-       * @params:
-       * @date: 2019-12-11 13:44
-       * @author: Wave
-       */
-      payeeNext(type){
-        if(type ===1){
-          console.log(type)
-        }
-        this.activeName = 'payeeScan';
-        this.qrcode(this.addressInfo.address);
+        setTimeout(() => {
+          this.qrcode(address);
+        }, 200);
       },
 
       /**
@@ -285,22 +242,12 @@
        */
       qrcode(address) {
         let qrcode = new QRCode('qrcode', {
-          width: 300,
-          height: 300,
-          colorDark: "#000000",
-          colorLight: "#ffffff",
+          width: 150,
+          height: 150,
+          colorDark: "#000",
+          colorLight: "#fff",
         });
-
-        let qrcodeInfo = {
-          "address":address,
-          "chainId":1,
-          "assetId":1,
-          "contractAddress":"",
-          "amount":this.payeeForm.amount,
-          "payer":""
-        };
-        console.log(qrcodeInfo);
-        qrcode.makeCode(JSON.stringify(qrcodeInfo))
+        qrcode.makeCode(address) //生成另一个新的二维码
       },
 
       /**
@@ -492,16 +439,6 @@
       },
 
       /**
-       * @disc: tab 切换
-       * @params: tab, event
-       * @date: 2019-12-04 11:38
-       * @author: Wave
-       */
-      payeeHandleClick(tab, event) {
-        console.log(tab, event);
-      },
-
-      /**
        * 连接跳转
        * @param name
        * @param parms
@@ -557,6 +494,7 @@
     .title {
       height: 130px;
     }
+
     .overview {
       border: @BD1;
       margin: -30px auto 0;
@@ -641,6 +579,7 @@
       }
 
     }
+
     .home_tabs {
       padding-bottom: 100px;
       .el-tabs {
@@ -650,50 +589,6 @@
         }
       }
     }
-    .payee_dialog {
-      .el-dialog {
-        .el-dialog__header {
-          border: 0;
-          padding: 0;
-        }
-        .el-dialog__body {
-          padding: 15px 0 30px;
-          .el-tabs__header {
-            .el-tabs__item {
-              padding-left: 20px;
-            }
-          }
-          .el-tabs__content {
-            padding: 0 20px;
-          }
-          .qrcode {
-            margin: 0 auto;
-            width: 300px;
-            height: 300px;
-          }
-        }
-      }
-    }
-    .payee_form {
-      width: 20rem;
-      .el-form-item {
-        .el-select {
-          .el-input {
-            .el-input__inner {
-              width: 20rem !important;
-            }
-          }
 
-        }
-      }
-      .el-button {
-        width: 7rem;
-      }
-      .el-button--success {
-        span {
-          color: #ffffff;
-        }
-      }
-    }
   }
 </style>
