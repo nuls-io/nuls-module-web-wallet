@@ -286,15 +286,11 @@
        * @param constructor
        */
       async makeContractConstructorArgsTypes(constructor) {
-        let args = constructor;
-        let length = args.length;
-        let contractConstructorArgsTypes = new Array(length);
-        let arg;
-        for (let i = 0; i < length; i++) {
-          arg = args[i];
-          contractConstructorArgsTypes[i] = arg.type;
+        let newArr = [];
+        for(let item of constructor){
+          newArr.push(item.value)
         }
-        return contractConstructorArgsTypes;
+        return newArr
       },
 
       /**
@@ -314,7 +310,8 @@
         contractCreate.contractCode = contractCode;
         contractCreate.alias = alias;
         let constructor = this.deployForm.parameterList;
-        let contractConstructorArgsTypes = this.makeContractConstructorArgsTypes(constructor);
+        //console.log(constructor);
+        let contractConstructorArgsTypes = await this.makeContractConstructorArgsTypes(constructor);
         if (args.length !== 0) {
           contractCreate.args = await utils.twoDimensionalArray(args, contractConstructorArgsTypes);
         } else {
@@ -405,6 +402,7 @@
         const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password);
         const newAddressInfo = nuls.importByKey(this.addressInfo.chainId, pri, password, this.prefix);
         let amount = this.contractCreateTxData.gasLimit * this.contractCreateTxData.price;
+        //console.log(this.contractCreateTxData);
         if (newAddressInfo.address === this.addressInfo.address) {
           let transferInfo = {
             fromAddress: this.addressInfo.address,
@@ -415,12 +413,15 @@
           };
           let pub = this.addressInfo.pub;
           let remark = this.deployForm.addtion;
+          //console.log(transferInfo);
+          //console.log(this.balanceInfo);
           let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 15);
           if (!inOrOutputs.success) {
             this.$message({message: inOrOutputs.data, type: 'error', duration: 1000});
           }
-          //console.log(this.contractCreateTxData);
+          //console.log(inOrOutputs);
           let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 15, this.contractCreateTxData);
+          //console.log(tAssemble);
           let txhex = '';
           //获取手续费
           let newFee = countFee(tAssemble, 1);

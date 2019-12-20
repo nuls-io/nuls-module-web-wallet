@@ -1,24 +1,30 @@
 <template>
-  <el-dialog :title="$t('password.password1')" :visible.sync="passwordVisible" top="30vh" width="30rem"
-             class="password-dialog"
-             :close-on-click-modal="false"
-             :close-on-press-escape="false"
-             @open="passwordShow"
-             @close="passwordClose">
-    <el-form ref="passwordForm" :model="passwordForm" :rules="passwordRules" @submit.native.prevent>
-      <div v-show="false">{{$t('password.password1')}}</div>
-      <el-form-item prop="password">
-        <el-input v-model="passwordForm.password" type="password" :maxlength="22" ref="inpus"
-                  @keyup.enter.native="enterSubmit('passwordForm')">
-        </el-input>
-      </el-form-item>
-    </el-form>
-    <div slot="footer" class="dialog-footer">
-      <el-button @click="passwordClose">{{$t('password.password2')}}</el-button>
-      <el-button type="success" @click="dialogSubmit('passwordForm')" id="passwordInfo">{{$t('password.password3')}}
-      </el-button>
+  <div class="password">
+    <div class="scan" v-if="false">二维码</div>
+    <div class="password_visible">
+      <el-dialog :title="$t('password.password1')" :visible.sync="passwordVisible" top="30vh" width="30rem"
+                 class="password-dialog"
+                 :close-on-click-modal="false"
+                 :close-on-press-escape="false"
+                 @open="passwordShow"
+                 @close="passwordClose">
+        <el-form ref="passwordForm" :model="passwordForm" :rules="passwordRules" @submit.native.prevent>
+          <div v-show="false">{{$t('password.password1')}}</div>
+          <el-form-item prop="password">
+            <el-input v-model="passwordForm.password" type="password" :maxlength="22" ref="inpus"
+                      @keyup.enter.native="enterSubmit('passwordForm')">
+            </el-input>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="passwordClose">{{$t('password.password2')}}</el-button>
+          <el-button type="success" @click="dialogSubmit('passwordForm')" id="passwordInfo">{{$t('password.password3')}}
+          </el-button>
+        </div>
+      </el-dialog>
     </div>
-  </el-dialog>
+  </div>
+
 </template>
 
 <script>

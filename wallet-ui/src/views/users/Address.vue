@@ -9,7 +9,10 @@
       <el-table :data="addressList" stripe border>
         <el-table-column prop="address" :label="$t('address.address1')" align="center" min-width="330">
         </el-table-column>
-        <el-table-column prop="total" :label="$t('tab.tab2')" align="center" width="150">
+        <el-table-column :label="$t('tab.tab2')" align="center" width="150">
+          <template slot-scope="scope">
+            <span>{{scope.row.total }}</span>
+          </template>
         </el-table-column>
         <el-table-column prop="balance" :label="$t('consensus.consensus2')" align="center" width="150">
         </el-table-column>
@@ -34,9 +37,11 @@
         </el-table-column>
         <el-table-column :label="$t('address.address5')" align="center" width="370">
           <template slot-scope="scope">
-            <label class="click tab_bn" @click="editPassword(scope.row)">{{$t('address.address6')}}</label>
+            <el-link class="click tab_bn" v-if="scope.row.aesPri ===''" disabled>{{$t('address.address6')}}</el-link>
+            <label class="click tab_bn" @click="editPassword(scope.row)" v-else>{{$t('address.address6')}}</label>
             <span class="tab_line">|</span>
-            <label class="click tab_bn" @click="backAddress(scope.row)">{{$t('address.address7')}}</label>
+            <el-link class="click tab_bn" v-if="scope.row.aesPri ===''" disabled>{{$t('address.address7')}}</el-link>
+            <label class="click tab_bn" @click="backAddress(scope.row)" v-else>{{$t('address.address7')}}</label>
             <span class="tab_line">|</span>
             <label class="click tab_bn" @click="deleteAddress(scope.row)">{{$t('address.address8')}}</label>
             <span class="tab_line">|</span>
@@ -120,7 +125,10 @@
       getAddressList() {
         this.addressList = addressInfo(0);
         for (let item in this.addressList) {
-          this.addressList[item].total = Number(Plus(this.addressList[item].balance, this.addressList[item].consensusLock))
+          this.addressList[item].total = Number(Plus(Number(this.addressList[item].balance), Number(this.addressList[item].consensusLock)));
+          if (this.addressList[item].total.toString() === 'NaN') {
+            this.addressList[item].total = 0
+          }
         }
         //如果没有账户跳转到创建地址界面
         if (this.addressList.length === 0) {
@@ -207,6 +215,16 @@
        * @param rowInfo
        **/
       deleteAddress(rowInfo) {
+        if (!rowInfo.aesPri) {
+          let newAddressInfo = addressInfo(0);
+          newAddressInfo.splice(newAddressInfo.findIndex(item => item.address === rowInfo.address), 1);
+          if (this.selectAddressInfo.selection && newAddressInfo.length !== 0) {
+            newAddressInfo[0].selection = true;
+          }
+          localStorage.setItem(chainIdNumber(), JSON.stringify(newAddressInfo));
+          this.getAddressList();
+          return;
+        }
         this.$confirm(this.$t('tab.tab29'), this.$t('tab.tab32'), {
           confirmButtonText: this.$t('tab.tab30'),
           cancelButtonText: this.$t('nodeService.nodeService8'),
@@ -333,10 +351,10 @@
     }
   }
 
-  .el-message-box__wrapper{
-    .el-message-box__content{
-      .el-message-box__message{
-        p{
+  .el-message-box__wrapper {
+    .el-message-box__content {
+      .el-message-box__message {
+        p {
           color: red;
         }
       }

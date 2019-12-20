@@ -222,7 +222,6 @@
        * 判断所有必填参数是否有值
        **/
       changeParameter() {
-        //console.log(this.selectionData);
         if (!this.selectionData.view && !this.selectionData.payable) {
           this.chainMethodCall();
         }
@@ -275,7 +274,6 @@
             return false;
           }
         });
-
       },
 
       /**
@@ -358,14 +356,18 @@
        */
       async imputedContractCallGas(sender, value, contractAddress, methodName, methodDesc, args) {
         return await this.$post('/', 'imputedContractCallGas', [sender, value, contractAddress, methodName, methodDesc, args])
-          .then((response) => {
-            //console.log(response.result);
+          .then(async (response) => {
+            //console.log(response);
             if (response.hasOwnProperty("result")) {
               this.gasNumber = response.result.gasLimit;
               this.oldGasNumber = response.result.gasLimit;
               this.callForm.gas = response.result.gasLimit;
-              let contractConstructorArgsTypes = this.getContractMethodArgsTypes(contractAddress, methodName);
-              let newArgs = utils.twoDimensionalArray(args, contractConstructorArgsTypes);
+              let contractConstructorArgsTypes = await this.getContractMethodArgsTypes(contractAddress, methodName, methodDesc);
+              if (!contractConstructorArgsTypes.success) {
+                this.$message({message: this.$t('call.call4') + response, type: 'error', duration: 3000});
+                return;
+              }
+              let newArgs = utils.twoDimensionalArray(args, contractConstructorArgsTypes.data);
               this.contractCallData = {
                 chainId: chainID(),
                 sender: sender,
@@ -378,11 +380,11 @@
                 args: newArgs
               };
             } else {
-              this.$message({message: this.$t('call.call4') + response, type: 'error', duration: 1000});
+              this.$message({message: this.$t('call.call4') + response, type: 'error', duration: 3000});
             }
           })
           .catch((error) => {
-            this.$message({message: this.$t('call.call5') + error, type: 'error', duration: 1000});
+            this.$message({message: this.$t('call.call5') + error, type: 'error', duration: 3000});
           });
       },
 
@@ -390,10 +392,12 @@
        * 获取合约指定函数的参数类型
        * @param contractAddress
        * @param  methodName
+       * @param  methodDesc
        */
-      async getContractMethodArgsTypes(contractAddress, methodName) {
-        return await this.$post('/', 'getContractMethodArgsTypes', [contractAddress, methodName])
+      async getContractMethodArgsTypes(contractAddress, methodName, methodDesc) {
+        return await this.$post('/', 'getContractMethodArgsTypes', [contractAddress, methodName, methodDesc])
           .then((response) => {
+            //console.log(response);
             if (response.hasOwnProperty("result")) {
               return {success: true, data: response.result};
             } else {
@@ -417,11 +421,10 @@
           if (response.success) {
             this.balanceInfo = response.data;
           } else {
-            this.$message({message: this.$t('public.err2') + response, type: 'error', duration: 1000});
+            this.$message({message: this.$t('public.err2') + response, type: 'error', duration: 3000});
           }
         }).catch((error) => {
-          console.log(error);
-          this.$message({message: this.$t('public.err3') + error, type: 'error', duration: 1000});
+          this.$message({message: this.$t('public.err3') + error, type: 'error', duration: 3000});
         });
       },
 
@@ -444,23 +447,17 @@
             fee: 100000
           };
           amount = Number(Plus(transferInfo.fee, amount));
-
           if (this.callForm.values > 0) {
             transferInfo.toAddress = this.contractAddress;
             transferInfo.value = Number(timesDecimals0(this.callForm.values));
             transferInfo.amount = Number(Plus(transferInfo.value, amount))
           }
-
           let remark = '';
-          //console.log(transferInfo);
           let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
-          //console.log(inOrOutputs);
-          //console.log(this.contractCallData);
           let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 16, this.contractCallData);
           let txhex = '';
           //获取手续费
           let newFee = countFee(tAssemble, 1);
-          //console.log(this.balanceInfo);
           //手续费大于0.001的时候重新组装交易及签名
           if (transferInfo.fee !== newFee) {
             transferInfo.fee = newFee;
@@ -484,13 +481,12 @@
               }
             }
           }).catch((err) => {
-            this.$message({message: this.$t('public.err1') + err, type: 'error', duration: 1000});
+            this.$message({message: this.$t('public.err1') + err, type: 'error', duration: 3000});
           });
         } else {
-          this.$message({message: this.$t('address.address13'), type: 'error', duration: 1000});
+          this.$message({message: this.$t('address.address13'), type: 'error', duration: 3000});
         }
       }
-
     }
   }
 </script>

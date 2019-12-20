@@ -37,7 +37,7 @@
 
 <script>
   import nuls from 'nuls-sdk-js'
-  import {inputsOrOutputs, validateAndBroadcast,getPrefixByChainId} from '@/api/requestData'
+  import {inputsOrOutputs, validateAndBroadcast, getPrefixByChainId} from '@/api/requestData'
   import Password from '@/components/PasswordBar'
   import BackBar from '@/components/BackBar'
   import * as config from '@/config.js'
@@ -111,6 +111,14 @@
         this.$refs[formName].validate((valid) => {
           if (valid) {
             if (this.balanceInfo.balance > 100100000) {
+              let address = this.$route.query.address;
+              let addressList = addressInfo(0);
+              for (let item of addressList) {
+                if(item.address === address && item.aesPri ===''){
+                  console.log(item);
+                  return
+                }
+              }
               this.$refs.password.showPassword(true);
             } else {
               this.$message({message: this.$t('newConsensus.newConsensus7'), type: 'error', duration: 1000});
@@ -150,10 +158,10 @@
       async passSubmit(password) {
 
         const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password);
-        const newAddressInfo = nuls.importByKey(chainID(), pri, password,this.prefix);
+        const newAddressInfo = nuls.importByKey(chainID(), pri, password, this.prefix);
         if (newAddressInfo.address === this.addressInfo.address) {
           //根据公钥获取地址
-          let burningAddress = nuls.getAddressByPub(chainID(), 1, config.API_BURNING_ADDRESS_PUB,this.prefix);
+          let burningAddress = nuls.getAddressByPub(chainID(), 1, config.API_BURNING_ADDRESS_PUB, this.prefix);
           //console.log(burningAddress);
           let transferInfo = {
             fromAddress: this.addressInfo.address,

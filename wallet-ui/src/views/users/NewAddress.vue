@@ -17,7 +17,6 @@
           </div>
         </el-tab-pane>
         <el-tab-pane :label="$t('importAddress.importAddress3')" name="keyImport">
-
           <div class="tab w1200 mt_30">
             <div class="tc font18 mzt_20" v-if="resetAddress !=='0'">
               {{$t('public.resetAddress')}}: {{resetAddress}}
@@ -71,7 +70,14 @@
 
 <script>
   import nuls from 'nuls-sdk-js'
-  import {chainID, defaultAddressInfo, localStorageByAddressInfo, passwordVerification} from '@/api/util'
+  import {
+    chainID,
+    defaultAddressInfo,
+    localStorageByAddressInfo,
+    passwordVerification,
+    timesDecimals,
+    Plus
+  } from '@/api/util'
   import {getPrefixByChainId} from '@/api/requestData'
   import Password from '@/components/PasswordBar'
 
@@ -134,7 +140,7 @@
       let validateAgreement = (rule, value, callback) => {
         if (!value) {
           callback(new Error(this.$t('newAddress.newAddress29')));
-        }  else {
+        } else {
           callback();
         }
       };
@@ -162,6 +168,8 @@
           ]
         },
         importAddressInfo: {},//私钥导入地址信息
+        importRandomString: '',//扫描导入随机字符串
+
         newAddressForm: {
           pass: '',
           checkPass: '',
@@ -192,6 +200,8 @@
         this.prefix = '';
       });
       this.activeName = this.resetAddress !== '0' ? 'keyImport' : 'keystoreImport';
+    },
+    mounted() {
 
     },
     methods: {
@@ -212,11 +222,51 @@
           this.keystoreInfo = {};
           this.newAddressInfo = {};
           this.$refs['newAddressForm'].resetFields();
+        } else if (tab.name === 'scanImport') {
+          //this.ramNumber();
+          this.getScanImport(this.importRandomString);
         } else {
           this.keystoreInfo = {};
           this.importAddressInfo = {};
           this.$refs['importForm'].resetFields();
         }
+      },
+
+
+      /**
+       * 获取地址NULS资产信息
+       * @param addressInfo
+       **/
+      async getAddressInfo(addressInfo) {
+        await this.$post('/', 'getAccountLedgerList', [addressInfo.address])
+          .then((response) => {
+            //console.log(response);
+            let newAssetsList = {
+              address: addressInfo.address,
+              aesPri: addressInfo.aesPri,
+              pub: addressInfo.pub,
+              remark: ''
+            };
+            if (response.hasOwnProperty("result")) {
+              newAssetsList.account = response.result[0].symbol;
+              newAssetsList.chainId = response.result[0].chainId;
+              newAssetsList.assetId = response.result[0].assetId;
+              newAssetsList.type = 1;
+              newAssetsList.balance = Number(timesDecimals(response.result[0].balance)).toFixed(3);
+              newAssetsList.locking = Number(timesDecimals(Plus(response.result[0].consensusLock, response.result[0].timeLock))).toFixed(3);
+              newAssetsList.total = response.result[0].totalBalance !== 0 ? Number(timesDecimals(response.result[0].totalBalance)).toFixed(3) : 0;
+            } else {
+              newAssetsList.account = response.result.symbol;
+              newAssetsList.chainId = response.result.chainId;
+              newAssetsList.assetId = response.result.assetId;
+              newAssetsList.type = 1;
+              newAssetsList.total = 0;
+              newAssetsList.locking = 0;
+              newAssetsList.balance = 0;
+            }
+            localStorageByAddressInfo(newAssetsList);
+            this.toUrl('address')
+          })
       },
 
       /**
@@ -363,18 +413,27 @@
           padding: 100px 0 100px 0;
           border: 1px solid #E4E7ED;
         }
-
         .form-bnt {
           text-align: center;
           .el-button--success {
             width: 190px;
           }
         }
-
         .tab {
           border: 1px solid #E4E7ED;
           .import-form {
             margin: 60px auto 100px;
+          }
+        }
+        .scan {
+          width: 100%;
+          min-height: 500px;
+          margin: 0 auto;
+          padding: 80px 0 0 0;
+          border: 1px solid #E4E7ED;
+          .qrcode {
+            width: 300px;
+            margin: 0 auto;
           }
         }
         .new_address {

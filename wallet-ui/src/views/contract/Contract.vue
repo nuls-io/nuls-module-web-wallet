@@ -181,6 +181,9 @@
                 for (let item of response.result.list) {
                   myContractList.push(item.contractAddress)
                 }
+                if (!this.addressInfo.contractList) {
+                  this.addressInfo.contractList = [];
+                }
                 let newContractList = [...myContractList, ...this.addressInfo.contractList];
                 this.getContractListById(this.pageIndex, this.pageSize, this.addressInfo.contractList.length + response.result.totalCount, newContractList);
               } else {
@@ -275,7 +278,7 @@
        **/
       collection(contractAddress) {
         this.isCollection = !this.isCollection;
-        let contractList = this.addressInfo.contractList;
+        let contractList = this.addressInfo.contractList ? this.addressInfo.contractList : [];
         if (contractList.length !== 0) {
           if (contractList.includes(contractAddress)) {
             for (let [index, elem] of contractList.entries()) {
@@ -293,6 +296,9 @@
         let addressList = addressInfo(0);
         for (let item of addressList) {
           if (item.address === this.addressInfo.address) {
+            if (!item.contractList) {
+              item.contractList = [];
+            }
             item.contractList.length = 0;
             let newArr = [...contractList, ...item.contractList];
             let oldArr = Array.from(new Set(newArr));
