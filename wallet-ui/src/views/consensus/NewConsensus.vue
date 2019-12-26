@@ -85,8 +85,8 @@
 
 <script>
   import nuls from 'nuls-sdk-js'
-  import {getNulsBalance, inputsOrOutputs, validateAndBroadcast,getPrefixByChainId} from '@/api/requestData'
-  import {Times, addressInfo,chainID} from '@/api/util'
+  import {getNulsBalance, inputsOrOutputs, validateAndBroadcast, getPrefixByChainId} from '@/api/requestData'
+  import {Times, addressInfo, chainID} from '@/api/util'
   import Password from '@/components/PasswordBar'
   import BackBar from '@/components/BackBar'
 
@@ -124,14 +124,16 @@
       let checkAmount = (rule, value, callback) => {
         let re = /^\d+(?=\.{0,1}\d+$|$)/;
         let res = /^\d{1,8}(\.\d{1,8})?$/;
-        let balance = this.balanceInfo.balance - value * 1000000000;
+        let balance = this.balanceInfo.balance - value * 100000000;
         if (!value) {
           return callback(new Error(this.$t('newConsensus.newConsensus5')));
         } else if (!re.exec(value) || !res.exec(value)) {
           callback(new Error(this.$t('newConsensus.newConsensus6')));
         } else if (balance < 0.001) {
+          console.log("1111");
           callback(new Error(this.$t('newConsensus.newConsensus7')));
         } else if (value < 200000 || value > 2000000) {
+          console.log("22222");
           callback(new Error(this.$t('newConsensus.newConsensus8')));
         } else {
           callback();
@@ -196,7 +198,7 @@
       setTimeout(() => {
         this.getPunishByAddress(this.addressInfo.address);
         this.getBalanceByAddress(this.agentAsset.agentAsset.chainId, this.agentAsset.agentAsset.assetId, this.addressInfo.address);
-      },600);
+      }, 600);
     },
     watch: {
       addressInfo(val, old) {
@@ -297,7 +299,7 @@
           };
           let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, '', 4, agent);
           const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password);
-          const newAddressInfo = nuls.importByKey(this.addressInfo.chainId, pri, password,this.prefix);
+          const newAddressInfo = nuls.importByKey(this.addressInfo.chainId, pri, password, this.prefix);
           if (newAddressInfo.address === this.addressInfo.address) {
             txhex = await nuls.transactionSerialize(pri, this.addressInfo.pub, tAssemble);
             //console.log(txhex);
