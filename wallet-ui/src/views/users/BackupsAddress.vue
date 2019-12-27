@@ -21,7 +21,7 @@
           <!--<el-button type="success" @click="backKeystore" v-if="RUN_PATTERN">{{$t('newAddress.newAddress16')}}
           </el-button>-->
           <el-button type="success" @click="backKeystore">{{$t('newAddress.newAddress16')}}</el-button>
-          <!--<el-button type="success" @click="backScan">二维码备份</el-button>-->
+          <el-button type="success" @click="backScan">{{$t('tips.tips8')}}</el-button>
           <el-button type="success" @click="backKey">{{$t('newAddress.newAddress17')}}</el-button>
           <el-button @click="toUrl('home')">{{$t('tab.tab24')}}</el-button>
         </div>
@@ -44,7 +44,8 @@
       </span>
     </el-dialog>
 
-    <el-dialog title="备份二维码" :visible.sync="scanDialog" width="450px" center @close="scanDialogClose">
+    <el-dialog :title="$t('tips.tips9')" :visible.sync="scanDialog" width="450px" center @close="scanDialogClose"
+               class="scan_dialog">
       <div>
         <div id="qrcode" class="qrcode"></div>
       </div>
@@ -103,9 +104,9 @@
        * @author: Wave
        */
       backScan() {
-        this.$confirm('二维码显示以后容易被拍照和摄像请确保环境周边的安全', '安全警告', {
-          confirmButtonText: '确定安全查看',
-          cancelButtonText: '不安全',
+        this.$confirm(this.$t('tips.tips5'), this.$t('tab.tab32'), {
+          confirmButtonText: this.$t('tips.tips6'),
+          cancelButtonText: this.$t('tips.tips7'),
           type: 'warning'
         }).then(() => {
           this.backType = 2;
@@ -270,6 +271,13 @@
           .mt_20 {
             margin: 100px auto 30px !important;
           }
+        }
+      }
+    }
+    .scan_dialog {
+      .el-dialog {
+        .el-dialog__body {
+          height: 480px;
         }
       }
     }

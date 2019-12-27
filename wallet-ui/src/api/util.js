@@ -71,8 +71,9 @@ export function Division(nu, arg) {
 export function timesDecimals(nu, decimals) {
   let newInfo = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')) : '';
   let newDecimals = decimals ? decimals : newInfo.defaultAsset.decimals;
-  //let newDecimals = 8;
-  //console.log(newDecimals);
+  if(decimals===0){
+    return nu
+  }
   let newNu = new BigNumber(Division(nu, Power(newDecimals)).toString());
   return newNu.toFormat().replace(/[,]/g, '');
 }
@@ -83,6 +84,9 @@ export function timesDecimals(nu, decimals) {
 export function timesDecimals0(nu, decimals) {
   let newInfo = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')) : '';
   let newDecimals = decimals ? decimals : newInfo.defaultAsset.decimals;
+  if(decimals===0){
+    return nu
+  }
   let newNu = new BigNumber(Times(nu, Power(newDecimals)).toString());
   return Number(newNu);
 }
@@ -273,19 +277,16 @@ export function connectToExplorer(name, parameter) {
     newUrl = explorerUrl + 'contracts'
   } else if (name === 'consensusInfo') {
     newUrl = explorerUrl + 'consensus/info?hash=' + parameter
-  }
-  else if (name === 'transactionInfo') {
+  } else if (name === 'transactionInfo') {
     newUrl = explorerUrl + 'transaction/info?hash=' + parameter
   } else if (name === 'nuls') {
     newUrl = parameter
   }
   //console.log(newUrl);
-
   let symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
   if (symbol === 'NULS') {
     openner(newUrl);
   }
-
 }
 
 //地址必须参数列表

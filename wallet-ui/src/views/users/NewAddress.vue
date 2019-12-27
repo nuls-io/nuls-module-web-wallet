@@ -38,6 +38,14 @@
             </el-form>
           </div>
         </el-tab-pane>
+        <el-tab-pane :label="$t('tips.tips10')" name="scanImport">
+          <div class="scan tc">
+            <div id="qrcode" class="qrcode"></div>
+            <div class="font12" style="margin: 5px 0 0 0">
+              (<span class="click td" @click="toUrl('https://www.denglu1.cn/',1)">{{$t('tips.tips11')}}</span>)
+            </div>
+          </div>
+        </el-tab-pane>
         <el-tab-pane :label="$t('importAddress.importAddress0')" name="newAddress" :disabled="resetAddress !=='0'">
           <div class="new_address">
             <el-form :model="newAddressForm" status-icon :rules="newAddressRules" ref="newAddressForm"
@@ -70,13 +78,16 @@
 
 <script>
   import nuls from 'nuls-sdk-js'
+  import QRCode from 'qrcodejs2'
   import {
     chainID,
     defaultAddressInfo,
     localStorageByAddressInfo,
     passwordVerification,
+    getRamNumber,
     timesDecimals,
-    Plus
+    Plus,
+    connectToExplorer
   } from '@/api/util'
   import {getPrefixByChainId} from '@/api/requestData'
   import Password from '@/components/PasswordBar'
@@ -187,6 +198,7 @@
           ],
         },
         newAddressInfo: {},//创建地址信息
+        scanImportInterval: null,
       };
     },
     components: {
@@ -202,9 +214,35 @@
       this.activeName = this.resetAddress !== '0' ? 'keyImport' : 'keystoreImport';
     },
     mounted() {
-
+      this.ramNumber();
+    },
+    beforeDestroy() {
+      clearInterval(this.scanImportInterval);
     },
     methods: {
+
+      /**
+       * @disc: 生成扫描登录的二维码
+       * @date: 2019-12-02 16:38
+       * @author: Wave
+       */
+      async ramNumber() {
+        if (!this.importRandomString) {
+          this.importRandomString = await getRamNumber(16);
+        }
+        let scanInfo = {
+          url: localStorage.hasOwnProperty('url') ? JSON.parse(localStorage.getItem('url')).urls : 'https://beta.wallet.nuls.io/api',
+          send: this.importRandomString,
+        };
+        console.log(this.importRandomString);
+        let qrcode = new QRCode('qrcode', {
+          width: 300,
+          height: 300,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+        });
+        qrcode.makeCode(JSON.stringify(scanInfo))
+      },
 
       /**
        * @disc: tab选择
@@ -223,8 +261,9 @@
           this.newAddressInfo = {};
           this.$refs['newAddressForm'].resetFields();
         } else if (tab.name === 'scanImport') {
-          //this.ramNumber();
-          this.getScanImport(this.importRandomString);
+          this.scanImportInterval = setInterval(() => {
+            this.getScanImport(this.importRandomString);
+          }, 3000);
         } else {
           this.keystoreInfo = {};
           this.importAddressInfo = {};
@@ -232,6 +271,25 @@
         }
       },
 
+      /**
+       * @disc: 获取扫描导入后的信息
+       * @params: importRandomString
+       * @date: 2019-12-02 16:39
+       * @author: Wave
+       */
+      async getScanImport(importRandomString) {
+        await this.$post('/', 'getMsg', [importRandomString])
+          .then((response) => {
+            //console.log(response);
+            if (response.hasOwnProperty("result")) {
+              let addressInfo = {address: response.result.address, aesPri: '', pub: ''};
+              this.getAddressInfo(addressInfo);
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      },
 
       /**
        * 获取地址NULS资产信息
@@ -294,7 +352,7 @@
        * @author: Wave
        */
       async keystoreImportPassSubmit(password) {
-        let isPassword = passwordVerification(this.keystoreInfo, password);
+        let isPassword = passwordVerification(this.keystoreInfo, password, this.prefix);
         if (isPassword.success) {
           let keystoreAddressInfo = defaultAddressInfo;
           keystoreAddressInfo.address = isPassword.address;
@@ -303,7 +361,7 @@
           localStorageByAddressInfo(keystoreAddressInfo);
           this.toUrl('address')
         } else {
-          this.$message({message: "密码错误，请输入正确的密码!", type: 'error', duration: 2000});
+          this.$message({message: this.$t('address.address13'), type: 'error', duration: 3000});
         }
       },
 
@@ -360,10 +418,14 @@
        * @date: 2019-09-02 11:12
        * @author: Wave
        */
-      toUrl(name) {
-        this.$router.push({
-          name: name
-        })
+      toUrl(name, type = 0) {
+        if (type === 0) {
+          this.$router.push({
+            name: name
+          })
+        } else {
+          connectToExplorer('nuls', name);
+        }
       },
     }
   }

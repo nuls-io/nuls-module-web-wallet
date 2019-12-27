@@ -961,6 +961,29 @@ const en = {
     "3": "A new version has been detected and is being downloaded...",
     "4": "Now the latest version is in use, no updates are needed.",
   },
+
+  "tips":{
+    "tips0":"Transaction has been sent, waiting for block confirmation",
+    "tips1":"Scan signature broadcast transaction error:",
+    "tips2":"Scan code contract transfer and cross chain transaction are not supported temporarily",
+    "tips3":"Scanning signature assembly transaction error",
+    "tips4":"Error sending message to background by scanning code signature:",
+    "tips5":"QR code is easy to be photographed and photographed after display. Please ensure the safety of surrounding environment",
+    "tips6":"Confirm safe view",
+    "tips7":"Unsafe",
+    "tips8":"QR code backup",
+    "tips9":"Backup QR code",
+    "tips10":"Scan import",
+    "tips11":"Login easily",
+
+    "tips12":"Collection information ",
+    "tips13":"Please fill in the amount received",
+    "tips14":"Please choose your currency",
+    "tips15":"Skip",
+    "tips16":"Generate qr code",
+    "tips17":"Scan the signature",
+    "tips":"tips",
+  },
   ...enLocale
 
 };

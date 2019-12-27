@@ -85,8 +85,14 @@
 
 <script>
   import nuls from 'nuls-sdk-js'
-  import {getNulsBalance, inputsOrOutputs, validateAndBroadcast,getPrefixByChainId} from '@/api/requestData'
-  import {Times, addressInfo,chainID} from '@/api/util'
+  import {
+    getNulsBalance,
+    inputsOrOutputs,
+    validateAndBroadcast,
+    getPrefixByChainId,
+    commitData
+  } from '@/api/requestData'
+  import {Times, addressInfo, chainID, getRamNumber} from '@/api/util'
   import Password from '@/components/PasswordBar'
   import BackBar from '@/components/BackBar'
 
@@ -177,6 +183,8 @@
         },
         newConsensusVisible: false,//创建节点确认弹框
         prefix: '',//地址前缀
+        getNewConsensusRandomString: '',
+        sendNewConsensusRandomString: '',
       };
     },
     created() {
@@ -196,7 +204,7 @@
       setTimeout(() => {
         this.getPunishByAddress(this.addressInfo.address);
         this.getBalanceByAddress(this.agentAsset.agentAsset.chainId, this.agentAsset.agentAsset.assetId, this.addressInfo.address);
-      },600);
+      }, 600);
     },
     watch: {
       addressInfo(val, old) {
@@ -268,8 +276,28 @@
       /**
        *  确定框确定提交
        **/
-      confiremSubmit() {
-        this.$refs.password.showPassword(true)
+      async confiremSubmit() {
+        if (this.addressInfo.aesPri === '') {
+          this.getNewConsensusRandomString = await getRamNumber(16);
+          this.sendNewConsensusRandomString = await getRamNumber(16);
+          let assembleHex = await this.newConsensusAssemble();
+          if (!assembleHex.success) {
+            this.$message({message: this.$t('tips.tips3'), type: 'error', duration: 3000});
+            return;
+          }
+          let commitDatas = await commitData(this.getNewConsensusRandomString, this.sendNewConsensusRandomString,this.addressInfo.address,assembleHex.data);
+          if (!commitDatas.success) {
+            this.$message({
+              message: this.$t('tips.tips4') + JSON.stringify(commitDatas.data),
+              type: 'error',
+              duration: 3000
+            });
+            return;
+          }
+          this.$refs.password.showScan(commitDatas.data.txInfo, commitDatas.data.assembleHex);
+        } else {
+          this.$refs.password.showPassword(true);
+        }
       },
 
       /**
@@ -277,6 +305,40 @@
        * @param password
        **/
       async passSubmit(password) {
+        let tAssemble = await this.newConsensusAssemble();
+        if (!tAssemble.success) {
+          return;
+        }
+
+        const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password);
+        const newAddressInfo = nuls.importByKey(this.addressInfo.chainId, pri, password, this.prefix);
+        if (newAddressInfo.address === this.addressInfo.address) {
+          let txhex = await nuls.transactionSerialize(pri, this.addressInfo.pub, tAssemble.data);
+          //console.log(txhex);
+          //验证并广播交易
+          await validateAndBroadcast(txhex).then((response) => {
+            //console.log(response);
+            if (response.success) {
+              this.$router.push({
+                name: "txList"
+              })
+            } else {
+              this.$message({message: this.$t('error.' + response.data.code), type: 'error', duration: 3000});
+            }
+          }).catch((err) => {
+            this.$message({message: this.$t('public.err0') + err, type: 'error', duration: 1000});
+          });
+        } else {
+          this.$message({message: this.$t('address.address13'), type: 'error', duration: 1000});
+        }
+      },
+
+      /**
+       * @disc: 创建节点组装交易
+       * @date: 2019-12-04 14:17
+       * @author: Wave
+       */
+      async newConsensusAssemble() {
         let transferInfo = {
           fromAddress: this.addressInfo.address,
           assetsChainId: this.agentAsset.agentAsset.chainId,
@@ -286,41 +348,27 @@
         };
         let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 4);
         //console.log(inOrOutputs);
-        let txhex = '';
-        if (inOrOutputs.success) {
-          let agent = {
-            agentAddress: this.addressInfo.address,
-            packingAddress: this.createrForm.blockAddress,
-            rewardAddress: this.createrForm.rewardAddress,
-            commissionRate: Number(this.createrForm.rate),
-            deposit: Number(Times(this.createrForm.amount, 100000000).toString())
-          };
-          let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, '', 4, agent);
-          const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password);
-          const newAddressInfo = nuls.importByKey(this.addressInfo.chainId, pri, password,this.prefix);
-          if (newAddressInfo.address === this.addressInfo.address) {
-            txhex = await nuls.transactionSerialize(pri, this.addressInfo.pub, tAssemble);
-            //console.log(txhex);
-            //验证并广播交易
-            await validateAndBroadcast(txhex).then((response) => {
-              //console.log(response);
-              if (response.success) {
-                this.$router.push({
-                  name: "txList"
-                })
-              } else {
-                this.$message({message: this.$t('error.' + response.data.code), type: 'error', duration: 3000});
-              }
-            }).catch((err) => {
-              this.$message({message: this.$t('public.err0') + err, type: 'error', duration: 1000});
-            });
-          } else {
-            this.$message({message: this.$t('address.address13'), type: 'error', duration: 1000});
-          }
-        } else {
-          this.$message({message: this.$t('public.err1') + inOrOutputs.data, type: 'error', duration: 1000});
+        if (!inOrOutputs.success) {
+          this.$message({
+            message: this.$t('public.err1') + JSON.stringify(inOrOutputs.data),
+            type: 'error',
+            duration: 3000
+          });
+          return {success: false}
         }
-
+        let agent = {
+          agentAddress: this.addressInfo.address,
+          packingAddress: this.createrForm.blockAddress,
+          rewardAddress: this.createrForm.rewardAddress,
+          commissionRate: Number(this.createrForm.rate),
+          deposit: Number(Times(this.createrForm.amount, 100000000).toString())
+        };
+        let data = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, '', 4, agent);
+        console.log(data);
+        return {
+          success: true,
+          data: data
+        };
       }
     }
   }
