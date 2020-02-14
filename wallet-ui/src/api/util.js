@@ -97,6 +97,9 @@ export function timesDecimals0(nu, decimals) {
  */
 export function passwordVerification(accountInfo, password, prefix) {
   const pri = nuls.decrypteOfAES(accountInfo.aesPri, password);
+  if (!prefix && sessionStorage.hasOwnProperty('info')) {
+    prefix = JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol
+  }
   const newAddressInfo = nuls.importByKey(chainID(), pri, password, prefix);
   if (newAddressInfo.address === accountInfo.address || nuls.addressEquals(accountInfo.address, newAddressInfo.address)) {
     return {success: true, pri: pri, pub: accountInfo.pub, aesPri: accountInfo.aesPri, address: newAddressInfo.address};
