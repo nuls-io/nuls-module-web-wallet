@@ -8,6 +8,7 @@
     "serve-other": "cross-env NULS_ENV=other vue-cli-service serve src/main-web",
     "build": "cross-env NULS_ENV=prod vue-cli-service build src/main-web",
     "build-prod": "cross-env NULS_ENV=prod vue-cli-service build src/main-web",
+    "build-factory": "cross-env NULS_ENV=prod vue-cli-service build src/main-web",
     "build-other": "cross-env NULS_ENV=other vue-cli-service build src/main-web",
     "build-beta": "cross-env NULS_ENV=beta vue-cli-service build src/main-web",
     "lint": "vue-cli-service lint",
