@@ -25,7 +25,7 @@
         </el-form-item>
         <div class="cross yellow font12" v-show="isCross">{{$t('transfer.transfer15')}}</div>
         <el-form-item :label="$t('transfer.transfer3')" prop="amount">
-          <span class="balance font12 fr">{{$t('public.usableBalance')}}: {{Number(changeAssets.balance).toFixed(3)}}</span>
+          <span class="balance font12 fr">{{$t('public.usableBalance')}}: {{Number(changeAssets.balance)}}</span>
           <el-input v-model="transferForm.amount" @change="changeParameter">
           </el-input>
         </el-form-item>
@@ -192,13 +192,14 @@
           callback(new Error(this.$t('transfer.transfer12') + ": " + this.changeAssets.decimals))
         } else if (Number(value) < 0.001) {
           callback(new Error(this.$t('transfer.transfer13')))
-        } else if (Number(value) > Number(Minus(this.changeAssets.balance, 0.001))) {
+        } else if (Number(value) > Number(Minus(this.changeAssets.balance, 0.001)) && this.changeAssets.symbol === 'NULS') {
           callback(new Error(this.$t('transfer.transfer131') + Number(Minus(this.changeAssets.balance, 0.001))))
         } else {
           setTimeout(() => {
-            if (Number(value) > Number(this.changeAssets.balance)) {
+            //console.log(this.changeAssets);
+            if (timesDecimals0(value, this.changeAssets.decimals) > timesDecimals0(this.changeAssets.balance, this.changeAssets.decimals)) {
               callback(new Error(this.$t('transfer.transfer14')))
-            } else if (Number(value) === Number(this.changeAssets.balance)) {
+            } else if (timesDecimals0(value, this.changeAssets.decimals) === timesDecimals0(this.changeAssets.balance, this.changeAssets.decimals) && this.changeAssets.symbol === 'NULS') {
               this.transferForm.amount = Number(Minus(value, this.fee));
             } else {
               callback()

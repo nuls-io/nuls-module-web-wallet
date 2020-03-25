@@ -285,6 +285,7 @@ export function connectToExplorer(name, parameter) {
   //console.log(newUrl);
   let symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
   if (symbol === 'NULS') {
+    //console.log(newUrl);
     openner(newUrl);
   }
 }

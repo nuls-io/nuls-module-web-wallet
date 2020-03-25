@@ -44,10 +44,17 @@
       </span>
     </el-dialog>
 
-    <el-dialog :title="$t('tips.tips9')" :visible.sync="scanDialog" width="450px" center @close="scanDialogClose"
+    <el-dialog :title="$t('tips.tips9')" :visible.sync="scanDialog" width="300px" center @close="scanDialogClose"
                class="scan_dialog">
       <div>
         <div id="qrcode" class="qrcode"></div>
+        <div class="font12 tc" style="margin: 20px 0 0 0">
+          {{$t('tips.tips18')}}
+          <font class="click td" @click="toUrl('http://nabox.io/',1)">Nabox</font>
+          /
+          <font class="click td" @click="toUrl('https://www.denglu1.cn/',1)">{{$t('tips.tips11')}}</font>
+          {{$t('tips.tips20')}}
+        </div>
       </div>
     </el-dialog>
   </div>
@@ -57,7 +64,7 @@
   import QRCode from 'qrcodejs2'
   import Password from '@/components/PasswordBar'
   import BackBar from '@/components/BackBar'
-  import {copys, chainID, passwordVerification} from '@/api/util'
+  import {copys, chainID, passwordVerification,connectToExplorer} from '@/api/util'
   import {RUN_PATTERN} from '@/config.js'
   import {getPrefixByChainId} from '@/api/requestData'
 
@@ -166,8 +173,8 @@
        */
       async createScan(scanInfo) {
         let qrcode = new QRCode('qrcode', {
-          width: 400,
-          height: 400,
+          width: 250,
+          height: 250,
           colorDark: "#000000",
           colorLight: "#ffffff",
         });
@@ -197,10 +204,14 @@
        * 连接跳转
        * @param name
        */
-      toUrl(name) {
-        this.$router.push({
-          name: name,
-        })
+      toUrl(name, type = 0) {
+        if (type === 0) {
+          this.$router.push({
+            name: name
+          })
+        } else {
+          connectToExplorer('nuls', name);
+        }
       },
     }
   }
@@ -277,7 +288,7 @@
     .scan_dialog {
       .el-dialog {
         .el-dialog__body {
-          height: 480px;
+          height: 350px;
         }
       }
     }

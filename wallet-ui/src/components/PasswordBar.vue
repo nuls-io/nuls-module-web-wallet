@@ -1,11 +1,15 @@
 <template>
   <div class="password">
     <div class="scan">
-      <el-dialog :title="$t('tips.tips17')" :visible.sync="scanDialog" width="500px" center @close="scanDialogClose" >
+      <el-dialog :title="$t('tips.tips17')" :visible.sync="scanDialog" width="308px" center @close="scanDialogClose">
         <div class="tc">
-          <div id="qrcode" class="qrcode"></div>
-          <div class="font12 tc" style="margin: 5px 0 0 0">
-            (<span class="click td" style="color: #608fff; font-size: 12px" @click="toUrl('https://www.denglu1.cn/',1)">{{$t('tips.tips11')}}</span>)
+          <div id="qrcode" class="qrcode tc"></div>
+          <div class="font12 tc" style="margin: 20px 0 0 0">
+            {{$t('tips.tips18')}}
+            <font class="click td" @click="toUrl('http://nabox.io/',1)">Nabox</font>
+            /
+            <font class="click td" @click="toUrl('https://www.denglu1.cn/',1)">{{$t('tips.tips11')}}</font>
+            {{$t('tips.tips17')}}
           </div>
         </div>
       </el-dialog>
@@ -92,8 +96,8 @@
         this.scanDialog = true;
         setTimeout(() => {
           let qrcode = new QRCode('qrcode', {
-            width: 450,
-            height: 450,
+            width: 250,
+            height: 250,
             colorDark: "#000000",
             colorLight: "#ffffff",
           });
@@ -205,6 +209,7 @@
        * @author: Wave
        */
       toUrl(name, type = 0) {
+        console.log(name,type);
         if (type === 0) {
           this.$router.push({
             name: name
@@ -218,7 +223,7 @@
 </script>
 
 <style lang="less">
-  .password{
+  .password {
     .password-dialog {
       .el-dialog {
         width: 370px;
@@ -249,10 +254,14 @@
         }
       }
     }
-    .scan{
+    .scan {
+      text-align: center;
       .el-dialog {
         .el-dialog__body {
-          height: 480px;
+          height: 330px;
+          .qrcode{
+            width: 250px;
+          }
         }
       }
     }

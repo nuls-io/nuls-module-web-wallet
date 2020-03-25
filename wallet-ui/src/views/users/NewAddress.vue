@@ -41,8 +41,12 @@
         <el-tab-pane :label="$t('tips.tips10')" name="scanImport">
           <div class="scan tc">
             <div id="qrcode" class="qrcode"></div>
-            <div class="font12" style="margin: 5px 0 0 0">
-              (<span class="click td" @click="toUrl('https://www.denglu1.cn/',1)">{{$t('tips.tips11')}}</span>)
+            <div class="font12" style="margin: 20px 0 0 0">
+              {{$t('tips.tips18')}}
+              <span class="click td" @click="toUrl('http://nabox.io/',1)">Nabox</span>
+              /
+              <span class="click td" @click="toUrl('https://www.denglu1.cn/',1)">{{$t('tips.tips11')}}</span>
+              {{$t('tips.tips19')}}
             </div>
           </div>
         </el-tab-pane>
@@ -236,8 +240,8 @@
         };
         console.log(this.importRandomString);
         let qrcode = new QRCode('qrcode', {
-          width: 300,
-          height: 300,
+          width: 250,
+          height: 250,
           colorDark: "#000000",
           colorLight: "#ffffff",
         });
@@ -494,7 +498,7 @@
           padding: 80px 0 0 0;
           border: 1px solid #E4E7ED;
           .qrcode {
-            width: 300px;
+            width: 250px;
             margin: 0 auto;
           }
         }

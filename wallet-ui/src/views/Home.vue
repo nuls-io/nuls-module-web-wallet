@@ -150,11 +150,12 @@
         </el-tab-pane>
         <el-tab-pane :label="$t('tips.tips16')" name="payeeScan">
           <div id="qrcode" class="qrcode"></div>
-          <div class="font12 tc" style="margin: 5px 0 0 0">
-            (<span class="click td" style="color: #608fff;"
-                   @click="toUrl('nuls','https://www.denglu1.cn/',1)">
-            {{$t('tips.tips11')}}
-          </span>)
+          <div class="font12 tc" style="margin: 20px 0 0 0">
+            {{$t('tips.tips18')}}
+            <font class="click td" @click="toUrl('nuls','http://nabox.io/',1)">Nabox</font>
+            /
+            <font class="click td" @click="toUrl('nuls','https://www.denglu1.cn/',1)">{{$t('tips.tips11')}}</font>
+            {{$t('tips.tips21')}}
           </div>
         </el-tab-pane>
       </el-tabs>
@@ -271,9 +272,9 @@
        * @date: 2019-12-11 13:44
        * @author: Wave
        */
-      payeeNext(type) {
-        if (type === 1) {
-          console.log(type)
+      payeeNext() {
+        if (document.getElementById('qrcode')) {
+          document.getElementById('qrcode').innerHTML = '';
         }
         this.activeName = 'payeeScan';
         this.qrcode(this.addressInfo.address);
@@ -287,8 +288,8 @@
        */
       qrcode(address) {
         let qrcode = new QRCode('qrcode', {
-          width: 300,
-          height: 300,
+          width: 250,
+          height: 250,
           colorDark: "#000000",
           colorLight: "#ffffff",
         });
@@ -301,7 +302,7 @@
           "amount": this.payeeForm.amount,
           "payer": ""
         };
-        console.log(qrcodeInfo);
+        //console.log(qrcodeInfo);
         qrcode.makeCode(JSON.stringify(qrcodeInfo))
       },
 
@@ -515,7 +516,7 @@
        * @param type 0:本网站跳转，1：跳转浏览器
        */
       toUrl(name, parms, type = 0) {
-        //console.log(name, parms, type);
+        console.log(name, parms, type);
         if (type === 1) {
           connectToExplorer(name, parms)
         } else {
@@ -675,8 +676,11 @@
           }
           .qrcode {
             margin: 0 auto;
-            width: 300px;
-            height: 300px;
+            width: 250px;
+            height: 250px;
+            img {
+              text-align: center;
+            }
           }
           .font12 {
             height: 20px;
