@@ -50,9 +50,16 @@
   import nuls from 'nuls-sdk-js'
   import sdk from 'nuls-sdk-js/lib/api/sdk'
   import utils from 'nuls-sdk-js/lib/utils/utils'
-  import {getNulsBalance, countFee, inputsOrOutputs, validateAndBroadcast, getPrefixByChainId} from '@/api/requestData'
+  import {
+    getNulsBalance,
+    countFee,
+    inputsOrOutputs,
+    validateAndBroadcast,
+    getPrefixByChainId,
+    commitData
+  } from '@/api/requestData'
   import Password from '@/components/PasswordBar'
-  import {getArgs, timesDecimals0, Times, Plus, addressInfo, chainID} from '@/api/util'
+  import {getArgs, timesDecimals0, Times, Plus, addressInfo, chainID, getRamNumber} from '@/api/util'
 
   export default {
     data() {
@@ -125,6 +132,8 @@
         callResult: '',//调用合约结果
         prefix: '',//地址前缀
         newArgs: [],//合约参数
+        txHexRandom: '',
+        signDataKeyRandom: ''
       };
     },
     props: {
@@ -252,9 +261,29 @@
                 this.imputedContractCallGas(this.addressInfo.address, Number(Times(this.callForm.values, 100000000)), this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs);
               }
               this.getBalanceByAddress(chainID(), 1, this.addressInfo.address);
-              this.$refs[formName].validate((valid) => {
+              this.$refs[formName].validate(async (valid) => {
                 if (valid) {
-                  this.$refs.password.showPassword(true);
+                  if (this.addressInfo.aesPri === '') {
+                    this.txHexRandom = await getRamNumber(16);
+                    this.signDataKeyRandom = await getRamNumber(16);
+                    let assembleHex = await this.getAssemble();
+                    if (!assembleHex.success) {
+                      this.$message({message: this.$t('tips.tips3'), type: 'error', duration: 3000});
+                      return;
+                    }
+                    let commitDatas = await commitData(this.txHexRandom, this.signDataKeyRandom, this.addressInfo.address, assembleHex.data);
+                    if (!commitDatas.success) {
+                      this.$message({
+                        message: this.$t('tips.tips4') + JSON.stringify(commitDatas.data),
+                        type: 'error',
+                        duration: 3000
+                      });
+                      return;
+                    }
+                    this.$refs.password.showScan(commitDatas.data.txInfo, commitDatas.data.assembleHex);
+                  } else {
+                    this.$refs.password.showPassword(true);
+                  }
                 } else {
                   return false;
                 }
@@ -274,6 +303,46 @@
             return false;
           }
         });
+      },
+
+      async getAssemble() {
+        let amount = Number(Times(this.callForm.gas, this.callForm.price));
+        let transferInfo = {
+          fromAddress: this.addressInfo.address,
+          assetsChainId: chainID(),
+          assetsId: 1,
+          amount: amount,
+          fee: 100000
+        };
+        amount = Number(Plus(transferInfo.fee, amount));
+        if (this.callForm.values > 0) {
+          transferInfo.toAddress = this.contractAddress;
+          transferInfo.value = Number(timesDecimals0(this.callForm.values));
+          transferInfo.amount = Number(Plus(transferInfo.value, amount))
+        }
+        let remark = '';
+        //console.log(transferInfo);
+        let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
+        if (!inOrOutputs.success) {
+          this.$message({message: inOrOutputs.data, type: 'error', duration: 3000});
+          return {success: false}
+        }
+        //console.log(inOrOutputs);
+        let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 16, this.contractCallData);
+        //获取手续费
+        let newFee = countFee(tAssemble, 1);
+        //console.log(this.balanceInfo);
+        //手续费大于0.001的时候重新组装交易及签名
+        if (transferInfo.fee !== newFee) {
+          transferInfo.fee = newFee;
+          inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
+          if (!inOrOutputs.success) {
+            this.$message({message: inOrOutputs.data, type: 'error', duration: 3000});
+            return {success: false}
+          }
+          tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 16, this.contractCallData);
+        }
+        return {success: true, data: tAssemble}
       },
 
       /**
@@ -384,7 +453,7 @@
             }
           })
           .catch((error) => {
-            this.$message({message: this.$t('call.call5') + error, type: 'error', duration: 3000});
+            this.$message({message: this.$t('call.call5') + JSON.stringify(error), type: 'error', duration: 3000});
           });
       },
 

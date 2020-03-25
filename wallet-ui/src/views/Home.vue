@@ -4,7 +4,7 @@
       {{addressInfo.address}}
       <span v-show="addressInfo.alias"> ({{addressInfo.alias}})</span>
       <i class="iconfont iconfuzhi clicks" @click="copy(addressInfo.address)"></i>
-      <i class="iconfont iconerweima clicks" @click="showCode(addressInfo.address)"></i>
+      <i class="iconfont iconerweima clicks" @click="showCode"></i>
     </h3>
 
     <div class="w1200 overview bg-white" v-loading="overviewLoading">
@@ -24,7 +24,7 @@
           <font>{{addressNULSAssets.balance}}</font>
           <el-button type="success" @click="toUrl('transfer',addressNULSAssets.account)">{{$t('tab.tab31')}}
           </el-button>
-          <el-button @click="showCode(addressInfo.address)">{{$t('tab.tab27')}}</el-button>
+          <el-button @click="showCode">{{$t('tab.tab27')}}</el-button>
         </h6>
       </div>
       <div class="locking fl">
@@ -128,10 +128,37 @@
       </el-tab-pane>
     </el-tabs>
 
-    <el-dialog :title="$t('tab.tab19')" :visible.sync="qrcodeDialog" width="20rem" center>
-      <div class="tc" style="width: 150px;margin: 0 auto;height: 180px">
-        <div id="qrcode" class="qrcode"></div>
-      </div>
+    <el-dialog title="" :visible.sync="qrcodeDialog" width="22.5rem" center class="payee_dialog">
+      <el-tabs v-model="activeName" @tab-click="payeeHandleClick">
+        <el-tab-pane :label="$t('tips.tips12')" name="payeeInfo">
+          <el-form :model="payeeForm" class="payee_form">
+            <el-form-item label="">
+              <el-input v-model="payeeForm.amount" autocomplete="off" :placeholder="$t('tips.tips13')">
+              </el-input>
+            </el-form-item>
+            <el-form-item label="">
+              <el-select v-model="payeeForm.currency" :placeholder="$t('tips.tips14')">
+                <el-option label="NULS" value="NULS">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <div class="tc ">
+              <el-button @click="payeeNext(0)">{{$t('tips.tips15')}}</el-button>
+              <el-button type="success" @click="payeeNext(1)">{{$t('public.next')}}</el-button>
+            </div>
+          </el-form>
+        </el-tab-pane>
+        <el-tab-pane :label="$t('tips.tips16')" name="payeeScan">
+          <div id="qrcode" class="qrcode"></div>
+          <div class="font12 tc" style="margin: 20px 0 0 0">
+            {{$t('tips.tips18')}}
+            <font class="click td" @click="toUrl('nuls','http://nabox.io/',1)">Nabox</font>
+            /
+            <font class="click td" @click="toUrl('nuls','https://www.denglu1.cn/',1)">{{$t('tips.tips11')}}</font>
+            {{$t('tips.tips21')}}
+          </div>
+        </el-tab-pane>
+      </el-tabs>
     </el-dialog>
   </div>
 </template>
@@ -169,6 +196,14 @@
         crossLinkData: [],//跨链资产
         crossLinkDataLoading: true, //资产加载动画
         qrcodeDialog: false,//二维码弹框
+
+        activeName: 'payeeInfo', //tab
+        payeeForm: {
+          amount: 100,
+          currency: 'NULS',
+          decimals: 8
+        }
+
       };
     },
     components: {},
@@ -220,18 +255,29 @@
 
       /**
        * @disc: 显示二维码
-       * @params:  address
        * @date: 2019-08-27 11:12
        * @author: Wave
        */
-      showCode(address) {
+      showCode() {
+        this.activeName = 'payeeInfo';
         this.qrcodeDialog = true;
         if (document.getElementById('qrcode')) {
           document.getElementById('qrcode').innerHTML = '';
         }
-        setTimeout(() => {
-          this.qrcode(address);
-        }, 200);
+      },
+
+      /**
+       * @disc:
+       * @params:
+       * @date: 2019-12-11 13:44
+       * @author: Wave
+       */
+      payeeNext() {
+        if (document.getElementById('qrcode')) {
+          document.getElementById('qrcode').innerHTML = '';
+        }
+        this.activeName = 'payeeScan';
+        this.qrcode(this.addressInfo.address);
       },
 
       /**
@@ -242,12 +288,22 @@
        */
       qrcode(address) {
         let qrcode = new QRCode('qrcode', {
-          width: 150,
-          height: 150,
-          colorDark: "#000",
-          colorLight: "#fff",
+          width: 250,
+          height: 250,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
         });
-        qrcode.makeCode(address) //生成另一个新的二维码
+
+        let qrcodeInfo = {
+          "address": address,
+          "chainId": 1,
+          "assetId": 1,
+          "contractAddress": "",
+          "amount": this.payeeForm.amount,
+          "payer": ""
+        };
+        //console.log(qrcodeInfo);
+        qrcode.makeCode(JSON.stringify(qrcodeInfo))
       },
 
       /**
@@ -439,13 +495,28 @@
       },
 
       /**
+       * @disc: tab 切换
+       * @params: tab
+       * @date: 2019-12-04 11:38
+       * @author: Wave
+       */
+      payeeHandleClick(tab) {
+        if (tab.name === 'payeeScan') {
+          if (document.getElementById('qrcode')) {
+            document.getElementById('qrcode').innerHTML = '';
+          }
+          this.qrcode(this.addressInfo.address);
+        }
+      },
+
+      /**
        * 连接跳转
        * @param name
        * @param parms
        * @param type 0:本网站跳转，1：跳转浏览器
        */
       toUrl(name, parms, type = 0) {
-        //console.log(name, parms, type);
+        console.log(name, parms, type);
         if (type === 1) {
           connectToExplorer(name, parms)
         } else {
@@ -494,7 +565,6 @@
     .title {
       height: 130px;
     }
-
     .overview {
       border: @BD1;
       margin: -30px auto 0;
@@ -579,7 +649,6 @@
       }
 
     }
-
     .home_tabs {
       padding-bottom: 100px;
       .el-tabs {
@@ -589,6 +658,57 @@
         }
       }
     }
+    .payee_dialog {
+      .el-dialog {
+        .el-dialog__header {
+          border: 0;
+          padding: 0;
+        }
+        .el-dialog__body {
+          padding: 15px 0 30px;
+          .el-tabs__header {
+            .el-tabs__item {
+              padding-left: 20px;
+            }
+          }
+          .el-tabs__content {
+            padding: 0 20px;
+          }
+          .qrcode {
+            margin: 0 auto;
+            width: 250px;
+            height: 250px;
+            img {
+              text-align: center;
+            }
+          }
+          .font12 {
+            height: 20px;
+            margin: 10px 0 0 0;
+          }
+        }
+      }
+    }
+    .payee_form {
+      width: 20rem;
+      .el-form-item {
+        .el-select {
+          .el-input {
+            .el-input__inner {
+              width: 20rem !important;
+            }
+          }
 
+        }
+      }
+      .el-button {
+        width: 7rem;
+      }
+      .el-button--success {
+        span {
+          color: #ffffff;
+        }
+      }
+    }
   }
 </style>

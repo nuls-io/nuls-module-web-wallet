@@ -83,10 +83,11 @@
     getContractConstructor,
     validateTx,
     broadcastTx,
-    getPrefixByChainId
+    getPrefixByChainId,
+    commitData
   } from '@/api/requestData'
   import Password from '@/components/PasswordBar'
-  import {getArgs, chainID} from '@/api/util'
+  import {getArgs, chainID, getRamNumber} from '@/api/util'
 
   export default {
     name: "deploy",
@@ -135,6 +136,8 @@
         fileName: '',//jar文件名
         deployLoading: false,//获取参数加载动画
         prefix: '',//地址前缀
+        txHexRandom: '',
+        signDataKeyRandom: ''
       };
     },
     props: {
@@ -319,7 +322,7 @@
         }
         contractCreate.contractAddress = sdk.getStringContractAddress(chainID());
         if (!contractCreate.chainId || !contractCreate.contractAddress || !contractCreate.contractCode || !contractCreate.gasLimit || !contractCreate.price || !contractCreate.sender) {
-          this.$message({message: this.$t('deploy.deploy15'), type: 'error', duration: 1000});
+          this.$message({message: this.$t('deploy.deploy15'), type: 'error', duration: 3000});
         } else {
           this.contractCreateTxData = contractCreate;
           //console.log(this.contractCreateTxData);
@@ -384,10 +387,30 @@
        * @param formName
        **/
       submitForm(formName) {
-        this.$refs[formName].validate((valid) => {
+        this.$refs[formName].validate(async (valid) => {
           if (valid) {
             this.isTestSubmit = false;
-            this.$refs.password.showPassword(true)
+            if (this.addressInfo.aesPri === '') {
+              this.txHexRandom = await getRamNumber(16);
+              this.signDataKeyRandom = await getRamNumber(16);
+              let assembleHex = await this.getAssemble();
+              if (!assembleHex.success) {
+                this.$message({message: this.$t('tips.tips3'), type: 'error', duration: 3000});
+                return;
+              }
+              let commitDatas = await commitData(this.txHexRandom, this.signDataKeyRandom,this.addressInfo.address, assembleHex.data);
+              if (!commitDatas.success) {
+                this.$message({
+                  message: this.$t('tips.tips4') + JSON.stringify(commitDatas.data),
+                  type: 'error',
+                  duration: 3000
+                });
+                return;
+              }
+              this.$refs.password.showScan(commitDatas.data.txInfo, commitDatas.data.assembleHex);
+            } else {
+              this.$refs.password.showPassword(true)
+            }
           } else {
             return false;
           }
@@ -434,7 +457,6 @@
           } else {
             txhex = await nuls.transactionSerialize(pri, pub, tAssemble);
           }
-          //console.log(transferInfo);
           //console.log(txhex);
           await validateTx(txhex).then((response) => {
             //console.log(response);
@@ -446,20 +468,55 @@
                     name: "txList"
                   })
                 } else {
-                  this.$message({message: this.$t('public.err') + JSON.stringify(response.data), type: 'error', duration: 2000});
+                  this.$message({
+                    message: this.$t('public.err') + JSON.stringify(response.data),
+                    type: 'error',
+                    duration: 2000
+                  });
                 }
               }).catch((err) => {
                 this.$message({message: this.$t('public.err0') + JSON.stringify(err), type: 'error', duration: 2000});
               });
             } else {
-              this.$message({message: this.$t('public.err') + JSON.stringify(response.data), type: 'error', duration: 2000});
+              this.$message({
+                message: this.$t('public.err') + JSON.stringify(response.data),
+                type: 'error',
+                duration: 2000
+              });
             }
           }).catch((err) => {
-            this.$message({message: this.$t('public.err0') +JSON.stringify(err), type: 'error', duration: 2000});
+            this.$message({message: this.$t('public.err0') + JSON.stringify(err), type: 'error', duration: 2000});
           });
         } else {
           this.$message({message: this.$t('address.address13'), type: 'error', duration: 2000});
         }
+      },
+
+      async getAssemble() {
+        let amount = this.contractCreateTxData.gasLimit * this.contractCreateTxData.price;
+        let transferInfo = {
+          fromAddress: this.addressInfo.address,
+          assetsChainId: chainID(),
+          assetsId: 1,
+          amount: amount,
+          fee: 100000
+        };
+        let remark = this.deployForm.addtion;
+        let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 15);
+        if (!inOrOutputs.success) {
+          this.$message({message: inOrOutputs.data, type: 'error', duration: 3000});
+          return {success: false}
+        }
+        let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 15, this.contractCreateTxData);
+        //获取手续费
+        let newFee = countFee(tAssemble, 1);
+        //手续费大于0.001的时候重新组装交易及签名
+        if (transferInfo.fee !== newFee) {
+          transferInfo.fee = newFee;
+          inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 15);
+          tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 15, this.contractCreateTxData);
+        }
+        return {success: true, data: tAssemble}
       },
 
       /**

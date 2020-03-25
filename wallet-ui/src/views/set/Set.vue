@@ -61,7 +61,7 @@
   export default {
     data() {
       return {
-        symbol:sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS',
+        symbol: sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS',
         updateDialogVisible: false,//更新弹框
         tips: {},//提示信息
         downloadPercent: 0,//下载进度

@@ -10,22 +10,22 @@
       <div class="w630">
         <h3 class="tc mzt_20">{{this.$route.query.address}}</h3>
         <div class="tip bg-gray">
-          <p>• {{$t('setAlias.setAlias1')}}{{addressInfo.symbol}}{{$t('setAlias.setAlias11')}}</p>
-          <p>• {{$t('setAlias.setAlias2')}}{{addressInfo.symbol}}</p>
+          <p>• {{$t('setAlias.setAlias1')}}{{symbol}}{{$t('setAlias.setAlias11')}}</p>
+          <p>• {{$t('setAlias.setAlias2')}}{{symbol}}</p>
         </div>
         <el-form :model="aliasForm" status-icon :rules="aliasRules" ref="aliasForm" class="mb_20">
           <el-form-item :label="$t('public.alias')" prop="alias">
-            <span class="balance font12 fr">{{$t('public.usableBalance')}}：{{addressInfo.balance}}</span>
+            <span class="balance font12 fr">{{$t('public.usableBalance')}}：{{addressInfo.balance}} <font class="fCN">{{symbol}}</font></span>
             <el-input type="text" v-model="aliasForm.alias" maxlength="20" autocomplete="off"></el-input>
           </el-form-item>
           <div class="div-data font14">
-            {{$t('public.fee')}}: <label>0.001 <span class="fCN">{{addressInfo.symbol}}</span></label>
+            {{$t('public.fee')}}: <label>0.001 <span class="fCN">{{symbol}}</span></label>
           </div>
           <el-form-item class="form-next">
             <el-button type="success" @click="submitAliasForm('aliasForm')"> {{$t('public.next')}}</el-button>
           </el-form-item>
           <div class="tc font18 mzt_20">
-            {{$t('setAlias.setAlias3')}}: 1.001
+            {{$t('setAlias.setAlias3')}}: 1.001 <span class="fCN">{{symbol}}</span>
           </div>
         </el-form>
       </div>
@@ -37,11 +37,11 @@
 
 <script>
   import nuls from 'nuls-sdk-js'
-  import {inputsOrOutputs, validateAndBroadcast, getPrefixByChainId} from '@/api/requestData'
+  import {inputsOrOutputs, validateAndBroadcast, getPrefixByChainId, commitData} from '@/api/requestData'
   import Password from '@/components/PasswordBar'
   import BackBar from '@/components/BackBar'
   import * as config from '@/config.js'
-  import {addressInfo, chainID} from '@/api/util'
+  import {addressInfo, chainID, getRamNumber} from '@/api/util'
 
   export default {
     data() {
@@ -67,6 +67,9 @@
         addressInfo: '', //默认账户信息
         balanceInfo: '',//账户余额信息
         prefix: '',//地址前缀
+        symbol: sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS', //symbol
+        getSetAliasRandomString: '',
+        sendSetAliasRandomString: '',
       };
     },
     created() {
@@ -80,7 +83,8 @@
 
       for (let item of addressInfo(0)) {
         if (item.address === this.$route.query.address) {
-          this.addressInfo = item
+          this.addressInfo = item;
+          //console.log(this.addressInfo)
         }
       }
 
@@ -108,18 +112,36 @@
        * @param formName
        */
       submitAliasForm(formName) {
-        this.$refs[formName].validate((valid) => {
+        this.$refs[formName].validate(async (valid) => {
           if (valid) {
             if (this.balanceInfo.balance > 100100000) {
               let address = this.$route.query.address;
               let addressList = addressInfo(0);
               for (let item of addressList) {
-                if(item.address === address && item.aesPri ===''){
-                  console.log(item);
-                  return
+                if (item.address === address) {
+                  if (item.aesPri === '') {
+                    this.getSetAliasRandomString = await getRamNumber(16);
+                    this.sendSetAliasRandomString = await getRamNumber(16);
+                    let setAliasHex = await this.setAliasAssemble();
+                    if (!setAliasHex.success) {
+                      this.$message({message: this.$t('tips.tips3'), type: 'error', duration: 3000});
+                      return;
+                    }
+                    let commitDatas = await commitData(this.getSetAliasRandomString, this.sendSetAliasRandomString, item.address, setAliasHex.data);
+                    if (!commitDatas.success) {
+                      this.$message({
+                        message: this.$t('tips.tips4') + JSON.stringify(commitDatas.data),
+                        type: 'error',
+                        duration: 3000
+                      });
+                      return;
+                    }
+                    this.$refs.password.showScan(commitDatas.data.txInfo, commitDatas.data.assembleHex);
+                  } else {
+                    this.$refs.password.showPassword(true);
+                  }
                 }
               }
-              this.$refs.password.showPassword(true);
             } else {
               this.$message({message: this.$t('newConsensus.newConsensus7'), type: 'error', duration: 1000});
             }
@@ -156,7 +178,6 @@
        * @param password
        **/
       async passSubmit(password) {
-
         const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password);
         const newAddressInfo = nuls.importByKey(chainID(), pri, password, this.prefix);
         if (newAddressInfo.address === this.addressInfo.address) {
@@ -193,6 +214,32 @@
         } else {
           this.$message({message: this.$t('address.address13'), type: 'error', duration: 1000});
         }
+      },
+
+      /**
+       * @disc: 设置别名交易组装
+       * @params:
+       * @date: 2019-12-03 14:52
+       * @author: Wave
+       */
+      async setAliasAssemble() {
+        //根据燃烧地址公钥获取地址
+        let burningAddress = nuls.getAddressByPub(chainID(), 1, config.API_BURNING_ADDRESS_PUB, this.prefix);
+        //console.log(burningAddress);
+        let transferInfo = {
+          fromAddress: this.addressInfo.address,
+          toAddress: burningAddress,
+          assetsChainId: chainID(),
+          assetsId: 1,
+          amount: 100000000,
+          fee: 100000
+        };
+        let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 3);
+        let aliasInfo = {
+          fromAddress: this.addressInfo.address,
+          alias: this.aliasForm.alias
+        };
+        return await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, '', 3, aliasInfo);
       },
 
       /**
