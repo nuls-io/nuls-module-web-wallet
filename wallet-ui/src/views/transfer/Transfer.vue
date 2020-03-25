@@ -995,7 +995,7 @@
         //console.log(outputs);
         let tAssemble = await nuls.transactionAssemble(inputs, outputs, transferInfo.remark, 10);//交易组装
         let ctxSign = "";//本链协议交易签名
-        let mainCtxSign = "";//主网协议交易签名
+        //let mainCtxSign = "";//主网协议交易签名
         const txs = require('nuls-sdk-js/lib/model/txs');
         const Serializers = require("nuls-sdk-js/lib/api/serializers");
         let bw = new Serializers();
