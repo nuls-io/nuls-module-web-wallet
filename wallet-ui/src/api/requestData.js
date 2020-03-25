@@ -349,9 +349,9 @@ export async function commitData(txHexKey, signDataKey, address, assembleHex) {
           txHexKey: txHexKey,
           signDataKey: signDataKey,
         };
-        console.log(txInfo);
+        /*console.log(txInfo);
         console.log(parameterValue.hash);
-        console.log(parameterValue.txHex);
+        console.log(parameterValue.txHex);*/
         return {success: true, data: {txInfo: txInfo, assembleHex: assembleHex}}
       } else {
         return {success: false, data: response}

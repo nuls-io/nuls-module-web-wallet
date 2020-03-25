@@ -209,7 +209,7 @@
        * @author: Wave
        */
       toUrl(name, type = 0) {
-        console.log(name,type);
+        //console.log(name,type);
         if (type === 0) {
           this.$router.push({
             name: name

@@ -88,8 +88,6 @@
     defaultAddressInfo,
     localStorageByAddressInfo,
     passwordVerification,
-    timesDecimals,
-    Plus,
     getRamNumber,
     timesDecimals,
     Plus,
@@ -275,43 +273,6 @@
           this.importAddressInfo = {};
           this.$refs['importForm'].resetFields();
         }
-      },
-
-
-      /**
-       * 获取地址NULS资产信息
-       * @param addressInfo
-       **/
-      async getAddressInfo(addressInfo) {
-        await this.$post('/', 'getAccountLedgerList', [addressInfo.address])
-          .then((response) => {
-            //console.log(response);
-            let newAssetsList = {
-              address: addressInfo.address,
-              aesPri: addressInfo.aesPri,
-              pub: addressInfo.pub,
-              remark: ''
-            };
-            if (response.hasOwnProperty("result")) {
-              newAssetsList.account = response.result[0].symbol;
-              newAssetsList.chainId = response.result[0].chainId;
-              newAssetsList.assetId = response.result[0].assetId;
-              newAssetsList.type = 1;
-              newAssetsList.balance = Number(timesDecimals(response.result[0].balance)).toFixed(3);
-              newAssetsList.locking = Number(timesDecimals(Plus(response.result[0].consensusLock, response.result[0].timeLock))).toFixed(3);
-              newAssetsList.total = response.result[0].totalBalance !== 0 ? Number(timesDecimals(response.result[0].totalBalance)).toFixed(3) : 0;
-            } else {
-              newAssetsList.account = response.result.symbol;
-              newAssetsList.chainId = response.result.chainId;
-              newAssetsList.assetId = response.result.assetId;
-              newAssetsList.type = 1;
-              newAssetsList.total = 0;
-              newAssetsList.locking = 0;
-              newAssetsList.balance = 0;
-            }
-            localStorageByAddressInfo(newAssetsList);
-            this.toUrl('address')
-          })
       },
 
       /**
