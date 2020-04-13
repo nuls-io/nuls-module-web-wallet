@@ -615,13 +615,20 @@
        * 资产类型选择
        * @param type
        **/
-      changeType(type) {
+      async changeType(type) {
         //console.log(type);
         this.changeParameter();
         if (type.type === 1) {
           this.transferForm.gas = 5000;
           this.transferForm.price = 25;
         } else {
+          let contractInfo = await this.$post('/', 'invokeView', [type.contractAddress, "balanceOf", "", [this.transferForm.fromAddress]]);
+         // console.log(contractInfo);
+          if (contractInfo.hasOwnProperty('result')) {
+            type.balance = Number(timesDecimals(contractInfo.result.result, type.decimals))
+          } else {
+            type.balance = 0
+          }
           this.transferForm.gas = 0;
           this.transferForm.price = sdk.CONTRACT_MINIMUM_PRICE;
         }
@@ -633,7 +640,7 @@
        *  默认资产类型
        * @param type 0：首次进入加载 1：填写地址以后判断默认为nuls
        **/
-      changeNuls(type = 1) {
+      async changeNuls(type = 1) {
         let defaultType = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
         if (type === 0) {
           if (this.$route.query.accountType) {
@@ -650,6 +657,13 @@
           } else {
             if (item.contractAddress === defaultType) {
               this.changeAssets = item;
+              let contractInfo = await this.$post('/', 'invokeView', [this.changeAssets.contractAddress, "balanceOf", "", [this.transferForm.fromAddress]]);
+              //console.log(contractInfo);
+              if (contractInfo.hasOwnProperty('result')) {
+                this.changeAssets.balance = Number(timesDecimals(contractInfo.result.result, this.changeAssets.decimals))
+              } else {
+                this.changeAssets.balance = 0
+              }
               this.transferForm.type = item.symbol;
             }
           }
