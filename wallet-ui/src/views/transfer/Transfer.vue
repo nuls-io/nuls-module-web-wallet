@@ -623,7 +623,7 @@
           this.transferForm.price = 25;
         } else {
           let contractInfo = await this.$post('/', 'invokeView', [type.contractAddress, "balanceOf", "", [this.transferForm.fromAddress]]);
-         // console.log(contractInfo);
+          // console.log(contractInfo);
           if (contractInfo.hasOwnProperty('result')) {
             type.balance = Number(timesDecimals(contractInfo.result.result, type.decimals))
           } else {
@@ -1150,13 +1150,16 @@
        */
       async imputedContractCallGas(sender, value, contractAddress, methodName, methodDesc, args) {
         return await this.$post('/', 'imputedContractCallGas', [sender, value, contractAddress, methodName, methodDesc, args])
-          .then((response) => {
+          .then(async (response)  => {
+            //console.log(response);
             if (response.hasOwnProperty("result")) {
               this.gasNumber = response.result.gasLimit;
               this.oldGasNumber = response.result.gasLimit;
               this.transferForm.gas = response.result.gasLimit;
-              let contractConstructorArgsTypes = this.getContractMethodArgsTypes(contractAddress, methodName, methodDesc);
-              let newArgs = utils.twoDimensionalArray(args, contractConstructorArgsTypes);
+              let contractConstructorArgsTypes = await this.getContractMethodArgsTypes(contractAddress, methodName, methodDesc);
+              //console.log(contractConstructorArgsTypes);
+              let newArgs = await utils.twoDimensionalArray(args, contractConstructorArgsTypes.data);
+              //console.log(newArgs);
               this.contractCallData = {
                 chainId: MAIN_INFO.chainId,
                 sender: sender,
@@ -1173,6 +1176,7 @@
             }
           })
           .catch((error) => {
+            console.log(error);
             this.$message({message: this.$t('call.call5') + JSON.stringify(error), type: 'error', duration: 3000});
           });
       },
@@ -1187,6 +1191,7 @@
       async getContractMethodArgsTypes(contractAddress, methodName, methodDesc) {
         return await this.$post('/', 'getContractMethodArgsTypes', [contractAddress, methodName, methodDesc])
           .then((response) => {
+            //console.log(response);
             if (response.hasOwnProperty("result")) {
               return {success: true, data: response.result};
             } else {
