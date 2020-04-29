@@ -516,7 +516,7 @@
        * @param type 0:本网站跳转，1：跳转浏览器
        */
       toUrl(name, parms, type = 0) {
-        console.log(name, parms, type);
+        //console.log(name, parms, type);
         if (type === 1) {
           connectToExplorer(name, parms)
         } else {

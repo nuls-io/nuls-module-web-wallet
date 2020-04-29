@@ -643,8 +643,9 @@
       async changeNuls(type = 1) {
         let defaultType = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
         if (type === 0) {
+          //console.log(this.$route.query.accountType)
           if (this.$route.query.accountType) {
-            defaultType = this.$route.query.accountType.contractAddress
+            defaultType = this.$route.query.accountType
           }
         }
         //console.log(this.assetsList);
@@ -655,7 +656,7 @@
               this.transferForm.type = item.symbol;
             }
           } else {
-            if (item.contractAddress === defaultType) {
+            if (item.contractAddress === defaultType.contractAddress) {
               this.changeAssets = item;
               let contractInfo = await this.$post('/', 'invokeView', [this.changeAssets.contractAddress, "balanceOf", "", [this.transferForm.fromAddress]]);
               //console.log(contractInfo);
@@ -1150,7 +1151,7 @@
        */
       async imputedContractCallGas(sender, value, contractAddress, methodName, methodDesc, args) {
         return await this.$post('/', 'imputedContractCallGas', [sender, value, contractAddress, methodName, methodDesc, args])
-          .then(async (response)  => {
+          .then(async (response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
               this.gasNumber = response.result.gasLimit;
