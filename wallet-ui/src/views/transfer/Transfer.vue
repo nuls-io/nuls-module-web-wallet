@@ -642,6 +642,7 @@
        **/
       async changeNuls(type = 1) {
         let defaultType = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
+        //console.log(defaultType);
         if (type === 0) {
           //console.log(this.$route.query.accountType)
           if (this.$route.query.accountType) {
@@ -650,11 +651,10 @@
         }
         //console.log(this.assetsList);
         for (let item of this.assetsList) {
-          if (defaultType === 'NULS') {
-            if (item.symbol === defaultType) {
-              this.changeAssets = item;
-              this.transferForm.type = item.symbol;
-            }
+          //console.log(defaultType);
+          if (item.symbol === defaultType) {
+            this.changeAssets = item;
+            this.transferForm.type = item.symbol;
           } else {
             if (item.contractAddress === defaultType.contractAddress) {
               this.changeAssets = item;
