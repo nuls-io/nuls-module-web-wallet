@@ -180,7 +180,7 @@
               for (let item of response.result.list) {
                 item.createTime = moment(getLocalTime(item.createTime * 1000)).format('YYYY-MM-DD HH:mm:ss');
                 item.txid = superLong(item.txHash, 8);
-                item.balance = Number(timesDecimals(item.balance)).toFixed(3);
+                item.balance = parseFloat(Number(timesDecimals(item.balance)).toFixed(3));
                 if (item.type === 16) {
                   item.amount = Number(timesDecimals(item.fee.value)).toFixed(3);
                 } else {

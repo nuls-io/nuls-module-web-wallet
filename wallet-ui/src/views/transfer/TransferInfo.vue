@@ -244,15 +244,27 @@
               response.result.value = timesDecimals(response.result.value);
               //输入
               if (response.result.coinFroms) {
+                let assetsList = sessionStorage.hasOwnProperty('assetsList') ? JSON.parse(sessionStorage.getItem('assetsList')) : [];
                 for (let itme of response.result.coinFroms) {
-                  itme.amount = timesDecimals(itme.amount);
+                  let _acData = assetsList.find(x => x.symbol === itme.symbol);
+                  if (_acData) {
+                    itme.amount = timesDecimals(itme.amount, _acData.decimals);
+                  } else {
+                    itme.amount = timesDecimals(itme.amount);
+                  }
                 }
                 this.inputData = response.result.coinFroms
               }
               //输出
               if (response.result.coinTos) {
+                let assetsList = sessionStorage.hasOwnProperty('assetsList') ? JSON.parse(sessionStorage.getItem('assetsList')) : [];
                 for (let itme of response.result.coinTos) {
-                  itme.amount = timesDecimals(itme.amount);
+                  let _acData = assetsList.find(x => x.symbol === itme.symbol);
+                  if (_acData) {
+                    itme.amount = timesDecimals(itme.amount, _acData.decimals);
+                  } else {
+                    itme.amount = timesDecimals(itme.amount);
+                  }
                 }
                 this.outputData = response.result.coinTos
               }

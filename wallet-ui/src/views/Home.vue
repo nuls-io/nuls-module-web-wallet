@@ -435,6 +435,15 @@
             this.addressAssetsData.push(...newAssetsList);
             this.addressInfo.tokens = [];
             this.addressInfo.tokens = this.addressAssetsData;
+
+            let newList = [];
+            for (let item of this.addressInfo.tokens) {
+              //console.log(item);
+              newList.push({key: item.contractAddress, symbol: item.tokenSymbol, decimals: item.decimals})
+            }
+            sessionStorage.removeItem('assetsList');
+            sessionStorage.setItem('assetsList', JSON.stringify(newList));
+
             //console.log(this.addressInfo.tokens);
             //localStorage.setItem(this.addressInfo.address, JSON.stringify(this.addressInfo));
             this.assetsListLoading = false;
