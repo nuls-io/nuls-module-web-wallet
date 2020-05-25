@@ -680,7 +680,7 @@ const en = {
     "newConsensus5": "Please enter a deposit",
     "newConsensus6": "Margin must be numbered",
     "newConsensus7": "Sorry, the balance is insufficient.",
-    "newConsensus8": "Margin not less than 2000 and not more than 200000",
+    "newConsensus8": "Margin not less than 1000000 and not more than 10000000",
     "newConsensus9": "Please enter the Commission ratio.",
     "newConsensus10": "The commission ratio must be numeric",
     "newConsensus11": "Margin not less than 10 and not more than 100",

@@ -683,7 +683,7 @@ const cn = {
     "newConsensus5": "请输入保证金",
     "newConsensus6": "保证金必须数字值",
     "newConsensus7": "对不起，余额不足",
-    "newConsensus8": "保证金不小于20000并且不大于200000",
+    "newConsensus8": "保证金不小于1000000并且不大于10000000",
     "newConsensus9": "请输入佣金比例",
     "newConsensus10": "佣金比例为10-100之间的整数",
     "newConsensus11": "保证金不小于10并且不大于100",

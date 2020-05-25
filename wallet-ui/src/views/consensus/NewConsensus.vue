@@ -137,7 +137,7 @@
           callback(new Error(this.$t('newConsensus.newConsensus6')));
         } else if (balance < 0.001) {
           callback(new Error(this.$t('newConsensus.newConsensus7')));
-        } else if (value < 20000 || value > 200000) {
+        } else if (value < 1000000 || value > 10000000) {
           callback(new Error(this.$t('newConsensus.newConsensus8')));
         } else {
           callback();
