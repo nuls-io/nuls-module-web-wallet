@@ -143,7 +143,7 @@
         let usable = Number(Minus(100000000, Number(this.nodeInfo.totalDeposit)));
         let balance = Number(Minus(this.balanceInfo.balance, Number(Times(value, 100000000))));
         let re = /^\d+(?=\.{0,1}\d+$|$)/;
-        let res = /^\d{1,8}(\.\d{1,8})?$/;
+        let res = /^\d{1,9}(\.\d{1,8})?$/;
         if (!value) {
           return callback(new Error(this.$t('consensusInfo.consensusInfo2')));
         } else if (!re.exec(value) || !res.exec(value)) {
