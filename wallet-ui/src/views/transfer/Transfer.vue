@@ -411,7 +411,8 @@
                   symbol: item.symbol,
                   chainId: item.chainId,
                   assetId: item.assetId,
-                  balance: timesDecimals(item.balance, item.decimals),
+                  balances: Number(timesDecimals(item.balance, item.decimals)),
+                  balance: Number(timesDecimals(item.balance, item.decimals)),
                   decimals: item.decimals
                 })
               }
@@ -656,7 +657,7 @@
             this.changeAssets = item;
             this.transferForm.type = item.symbol;
           } else {
-            if (item.contractAddress === defaultType.contractAddress) {
+            if (item.contractAddress && item.contractAddress === defaultType.contractAddress) {
               this.changeAssets = item;
               let contractInfo = await this.$post('/', 'invokeView', [this.changeAssets.contractAddress, "balanceOf", "", [this.transferForm.fromAddress]]);
               //console.log(contractInfo);
