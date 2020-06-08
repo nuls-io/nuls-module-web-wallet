@@ -173,7 +173,7 @@
     name: 'home',
     data() {
       return {
-        symbol: 'NULS', //symbol
+        symbol: 'RC', //symbol
         homeActive: 'homeFirst',   //tab默认选中
         addressInfo: {},//默认账户信息
         addressNULSAssets: {},//账户NULS资产信息
@@ -229,7 +229,7 @@
 
     },
     mounted() {
-      this.symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
+      this.symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'RC';
     },
     watch: {
       addressInfo(val, old) {
