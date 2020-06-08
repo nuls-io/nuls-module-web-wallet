@@ -448,9 +448,9 @@
         //判断转出地址是否为其他链地址 如果有就为跨链交易
         if (this.transferForm.toAddress) { //转入地址有值
           this.contractInfo = {};
-          let fromAddress = nuls.verifyAddress(this.transferForm.fromAddress);
+          let fromAddress = await nuls.verifyAddress(this.transferForm.fromAddress);
           let toAddress = {};
-          await this.sleep(500);
+          //await this.sleep(500);
           if (this.aliasToAddress) { //是否为别名转账
             toAddress = nuls.verifyAddress(this.aliasToAddress);
           } else {
@@ -465,6 +465,7 @@
           if (toAddress.type === 2) { //向合约地址转账nuls
             //this.changeNuls();
             let methodsList = await this.contractInfoByContractAddress(this.transferForm.toAddress);
+            //console.info(methodsList);
             if (methodsList.length !== 0) {
               let ifPayable = false;
               for (let item of methodsList) {
@@ -478,6 +479,7 @@
                 if (this.transferForm.amount) { //判断是否填入金额
                   this.transferForm.gas = sdk.CONTRACT_MAX_GASLIMIT;
                   this.$refs['transferForm'].validate((valid) => {
+                    //console.info(valid);
                     if (valid) {
                       let gasLimit = sdk.CONTRACT_MAX_GASLIMIT;
                       let price = this.transferForm.price;
@@ -812,10 +814,14 @@
           let tAssemble = [];
           //console.log(this.contractInfo.success);
           if (this.contractInfo.success) { //合约转账
+            //console.info(this.transferForm);
             this.contractCallData.chainId = MAIN_INFO.chainId;
-            transferInfo['amount'] = Number(Plus(transferInfo.fee, Number(Times(this.transferForm.gas, this.transferForm.price))));
             transferInfo.value = Number(timesDecimals0(this.transferForm.amount, this.changeAssets.decimals));
+            transferInfo['amount'] = Number(Plus(transferInfo.value, Number(Times(this.transferForm.gas, this.transferForm.price))));
+            transferInfo['toAddress'] = this.transferForm.toAddress;
+            //console.info(transferInfo);
             inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
+            //console.info(inOrOutputs);
             tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, this.transferForm.remarks, 16, this.contractCallData);
           } else {
             if (this.changeAssets.type === 1 && !this.isCross) { //NULS普通转账交易
@@ -889,7 +895,7 @@
               if (response.success) {
                 this.toUrl("txList");
               } else {
-                this.$message({message: this.$t('error.' + response.data.code), type: 'error', duration: 3000});
+                this.$message({message: this.$t('error.' + response.data.code)+JSON.stringify(response.data), type: 'error', duration: 3000});
               }
             }).catch((err) => {
               this.transferLoading = false;

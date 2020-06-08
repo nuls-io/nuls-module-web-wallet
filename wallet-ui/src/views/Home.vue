@@ -419,7 +419,7 @@
         this.assetsListLoading = true;
         await this.$post('/', 'getAccountTokens', [pageSize, pageRows, address], 'Home')
           .then((response) => {
-            //console.log(response);
+            console.log(response);
             if (response.hasOwnProperty("result")) {
               this.addressAssetsData = [];
               for (let itme of response.result.list) {

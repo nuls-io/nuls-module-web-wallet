@@ -151,8 +151,7 @@
        * @param pageSize
        * @param pageRows
        * @param address
-       * @param type
-       * @param isHide
+       * @param contractAddress
        **/
       getTxlistByAddress(pageSize, pageRows, address, contractAddress) {
         this.$post('/', 'getTokenTransfers', [pageSize, pageRows, address, contractAddress])
@@ -164,7 +163,7 @@
                 item.txid = superLong(item.txHash, 10);
                 item.fromAddresss = superLong(item.fromAddress, 6);
                 item.toAddresss = superLong(item.toAddress, 6);
-                item.balance = timesDecimals(item.toBalance, item.decimals);
+                item.balance = timesDecimals(item.fromAddress === this.addressInfo.address ? item.fromBalance : item.toBalance, item.decimals);
                 item.amount = timesDecimals(item.value, item.decimals);
               }
               this.txListData = response.result.list;
