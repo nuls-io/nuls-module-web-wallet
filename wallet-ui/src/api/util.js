@@ -71,7 +71,7 @@ export function Division(nu, arg) {
 export function timesDecimals(nu, decimals) {
   let newInfo = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')) : '';
   let newDecimals = decimals ? decimals : newInfo.defaultAsset.decimals;
-  if(decimals===0){
+  if (decimals === 0) {
     return nu
   }
   let newNu = new BigNumber(Division(nu, Power(newDecimals)).toString());
@@ -84,11 +84,11 @@ export function timesDecimals(nu, decimals) {
 export function timesDecimals0(nu, decimals) {
   let newInfo = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')) : '';
   let newDecimals = decimals ? decimals : newInfo.defaultAsset.decimals;
-  if(decimals===0){
+  if (decimals === 0) {
     return nu
   }
   let newNu = new BigNumber(Times(nu, Power(newDecimals)).toString());
-  return Number(newNu);
+  return newNu;
 }
 
 /**
