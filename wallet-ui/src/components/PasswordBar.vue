@@ -74,6 +74,9 @@
     created() {
     },
     mounted() {
+      if (process.env.NODE_ENV !== 'production') {
+        this.passwordForm.password = 'nuls123456'
+      }
     },
     watch: {
       passwordVisible(val) {
