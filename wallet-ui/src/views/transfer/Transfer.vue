@@ -197,7 +197,7 @@
         } else {
           setTimeout(() => {
             //console.log(this.changeAssets);
-            if (this.changeAssets.decimals < 13) {
+            if (this.changeAssets.decimals > 13) {
               if (timesDecimals0(value, this.changeAssets.decimals) > timesDecimals0(this.changeAssets.balance, this.changeAssets.decimals)) {
                 callback(new Error(this.$t('transfer.transfer14')))
               } else if (timesDecimals0(value, this.changeAssets.decimals) === timesDecimals0(this.changeAssets.balance, this.changeAssets.decimals) && this.changeAssets.symbol === 'NULS') {
