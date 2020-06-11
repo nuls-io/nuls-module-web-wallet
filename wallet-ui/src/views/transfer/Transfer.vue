@@ -197,12 +197,20 @@
         } else {
           setTimeout(() => {
             //console.log(this.changeAssets);
-            if (value > this.changeAssets.balance) {
-              callback(new Error(this.$t('transfer.transfer14')))
-            } else if (timesDecimals0(value, this.changeAssets.decimals) === timesDecimals0(this.changeAssets.balance, this.changeAssets.decimals) && this.changeAssets.symbol === 'NULS') {
-              this.transferForm.amount = Number(Minus(value, this.fee));
+            if (this.changeAssets.decimals < 13) {
+              if (timesDecimals0(value, this.changeAssets.decimals) > timesDecimals0(this.changeAssets.balance, this.changeAssets.decimals)) {
+                callback(new Error(this.$t('transfer.transfer14')))
+              } else if (timesDecimals0(value, this.changeAssets.decimals) === timesDecimals0(this.changeAssets.balance, this.changeAssets.decimals) && this.changeAssets.symbol === 'NULS') {
+                this.transferForm.amount = Number(Minus(value, this.fee));
+              } else {
+                callback()
+              }
             } else {
-              callback()
+              if (this.changeAssets.decimals > this.changeAssets.balance) {
+                callback(new Error(this.$t('transfer.transfer14')))
+              } else {
+                callback()
+              }
             }
           }, 200);
           //callback();
