@@ -1,5 +1,5 @@
 <template>
-  <div class="set bg-gray">
+  <div class="set bg-gray cb">
     <div class="bg-white">
       <div class="w1200">
         <h3 class="title">
@@ -26,7 +26,7 @@
           <li v-show="RUN_PATTERN && system !== 'Darwin'"><span>{{$t('public.logInfo')}}:</span>{{logUrl}}</li>
           <li v-show="system === 'Darwin'">
             <span>{{$t('public.downloadUrl')}}:</span>
-            <font>https://github.com/nuls-io/nuls-v2/releases</font>
+            <font>{{FILE_URL}}</font>
           </li>
         </ul>
         <el-button type="success" @click="checkUpdate" v-show="RUN_PATTERN && system !== 'Darwin'">
@@ -61,14 +61,14 @@
   export default {
     data() {
       return {
-        symbol: sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS',
+        symbol: sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'BBAI',
         updateDialogVisible: false,//更新弹框
         tips: {},//提示信息
         downloadPercent: 0,//下载进度
         logUrl: '',
         system: '',
         version: packages.version,//版本号
-        newVersion: '',//最新版本号
+        newVersion: '1.0.0',//最新版本号
         RUN_PATTERN: RUN_PATTERN,//运行模式
         RUN_DEV: RUN_DEV,// 运行环境
         FILE_URL: FILE_URL,//桌面程序下载路径
@@ -167,7 +167,6 @@
             padding-right: 0.5rem;
           }
         }
-
       }
       .el-button {
         margin: 1rem 0 0 0;

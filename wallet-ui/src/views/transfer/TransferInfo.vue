@@ -111,7 +111,7 @@
           <ul>
             <li v-for="item of tokenTransfersData" :key="item.address">
               <font class="click td" @click="toUrl('address',item.fromAddress)">{{item.fromAddress}}</font>
-              <label>{{item.value}}<span class="fCN">{{item.name}}</span></label>
+              <label>{{item.value}}<span class="fCN">{{item.symbol}}</span></label>
             </li>
           </ul>
         </div>
@@ -119,7 +119,7 @@
           <ul>
             <li v-for="item of tokenTransfersData" :key="item.address">
               <font class="click td" @click="toUrl('address',item.toAddress)">{{item.toAddress}}</font>
-              <label>{{item.value}}<span class="fCN">{{item.name}}</span></label>
+              <label>{{item.value}}<span class="fCN">{{item.symbol}}</span></label>
             </li>
           </ul>
         </div>
