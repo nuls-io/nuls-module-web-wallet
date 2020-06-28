@@ -465,9 +465,11 @@
             this.crossLinkDataLoading = false;
             if (response.hasOwnProperty("result")) {
               for (let item of response.result) {
-                item.totalBalance = timesDecimals(item.totalBalance);
-                item.balance = timesDecimals(item.balance);
-                item.locking = timesDecimals(item.consensusLock + item.timeLock);
+                item.totalBalance = timesDecimals(item.totalBalance, item.decimals);
+                item.balance = timesDecimals(item.balance, item.decimals);
+                item.timeLock = timesDecimals(item.timeLock, item.decimals);
+                item.consensusLock = timesDecimals(item.consensusLock, item.decimals);
+                item.locking = Plus(item.consensusLock, item.timeLock).toString();
               }
               this.crossLinkData = response.result;
               this.txListDataLoading = false;
