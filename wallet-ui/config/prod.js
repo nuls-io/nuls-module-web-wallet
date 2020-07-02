@@ -19,7 +19,7 @@ setInterval(() => {
   API_URL = localStorage.hasOwnProperty("url") && localStorage.getItem('url') !== 'undefined' ? JSON.parse(localStorage.getItem("url")).urls : '/api';
 }, 500);
 //请求最迟时间
-export const API_TIME = '8000';
+export const API_TIME = '9000';
 
 //默认节点服务列表
 const electronData = [

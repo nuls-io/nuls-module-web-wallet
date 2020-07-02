@@ -209,6 +209,7 @@ export async function validateAndBroadcast(txHex) {
         let newHash = response.result.value;
         return post('/', 'broadcastTx', [txHex])
           .then((response) => {
+            //console.log(response);
             if (response.hasOwnProperty("result")) {
               return {success: true, hash: newHash};
             } else {
