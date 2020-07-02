@@ -108,7 +108,7 @@
           </el-table-column>
           <el-table-column fixed="right" :label="$t('public.operation')" align="center" min-width="120">
             <template slot-scope="scope">
-              <label class="click tab_bn" @click="toUrl('transfer',scope.row.symbol)">{{$t('nav.transfer')}}</label>
+              <label class="click tab_bn" @click="toUrl('transfer', {type: 1, tokenSymbol: scope.row.symbol})">{{$t('nav.transfer')}}</label>
               <span class="tab_line">|</span>
               <label class="click tab_bn" @click="toUrl('txList',scope.row)">{{$t('home.home2')}}</label>
             </template>
@@ -527,7 +527,7 @@
        * @param type 0:本网站跳转，1：跳转浏览器
        */
       toUrl(name, parms, type = 0) {
-        //console.log(name, parms, type);
+        console.log(name, parms, type);
         if (type === 1) {
           connectToExplorer(name, parms)
         } else {

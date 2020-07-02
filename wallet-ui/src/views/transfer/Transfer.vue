@@ -176,8 +176,7 @@
       };
       let validateAmount = (rule, value, callback) => {
         let patrn = new RegExp("^([1-9][\\d]{0,20}|0)(\\.[\\d]{1," + this.assetsInfo.decimals + "})?$");
-        //console.log(this.assetsInfo);
-        this.available = this.assetsInfo.balance;
+        this.available = Number(this.assetsInfo.balance);
         if (this.assetsInfo.type === 1) {
           this.available = Number(Minus(this.assetsInfo.balance, this.transferForm.fee))
         }
@@ -304,6 +303,10 @@
           .catch((error) => {
             console.log("getAccountLedgerList:" + error);
             this.assetsListLoading = false;
+            setTimeout(()=>{
+              this.getCapitalListByAddress(address)
+            },800);
+            return;
           });
         ///console.log(basicAssets);
 
@@ -329,6 +332,10 @@
           })
           .catch((error) => {
             console.log("getAccountTokens:" + error);
+            setTimeout(()=>{
+              this.getCapitalListByAddress(address)
+            },800);
+            return;
           });
 
         const newContractAssets = contractAssets.filter(obj => obj.status !== 3); //隐藏已经删除合约
@@ -354,6 +361,10 @@
           })
           .catch((err) => {
             console.log("getAccountCrossLedgerList:" + err);
+            setTimeout(()=>{
+              this.getCapitalListByAddress(address)
+            },800);
+            return;
           });
         //console.log(crossAssets);
 
@@ -572,8 +583,8 @@
         let inOrOutputs = {};
         let tAssemble = [];
         let txHex = "";//交易签名
-        //console.log(transferInfo);
-        //console.log(this.toAddressInfo.transferType);
+        /*console.log(transferInfo);
+        console.log(this.toAddressInfo.transferType);*/
         if (this.toAddressInfo.transferType === 1) { //1:NULS转账
           inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 2);
           tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, htmlEncode(this.transferForm.remarks), 2);
@@ -785,8 +796,9 @@
         }
         //如果转出资产为本链主资产，则直接将手续费加到转出金额上
         if (chainId === transferInfo.assetsChainId && transferInfo.assetsId === 1) {
-          let newAmount = transferInfo.amount + transferInfo.fee;
-          if (balanceInfo.data.balance < transferInfo.amount + transferInfo.fee) {
+          let newAmount = Number(Plus(transferInfo.amount, transferInfo.fee));
+          //console.log(newAmount);
+          if (balanceInfo.data.balance < newAmount) {
             this.$message({message: this.$t('newConsensus.newConsensus7'), type: 'error', duration: 3000});
             return;
           }
@@ -862,8 +874,8 @@
             });
           }
         }
-        console.log(inputs);
-        console.log(outputs);
+        /*console.log(inputs);
+        console.log(outputs);*/
 
         let tAssemble = await nuls.transactionAssemble(inputs, outputs, transferInfo.remark, 10);//交易组装
         let ctxSign = "";//本链协议交易签名
