@@ -255,8 +255,21 @@
     },
     mounted() {
       this.getCapitalListByAddress(this.addressInfo.address);
+      setInterval(() => {
+        this.addressInfo = addressInfo(1);
+      }, 500);
     },
-    watch: {},
+    watch: {
+      addressInfo(val, old) {
+        if (val.address !== old.address && old.address) {
+          this.transferForm.fromAddress = this.addressInfo.address;
+          this.getCapitalListByAddress(this.addressInfo.address);
+          if (this.transferForm.toAddress) {
+            this.$refs.transferForm.validateField('toAddress');
+          }
+        }
+      },
+    },
     components: {
       Password,
     },
