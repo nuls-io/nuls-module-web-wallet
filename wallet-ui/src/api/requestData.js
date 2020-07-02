@@ -94,7 +94,8 @@ export async function inputsOrOutputs(transferInfo, balanceInfo, type) {
   if (type === 2 && transferInfo.assetsChainId !== chainID()) {
     inputs[0].amount = transferInfo.amount;
     //账户转出资产余额
-    let nulsbalance = await getNulsBalance(chainID(), transferInfo.assetsId, transferInfo.fromAddress);
+    let nulsbalance = await getNulsBalance(chainID(), 1, transferInfo.fromAddress);
+    //console.log(nulsbalance);
     if (nulsbalance.data.balance < 100000) {
       console.log("余额小于手续费");
       return
@@ -102,7 +103,7 @@ export async function inputsOrOutputs(transferInfo, balanceInfo, type) {
     inputs.push({
       address: transferInfo.fromAddress,
       assetsChainId: chainID(),
-      assetsId: transferInfo.assetsId,
+      assetsId: 1,
       amount: 100000,
       locked: newLocked,
       nonce: nulsbalance.data.nonce
@@ -134,6 +135,8 @@ export async function inputsOrOutputs(transferInfo, balanceInfo, type) {
     amount: newoutputAmount,
     lockTime: newLockTime
   }];
+  /*console.log(inputs);
+  console.log(outputs);*/
   return {success: true, data: {inputs: inputs, outputs: outputs}};
 }
 
