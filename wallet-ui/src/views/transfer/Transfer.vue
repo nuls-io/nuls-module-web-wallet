@@ -530,11 +530,6 @@
        */
       allAvailable() {
         this.$refs.transferForm.validateField('amount');
-        /*console.log(this.available);
-        this.allAvailable();
-        if(this.available){
-
-        }*/
         this.transferForm.amount = this.available.toString()
       },
 
