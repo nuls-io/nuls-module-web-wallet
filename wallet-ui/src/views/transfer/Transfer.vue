@@ -303,9 +303,9 @@
           .catch((error) => {
             console.log("getAccountLedgerList:" + error);
             this.assetsListLoading = false;
-            setTimeout(()=>{
+            setTimeout(() => {
               this.getCapitalListByAddress(address)
-            },800);
+            }, 800);
             return;
           });
         ///console.log(basicAssets);
@@ -332,9 +332,9 @@
           })
           .catch((error) => {
             console.log("getAccountTokens:" + error);
-            setTimeout(()=>{
+            setTimeout(() => {
               this.getCapitalListByAddress(address)
-            },800);
+            }, 800);
             return;
           });
 
@@ -361,9 +361,9 @@
           })
           .catch((err) => {
             console.log("getAccountCrossLedgerList:" + err);
-            setTimeout(()=>{
+            setTimeout(() => {
               this.getCapitalListByAddress(address)
-            },800);
+            }, 800);
             return;
           });
         //console.log(crossAssets);
@@ -1060,7 +1060,7 @@
           margin: 5px 0 0 0;
         }
         .all {
-          margin: -45px -23px 0 0;
+          margin: -45px -26px 0 0;
           line-height: 20px;
           z-index: 88;
           position: relative;
