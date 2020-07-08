@@ -165,7 +165,6 @@
 </template>
 
 <script>
-  import nuls from 'nuls-sdk-js'
   import axios from 'axios'
   import QRCode from 'qrcodejs2'
   import {timesDecimals, copys, addressInfo, Times, superLong, connectToExplorer, Plus} from '@/api/util'
@@ -232,16 +231,6 @@
     },
     mounted() {
       this.symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
-
-      /*setInterval(() => {
-        let passWord = '';
-        const newAddress = nuls.newAddress(1, passWord, 'NULS');
-        //console.log(newAddress);
-        let lans = newAddress.address.slice(-4).toLowerCase();
-        if (lans === 'cara' || lans === 'wave') {
-          console.log(newAddress);
-        }
-      }, 500);*/
     },
     watch: {
       addressInfo(val, old) {
