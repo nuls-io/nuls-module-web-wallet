@@ -718,14 +718,18 @@
        */
       async imputedContractCallGas(sender, value, contractAddress, methodName, methodDesc, args) {
         return await this.$post('/', 'imputedContractCallGas', [sender, value, contractAddress, methodName, methodDesc, args])
-          .then((response) => {
+          .then(async (response) => {
             if (response.hasOwnProperty("result")) {
               this.gasInfo.number = response.result.gasLimit;
               this.gasInfo.oldNumber = response.result.gasLimit;
               this.transferForm.gas = response.result.gasLimit;
               this.transferForm.fee = Number(timesDecimals(Number(Times(this.transferForm.gas, this.transferForm.price)), 8));
-              let contractConstructorArgsTypes = this.getContractMethodArgsTypes(contractAddress, methodName);
-              let newArgs = utils.twoDimensionalArray(args, contractConstructorArgsTypes);
+              let contractConstructorArgsTypes = await this.getContractMethodArgsTypes(contractAddress, methodName);
+              if (!contractConstructorArgsTypes.success) {
+                console.log(JSON.stringify(contractConstructorArgsTypes.data));
+                return;
+              }
+              let newArgs = utils.twoDimensionalArray(args, contractConstructorArgsTypes.data);
               this.contractCallData = {
                 chainId: MAIN_INFO.chainId,
                 sender: sender,
