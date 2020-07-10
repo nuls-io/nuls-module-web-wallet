@@ -957,11 +957,11 @@
           //console.log(transferInfo);
           //console.log(chainId === transferInfo.assetsChainId && transferInfo.assetsId === 1);
           if (chainId === transferInfo.assetsChainId && transferInfo.assetsId === 1) {
-            if (balanceInfo.data.balance < transferInfo.amount + newFee) {
+            if (balanceInfo.data.balance <  Number(Plus(transferInfo.amount, newFee))) {
               this.$message({message: this.$t('newConsensus.newConsensus7'), type: 'error', duration: 3000});
               return;
             }
-            inputs[0].amount = transferInfo.amount + newFee;
+            inputs[0].amount =  Number(Plus(transferInfo.amount, newFee));
             if (!isMainNet(chainId)) {
               inputs[1].amount = newFee;
             }
