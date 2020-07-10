@@ -890,8 +890,8 @@
             });
           }
         }
-        /*console.log(inputs);
-        console.log(outputs);*/
+        //console.log(inputs);
+        //console.log(outputs);
 
         let tAssemble = await nuls.transactionAssemble(inputs, outputs, transferInfo.remark, 10);//交易组装
         let ctxSign = "";//本链协议交易签名
@@ -905,6 +905,7 @@
         //console.log(isMainNet(chainId));
         if (isMainNet(chainId)) {
           await countCtxFee(tAssemble, 1).then((result) => {
+            ///console.log(result);
             newFee = result;
           }).catch((err) => {
             this.$message({message: this.$t('newConsensus.newConsensus7'), type: 'error', duration: 3000});
@@ -954,6 +955,8 @@
         //console.log(transferInfo.fee !== newFee);
         //如果手续费发生改变，重新组装CoinData
         if (transferInfo.fee !== newFee) {
+          //console.log(transferInfo);
+          //console.log(chainId === transferInfo.assetsChainId && transferInfo.assetsId === 1);
           if (chainId === transferInfo.assetsChainId && transferInfo.assetsId === 1) {
             if (balanceInfo.data.balance < transferInfo.amount + newFee) {
               this.$message({message: this.$t('newConsensus.newConsensus7'), type: 'error', duration: 3000});
@@ -964,22 +967,27 @@
               inputs[1].amount = newFee;
             }
           } else {
+            //console.log(localBalanceInfo.data.balance < transferInfo.fee);
             if (localBalanceInfo.data.balance < transferInfo.fee) {
               this.$message({message: this.$t('transfer.transfer20'), type: 'error', duration: 3000});
               return;
             }
+            //console.log(transferInfo.assetsChainId === MAIN_INFO.chainId && transferInfo.assetsId === 1);
             if (transferInfo.assetsChainId === MAIN_INFO.chainId && transferInfo.assetsId === 1) {
-              if (mainNetBalanceInfo.data.balance < transferInfo.amount + newFee) {
+              if (mainNetBalanceInfo.data.balance < Number(Plus(transferInfo.amount, newFee))) {
                 this.$message({message: this.$t('newConsensus.newConsensus7'), type: 'error', duration: 3000});
                 return;
               }
-              inputs[0].amount = transferInfo.amount + newFee;
+              inputs[0].amount = Number(Plus(transferInfo.amount, newFee));
               inputs[1].amount = newFee;
             } else {
+              //console.log(inputs);
+              inputs[0].amount = Number(transferInfo.amount);
               inputs[1].amount = newFee;
-              inputs[2].amount = newFee;
             }
           }
+          //console.log(inputs);
+          //console.log(outputs);
           tAssemble = await nuls.transactionAssemble(inputs, outputs, transferInfo.remark, 10);
           ctxSign = nuls.transactionSignature(pri, tAssemble);
         } else {
@@ -995,6 +1003,7 @@
           bw.writeBytesWithLength(mainCtxSign);
         }
         tAssemble.signatures = bw.getBufWriter().toBuffer();
+        //console.log(tAssemble.txSerialize().toString('hex'));
         return tAssemble.txSerialize().toString('hex');
       },
 
