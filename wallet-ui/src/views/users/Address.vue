@@ -7,7 +7,7 @@
         <i class="el-icon-plus click" @click="toUrl('newAddress')"></i>
       </div>
       <el-table :data="addressList" stripe border>
-        <el-table-column prop="address" :label="$t('address.address1')" align="center" min-width="330">
+        <el-table-column prop="address" :label="$t('address.address1')" align="center" min-width="335">
         </el-table-column>
         <el-table-column :label="$t('tab.tab2')" align="center" width="150">
           <template slot-scope="scope">
