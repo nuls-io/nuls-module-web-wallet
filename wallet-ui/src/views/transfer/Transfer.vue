@@ -443,7 +443,7 @@
           return {success: true}
         } else { //跨链交易
           this.toAddressInfo.transferType = 5;
-          this.transferForm.fee = 0.01;
+          this.transferForm.fee = 0.1;
           return {success: true}
         }
       },
