@@ -135,9 +135,11 @@
     Times,
     Power,
     Plus,
+    Division,
     Minus,
     timesDecimals,
     timesDecimals0,
+    timesDecimalsBig,
     addressInfo,
     passwordVerification,
     htmlEncode
@@ -232,7 +234,7 @@
         },
         transferRules: {
           toAddress: [{validator: validateToAddress, trigger: ['blur']}],
-          amount: [{validator: validateAmount, trigger: ['blur', 'change']}],
+          amount: [{validator: validateAmount, trigger: ['blur']}],
           gas: [{validator: validateGas, trigger: ['blur', 'change']}],
           price: [{validator: validatePrice, trigger: ['blur', 'change']}],
         },
@@ -241,6 +243,7 @@
         aliasToAddress: '',//别名地址
         contractCallData: {},//合约信息
         gasInfo: {number: 0, oldNumber: 0},//gas信息
+        contractFee: 0,//调用合约手续费
         bookDialog: false,//通讯录弹框
         bookData: [],//通讯录数据
         transferDiolog: false,//确认弹框
@@ -502,7 +505,7 @@
         let contractAddress = this.assetsInfo.contractAddress;
         let methodName = 'transfer';
         let methodDesc = '';
-        let args = [this.aliasToAddress ? this.aliasToAddress : this.transferForm.toAddress, Number(Times(this.transferForm.amount, Number(Power(this.assetsInfo.decimals))))];
+        let args = [this.aliasToAddress ? this.aliasToAddress : this.transferForm.toAddress, timesDecimalsBig(this.transferForm.amount, this.assetsInfo.decimals).toString()];
         this.validateContractCall(this.addressInfo.address, 0, gasLimit, price, contractAddress, methodName, methodDesc, args);
       },
 
@@ -542,7 +545,11 @@
       submitTransferForm(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
+            if (this.toAddressInfo.transferType === 2) {
+              this.transferForm.fee = this.contractFee;
+            }
             this.transferDiolog = true;
+
           } else {
             return false;
           }
@@ -591,6 +598,7 @@
           tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, htmlEncode(this.transferForm.remarks), 2);
         } else if (this.toAddressInfo.transferType === 2) { //2：token转账
           transferInfo.amount = Number(Plus(0, Number(Times(this.transferForm.gas, this.transferForm.price)))).toString();
+          //console.log(transferInfo);
           inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
           tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, htmlEncode(this.transferForm.remarks), 16, this.contractCallData);
         } else if (this.toAddressInfo.transferType === 3) { //3：向合约转NULS
@@ -625,6 +633,7 @@
         }
         //console.log(inOrOutputs);
         txHex = await nuls.transactionSerialize(passwordInfo.pri, passwordInfo.pub, tAssemble);
+        //console.log(txHex);
         let broadcastResult = await validateAndBroadcast(txHex);
         //console.log(broadcastResult);
         if (!broadcastResult.success) {
@@ -692,6 +701,7 @@
        * @param args
        */
       async validateContractCall(sender, value, gasLimit, price, contractAddress, methodName, methodDesc, args) {
+        //console.log(sender, value, gasLimit, price, contractAddress, methodName, methodDesc, args);
         return await this.$post('/', 'validateContractCall', [sender, value, gasLimit, price, contractAddress, methodName, methodDesc, args])
           .then((response) => {
             //console.log(response);
@@ -723,7 +733,8 @@
               this.gasInfo.number = response.result.gasLimit;
               this.gasInfo.oldNumber = response.result.gasLimit;
               this.transferForm.gas = response.result.gasLimit;
-              this.transferForm.fee = Number(timesDecimals(Number(Times(this.transferForm.gas, this.transferForm.price)), 8));
+              this.transferForm.fee = Number(Plus(Number(Division(Number(Times(this.transferForm.gas, this.transferForm.price)), 10000000)),0.001));
+              this.contractFee = this.transferForm.fee;
               let contractConstructorArgsTypes = await this.getContractMethodArgsTypes(contractAddress, methodName);
               if (!contractConstructorArgsTypes.success) {
                 console.log(JSON.stringify(contractConstructorArgsTypes.data));

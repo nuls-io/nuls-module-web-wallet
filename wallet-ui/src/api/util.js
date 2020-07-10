@@ -74,8 +74,9 @@ export function timesDecimals(nu, decimals) {
   if (decimals === 0) {
     return nu
   }
-  let newNu = new BigNumber(Division(nu, Power(newDecimals)).toString());
-  return newNu.toFormat().replace(/[,]/g, '');
+  let fmt = {groupSeparator: ',',};
+  BigNumber.config({FORMAT: fmt});
+  return Number(Division(nu,Number(Power(newDecimals))))
 }
 
 /**
@@ -87,8 +88,24 @@ export function timesDecimals0(nu, decimals) {
   if (decimals === 0) {
     return nu
   }
-  let newNu = new BigNumber(Times(nu, Power(newDecimals)).toString());
+  let newNu = new BigNumber(Times(nu, Power(newDecimals)));
   return newNu;
+}
+
+/**
+ * 数字乘以精度系数(超长数字)
+ *
+ */
+export function timesDecimalsBig(nu, decimals) {
+  let newInfo = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')) : '';
+  let newDecimals = decimals ? decimals : newInfo.defaultAsset.decimals;
+  if (decimals === 0) {
+    return nu
+  }
+  let fmt = {groupSeparator: '',};
+  BigNumber.config({FORMAT: fmt});
+  let newNu = new BigNumber(Times(nu, Power(newDecimals)));
+  return newNu.toFormat();
 }
 
 /**

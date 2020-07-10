@@ -114,6 +114,7 @@ export async function inputsOrOutputs(transferInfo, balanceInfo, type) {
     return {success: true, data: {inputs: inputs, outputs: outputs}};
   }
   if (type === 16) {
+    inputs[0].amount = Number(Plus(transferInfo.amount, 100000));
     if (transferInfo.toAddress) {
       if (transferInfo.value) { //向合约地址转nuls
         //inputs[0].amount = transferInfo.amount;
