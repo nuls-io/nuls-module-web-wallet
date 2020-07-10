@@ -133,7 +133,6 @@
   import {MAIN_INFO} from '@/config.js'
   import {
     Times,
-    Power,
     Plus,
     Division,
     Minus,
@@ -179,7 +178,7 @@
       let validateAmount = (rule, value, callback) => {
         let patrn = new RegExp("^([1-9][\\d]{0,20}|0)(\\.[\\d]{1," + this.assetsInfo.decimals + "})?$");
         this.available = Number(this.assetsInfo.balance);
-        if (this.assetsInfo.type === 1) {
+        if (this.assetsInfo.type === 1 && this.assetsInfo.symbol === 'NULS') {
           this.available = Number(Minus(this.assetsInfo.balance, this.transferForm.fee))
         }
         if (value === '') {
@@ -234,7 +233,7 @@
         },
         transferRules: {
           toAddress: [{validator: validateToAddress, trigger: ['blur']}],
-          amount: [{validator: validateAmount, trigger: ['blur']}],
+          amount: [{validator: validateAmount, trigger: ['blur', 'change']}],
           gas: [{validator: validateGas, trigger: ['blur', 'change']}],
           price: [{validator: validatePrice, trigger: ['blur', 'change']}],
         },
@@ -733,7 +732,7 @@
               this.gasInfo.number = response.result.gasLimit;
               this.gasInfo.oldNumber = response.result.gasLimit;
               this.transferForm.gas = response.result.gasLimit;
-              this.transferForm.fee = Number(Plus(Number(Division(Number(Times(this.transferForm.gas, this.transferForm.price)), 10000000)),0.001));
+              this.transferForm.fee = Number(Plus(Number(Division(Number(Times(this.transferForm.gas, this.transferForm.price)), 10000000)), 0.001));
               this.contractFee = this.transferForm.fee;
               let contractConstructorArgsTypes = await this.getContractMethodArgsTypes(contractAddress, methodName);
               if (!contractConstructorArgsTypes.success) {
