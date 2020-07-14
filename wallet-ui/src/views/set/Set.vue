@@ -155,7 +155,7 @@
         li {
           line-height: 1.6rem;
           width: 40rem;
-          margin: 0 0 0 30%;
+          margin: 0 0 0 39%;
           text-align: left;
           font-size: 12px;
           span {

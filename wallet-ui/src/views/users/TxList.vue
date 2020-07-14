@@ -39,7 +39,10 @@
           </el-table-column>
           <el-table-column label="TxID" align="center">
             <template slot-scope="scope">
-              <span class="click " @click="toUrl('transferInfo',scope.row.txHash)">{{scope.row.txid}}</span>
+              <router-link class="click" tag="a" :to="{name:'transferInfo',query:{hash:scope.row.txHash}}">
+                {{ scope.row.txid }}
+              </router-link>
+              <!--<span class="click " @click="toUrl('transferInfo',scope.row.txHash)">{{scope.row.txid}}</span>-->
             </template>
           </el-table-column>
           <el-table-column prop="createTime" :label="$t('tab.tab5')" align="center">
@@ -140,25 +143,32 @@
         this.addressInfo = addressInfo(1);
       }, 500);
     },
+    mounted() {
+      setTimeout(() => {
+        this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.types, -1, -1, this.$route.query.chainId, this.$route.query.assetId);
+      }, 600);
+      //10秒循环一次数据
+      this.txListSetInterval = setInterval(() => {
+        this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.types, -1, -1, this.$route.query.chainId, this.$route.query.assetId);
+      }, 10000);
+    },
+    beforeRouteLeave(to, from, next) {
+      if (to.name === 'transferInfo') {
+        from.meta.keepAlive = true
+      } else {
+        from.meta.keepAlive = false
+      }
+      next();
+    },
+    destroyed() { //离开当前页面后执行
+      clearInterval(this.txListSetInterval);
+    },
     watch: {
       addressInfo(val, old) {
         if (val.address !== old.address && old.address) {
           this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.types);
         }
       }
-    },
-    mounted() {
-      setTimeout(() => {
-        this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.types);
-      }, 600);
-      //10秒循环一次数据
-      this.txListSetInterval = setInterval(() => {
-        this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.types);
-      }, 10000);
-    },
-    //离开当前页面后执行
-    destroyed() {
-      clearInterval(this.txListSetInterval);
     },
     components: {
       BackBar
@@ -167,26 +177,30 @@
 
       /**
        * 根据地址获取交易列表
-       * @param pageSize
-       * @param pageRows
-       * @param address
-       * @param type
+       * @param pageSize 当前页码
+       * @param pageRows 每页条数
+       * @param address 地址
+       * @param type 交易类型
+       * @param startHigh 开始高度  default：-1
+       * @param endHigh 结束高度 default：-1
+       * @param chainId 链ID default：0
+       * @param assetId 资产ID default：0
        **/
-      getTxlistByAddress(pageSize, pageRows, address, type) {
-        this.$post('/', 'getAccountTxs', [pageSize, pageRows, address, type, -1, -1])
+      getTxlistByAddress(pageSize, pageRows, address, type, startHigh, endHigh, chainId, assetId) {
+        //console.log(pageSize, pageRows, address, type, startHigh, endHigh, chainId, assetId);
+        this.$post('/', 'getAccountTxs', [pageSize, pageRows, address, type, startHigh, endHigh, chainId, assetId])
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
               for (let item of response.result.list) {
                 item.createTime = moment(getLocalTime(item.createTime * 1000)).format('YYYY-MM-DD HH:mm:ss');
                 item.txid = superLong(item.txHash, 8);
-                item.balance = parseFloat(Number(timesDecimals(item.balance,item.decimals)).toFixed(3));
+                item.balance = parseFloat(Number(timesDecimals(item.balance, item.decimals)).toFixed(3));
                 if (item.type === 16) {
-                  item.amount = Number(timesDecimals(item.fee.value,item.decimals)).toFixed(3);
+                  item.amount = Number(timesDecimals(item.fee.value, item.decimals)).toFixed(3);
                 } else {
-                  item.amount = Number(timesDecimals(item.values,item.decimals)).toFixed(3);
+                  item.amount = Number(timesDecimals(item.values, item.decimals)).toFixed(3);
                 }
-
               }
               this.txListData = response.result.list;
               this.pageTotal = response.result.totalCount;
@@ -213,7 +227,7 @@
       channgeType(e) {
         this.types = Number(e);
         this.typeValue = Number(e);
-        this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.types);
+        this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.types, -1, -1, this.$route.query.chainId, this.$route.query.assetId);
       },
 
       /**
@@ -231,7 +245,7 @@
       changeHide(e) {
         this.isHide = e;
         this.pageIndex = 1;
-        this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.types)
+        this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.types, -1, -1, this.$route.query.chainId, this.$route.query.assetId);
       },
 
       /**
@@ -241,7 +255,7 @@
       txListPages(val) {
         this.pageIndex = val;
         this.txListDataLoading = true;
-        this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.types)
+        this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.types, -1, -1, this.$route.query.chainId, this.$route.query.assetId);
       },
 
       /**

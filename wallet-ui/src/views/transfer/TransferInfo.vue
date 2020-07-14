@@ -224,6 +224,17 @@
         this.getTxInfoByHash(this.hash);
       }, 600);
     },
+    beforeRouteLeave(to, from, next) {
+      console.log(to.name);
+      if (to.name === 'txList') {
+        to.meta.keepAlive = true
+      } else if (to.name === 'TokenTxList') {
+        to.meta.keepAlive = true
+      } else {
+        to.meta.keepAlive = false
+      }
+      next();
+    },
     components: {
       BackBar
     },

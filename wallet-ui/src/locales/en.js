@@ -19,7 +19,7 @@ const en = {
     "display": "Display",
     "total": "Total",
     "hideReward": "Hide Consensus Reward",
-    "usableBalance": "Usable balance",
+    "usableBalance": "Balance",
     "fee": "Fee",
     "next": "Next",
     "basicData": "Basic data",
@@ -621,6 +621,7 @@ const en = {
     "home0": "Main assets",
     "home1": "Cross assets",
     "home2": "Transaction record",
+    "home3": "Across assets",
   },
 
   "frozenList": {

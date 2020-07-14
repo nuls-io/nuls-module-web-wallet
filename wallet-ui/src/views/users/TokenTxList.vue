@@ -19,22 +19,25 @@
         <el-table :data="txListData" stripe border>
           <el-table-column :label="$t('public.height')" align="center" width="80">
             <template slot-scope="scope">
-              <span class="click td" @click="toUrl('height',scope.row.height)">{{scope.row.height}}</span>
+              <span class="click td" @click="toUrl('height',scope.row.height,1)">{{scope.row.height}}</span>
             </template>
           </el-table-column>
           <el-table-column label="TxID" align="center" width="210">
             <template slot-scope="scope">
-              <span class="click " @click="toUrl('transferInfo',scope.row.txHash)">{{scope.row.txid}}</span>
+              <router-link class="click" tag="a" :to="{name:'transferInfo',query:{hash:scope.row.txHash}}">
+                {{ scope.row.txid }}
+              </router-link>
+              <!--<span class="click " @click="toUrl('transferInfo',scope.row.txHash)">{{scope.row.txid}}</span>-->
             </template>
           </el-table-column>
           <el-table-column :label="$t('public.fromAddresss')" align="center" width="160">
             <template slot-scope="scope">
-              <span class="click td" @click="toUrl('address',scope.row.fromAddress)">{{scope.row.fromAddresss}}</span>
+              <span class="click td" @click="toUrl('address',scope.row.fromAddress,1)">{{scope.row.fromAddresss}}</span>
             </template>
           </el-table-column>
           <el-table-column :label="$t('public.toAddresss')" align="center" width="160">
             <template slot-scope="scope">
-              <span class="click td" @click="toUrl('address',scope.row.toAddress)">{{scope.row.toAddresss}}</span>
+              <span class="click td" @click="toUrl('address',scope.row.toAddress,1)">{{scope.row.toAddresss}}</span>
             </template>
           </el-table-column>
           <el-table-column prop="createTime" :label="$t('tab.tab5')" align="center">
@@ -74,7 +77,7 @@
 
 <script>
   import moment from 'moment'
-  import {timesDecimals, getLocalTime, superLong, addressInfo} from '@/api/util'
+  import {timesDecimals, getLocalTime, superLong, addressInfo,connectToExplorer} from '@/api/util'
   import BackBar from '@/components/BackBar'
 
   export default {
@@ -93,17 +96,11 @@
       };
     },
     created() {
+      this.contractAddress = this.$route.query.contractAddress;
       this.addressInfo = addressInfo(1);
       setInterval(() => {
         this.addressInfo = addressInfo(1);
       }, 500);
-    },
-    watch: {
-      addressInfo(val, old) {
-        if (val.address !== old.address && old.address) {
-          this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.contractAddress);
-        }
-      }
     },
     mounted() {
       setTimeout(() => {
@@ -115,12 +112,26 @@
         this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.contractAddress);
       }, 10000);
     },
-    //离开当前页面后执行
+    beforeRouteLeave(to, from, next) {
+      if (to.name === 'transferInfo') {
+        from.meta.keepAlive = true
+      } else {
+        from.meta.keepAlive = false
+      }
+      next();
+    },
     destroyed() {
       clearInterval(this.txListSetInterval);
     },
     components: {
       BackBar
+    },
+    watch: {
+      addressInfo(val, old) {
+        if (val.address !== old.address && old.address) {
+          this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.contractAddress);
+        }
+      }
     },
     methods: {
 
@@ -201,12 +212,17 @@
        * @param name
        * @param params
        */
-      toUrl(name, params) {
-        let newQuery = {hash: params};
-        this.$router.push({
-          name: name,
-          query: newQuery
-        })
+      toUrl(name, params, type = 0) {
+        if (type === 1) {
+          connectToExplorer(name,params)
+        } else {
+          let newQuery = {hash: params};
+          this.$router.push({
+            name: name,
+            query: newQuery
+          })
+        }
+
       },
     }
   }

@@ -24,12 +24,18 @@ export default new Router({
     {
       path: '/wallet/txList',
       name: 'txList',
-      component: resolve => require(['@/views/users/TxList.vue'], resolve)
+      component: resolve => require(['@/views/users/TxList.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
     },
     {
       path: '/wallet/tokenTxList',
       name: 'tokenTxList',
-      component: resolve => require(['@/views/users/TokenTxList.vue'], resolve)
+      component: resolve => require(['@/views/users/TokenTxList.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
     },
     {
       path: '/transfer',

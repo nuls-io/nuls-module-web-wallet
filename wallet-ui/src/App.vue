@@ -2,8 +2,14 @@
     <div id="app" class="app">
         <HeaderBar>
         </HeaderBar>
-        <router-view>
+        <keep-alive>
+            <router-view v-if="$route.meta.keepAlive">
+            </router-view>
+        </keep-alive>
+        <router-view v-if="!$route.meta.keepAlive">
         </router-view>
+        <!--<router-view>
+        </router-view>-->
         <BottomBar>
         </BottomBar>
     </div>

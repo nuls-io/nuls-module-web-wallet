@@ -9,7 +9,7 @@
 
     <div class="w1200 overview bg-white" v-loading="overviewLoading">
       <div class="title">
-        {{symbol.toLocaleUpperCase()}} {{$t('tab.tab26')}}
+        <img src="./../assets/img/nuls-logo.svg"/>{{symbol.toLocaleUpperCase()}}
         <span class="fr click" @click="toUrl('txList',addressNULSAssets)">{{$t('home.home2')}}</span>
       </div>
       <div class="total fl">
@@ -36,38 +36,76 @@
         </h6>
       </div>
     </div>
-
     <div class="cb"></div>
-    <el-tabs v-model="homeActive" @tab-click="handleClick" class="w1200 home_tabs">
-      <el-tab-pane :label="$t('tab.tab25')" name="homeFirst">
-        <el-select v-model="assetsValue" @change="channgeAsesets" v-show="false">
-          <el-option v-for="item in assetsOptions" :key="item.value" :label="$t('assetsType.'+item.value)"
-                     :value="item.value">
-          </el-option>
-        </el-select>
-        <el-table :data="addressAssetsData" stripe border v-loading="assetsListLoading">
-          <el-table-column :label="$t('nodeService.nodeService2')" align="center">
+    <div class="w1200 overview bg-white" style="margin: 20px auto 0; height: auto">
+      <div class="title">
+        <img src="./../assets/img/across-logo.svg" style="width: 20px; margin-top:11px; "/>
+        {{$t('home.home3')}}
+      </div>
+      <div class="home_tabs" style="padding: 0">
+        <el-table :data="crossLinkData" stripe border v-loading="txListDataLoading">
+          <el-table-column :label="$t('tab.tab0')" align="center" width="200">
             <template slot-scope="scope">
-            <span>
-              {{ scope.row.account }}
-            </span>
+              <div style="margin: 0 0 0 30%">
+                <img src="./../assets/img/nvt-logo.svg" class="fl" style="width: 25px;margin: 3px 2px 0 0"
+                     v-show="scope.row.symbol ==='NVT'"/>
+                <img src="./../assets/img/eth-logo.png" class="fl" style="width: 25px;margin: 3px 2px 0 0"
+                     v-show="scope.row.symbol ==='ETH'"/>
+                <span class="fl">{{scope.row.symbol}}</span>
+              </div>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('contract.contract9')" align="center" width="180">
-            <template slot-scope="scope">
-              <span class="click td" @click="toUrl('contractsInfo',scope.row.contractAddress,1)">{{ scope.row.contractAddresss }}</span>
-            </template>
+          <el-table-column prop="totalBalance" :label="$t('tab.tab2')" align="left" width="230">
           </el-table-column>
-          <el-table-column prop="balance" :label="$t('tab.tab4')">
+          <el-table-column prop="balance" :label="$t('tab.tab4')" width="230">
           </el-table-column>
-          <el-table-column :label="$t('tab.tab3')">
+          <el-table-column :label="$t('tab.tab3')" width="230">
             <template slot-scope="scope">
               <span class="click" @click="toUrl('frozenList',scope.row)"
                     v-show="scope.row.locking !== '--' && scope.row.locking !==0 ">{{scope.row.locking}}</span>
               <span v-show="scope.row.locking === '--' || scope.row.locking ===0">{{scope.row.locking}}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="total" :label="$t('tab.tab2')">
+          <el-table-column fixed="right" :label="$t('public.operation')" align="center" min-width="120">
+            <template slot-scope="scope">
+              <label class="click tab_bn" @click="toUrl('transfer', {type: 1, tokenSymbol: scope.row.symbol})">
+                {{$t('nav.transfer')}}
+              </label>
+              <span class="tab_line">|</span>
+              <label class="click tab_bn" @click="toUrl('txList',scope.row)">{{$t('home.home2')}}</label>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+    </div>
+    <div class="cb"></div>
+    <div class="w1200 overview bg-white" style="margin: 20px auto 0">
+      <div class="title">
+        <img src="./../assets/img/contract-logo.svg" style="width: 20px;margin-top:11px;"/>{{$t('tab.tab25')}}
+      </div>
+      <div class="home_tabs">
+        <el-table :data="addressAssetsData" stripe border v-loading="assetsListLoading">
+          <el-table-column :label="$t('nodeService.nodeService2')" align="center" width="200">
+            <template slot-scope="scope">
+              <span class="click td" @click="toUrl('contractsInfo',scope.row.contractAddress,1)">
+                {{ scope.row.account }}
+              </span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="total" :label="$t('tab.tab2')" align="left" width="230">
+          </el-table-column>
+          <el-table-column prop="balance" :label="$t('tab.tab4')" width="230">
+          </el-table-column>
+          <el-table-column :label="$t('tab.tab3')" width="230">
+            <template slot-scope="scope">
+              <span class="click" @click="toUrl('frozenList',scope.row)"
+                    v-show="scope.row.locking !== '--' && scope.row.locking !==0 ">
+                {{scope.row.locking}}
+              </span>
+              <span v-show="scope.row.locking === '--' || scope.row.locking ===0">
+                {{scope.row.locking}}
+              </span>
+            </template>
           </el-table-column>
           <el-table-column fixed="right" :label="$t('public.operation')" align="center" min-width="120">
             <template slot-scope="scope">
@@ -77,58 +115,8 @@
             </template>
           </el-table-column>
         </el-table>
-        <div class="pages" v-show="false">
-          <div class="page-total">
-            {{pageNumber-1 === 0 ? 1 : (pageNumber-1) *pageSize}}-{{pageNumber*pageSize}}
-            of {{addressAssetsData.length}}
-          </div>
-          <el-pagination v-show="addressAssetsData.length > pageSize" class="fr" background
-                         @current-change="addressAssetsListPages"
-                         layout=" prev, pager, next, jumper"
-                         :total="addressAssetsData.length">
-          </el-pagination>
-        </div>
-      </el-tab-pane>
-      <el-tab-pane :label="$t('home.home1')" name="homeSecond">
-        <el-table :data="crossLinkData" stripe border v-loading="crossLinkDataLoading">
-          <el-table-column prop="symbol" :label="$t('tab.tab0')" align="center">
-          </el-table-column>
-          <!--  <el-table-column :label="$t('tab.tab1')" align="center" width="150">
-              <template slot-scope="scope"><span>{{ scope.row.symbol }}</span></template>
-            </el-table-column>-->
-          <el-table-column prop="balance" :label="$t('tab.tab4')">
-          </el-table-column>
-          <el-table-column :label="$t('tab.tab3')">
-            <template slot-scope="scope">
-              <span class="click" @click="toUrl('frozenList',scope.row)"
-                    v-show="scope.row.locking !== '--' && scope.row.locking !==0 ">{{scope.row.locking}}</span>
-              <span v-show="scope.row.locking === '--' || scope.row.locking ===0">{{scope.row.locking}}</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="totalBalance" :label="$t('tab.tab2')">
-          </el-table-column>
-          <el-table-column fixed="right" :label="$t('public.operation')" align="center" min-width="120">
-            <template slot-scope="scope">
-              <label class="click tab_bn" @click="toUrl('transfer', {type: 1, tokenSymbol: scope.row.symbol})">{{$t('nav.transfer')}}</label>
-              <span class="tab_line">|</span>
-              <label class="click tab_bn" @click="toUrl('txList',scope.row)">{{$t('home.home2')}}</label>
-            </template>
-          </el-table-column>
-        </el-table>
-        <div class="pages" v-show="addressAssetsData.length > 10">
-          <div class="page-total">
-            {{pageNumber-1 === 0 ? 1 : (pageNumber-1) *pageSize}}-{{pageNumber*pageSize}}
-            of {{crossLinkData.length}}
-          </div>
-          <el-pagination v-show="addressAssetsData.length > pageSize" class="fr" background
-                         @current-change="addressAssetsListPages"
-                         layout=" prev, pager, next, jumper"
-                         :total="addressAssetsData.length">
-          </el-pagination>
-        </div>
-      </el-tab-pane>
-    </el-tabs>
-
+      </div>
+    </div>
     <el-dialog title="" :visible.sync="qrcodeDialog" width="22.5rem" center class="payee_dialog">
       <el-tabs v-model="activeName" @tab-click="payeeHandleClick">
         <el-tab-pane :label="$t('tips.tips12')" name="payeeInfo">
@@ -219,7 +207,8 @@
         setTimeout(() => {
           this.getAddressInfoByNode(this.addressInfo.address);
           setTimeout(() => {
-            this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address)
+            this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
+            this.getAccountCrossLedgerList(this.addressInfo.address);
           }, 400);
         }, 600);
       } else {
@@ -227,7 +216,6 @@
           name: "newAddress"
         })
       }
-
     },
     mounted() {
       this.symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
@@ -236,20 +224,13 @@
       addressInfo(val, old) {
         if (val) {
           if (val.address !== old.address && old.address) {
-            if (this.homeActive === 'homeFirst') {
-              this.getAddressInfoByNode(this.addressInfo.address);
-              setTimeout(() => {
-                this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
-              }, 200);
-            } else {
-              this.pageNumber = 1;
-              this.pageSize = 10;
-              this.pageCount = 0;
+            this.getAddressInfoByNode(this.addressInfo.address);
+            setTimeout(() => {
+              this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
               this.getAccountCrossLedgerList(this.addressInfo.address);
-            }
+            }, 200);
           }
         }
-
       }
     },
     methods: {
@@ -444,9 +425,6 @@
             }
             sessionStorage.removeItem('assetsList');
             sessionStorage.setItem('assetsList', JSON.stringify(newList));
-
-            //console.log(this.addressInfo.tokens);
-            //localStorage.setItem(this.addressInfo.address, JSON.stringify(this.addressInfo));
             this.assetsListLoading = false;
           }).catch((error) => {
             this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
@@ -475,6 +453,9 @@
               this.crossLinkData = response.result;
               this.txListDataLoading = false;
             }
+          }).catch((err) => {
+            this.getAccountCrossLedgerList(address);
+            console.log(err);
           })
       },
 
@@ -546,12 +527,15 @@
             })
           } else {
             if (parms.type === 2) {
+              //console.log(parms);
               this.$router.push({
-                name: 'tokenTxList'
+                name: 'tokenTxList',
+                query: {contractAddress: parms.contractAddress}
               })
             } else {
               this.$router.push({
                 name: name,
+                query: {chainId: parms.chainId, assetId: parms.assetId,}
               })
             }
           }
@@ -587,9 +571,15 @@
         line-height: 40px;
         color: #475472;
         height: 40px;
-        font-size: 18px;
-        padding: 0 30px;
+        font-size: 16px;
+        padding: 0 20px;
         border-bottom: 1px solid #dfe4ef;
+        font-weight: bold;
+        img {
+          width: 15px;
+          margin: 6px 10px 5px 10px;
+          float: left;
+        }
         span {
           font-size: 14px;
           font-weight: normal;
