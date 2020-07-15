@@ -1,6 +1,6 @@
 {
   "name": "NULS-Wallet",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "private": true,
   "scripts": {
     "serve": "cross-env NULS_ENV=prod vue-cli-service serve src/main-web",
