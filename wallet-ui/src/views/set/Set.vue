@@ -29,7 +29,7 @@
             <font>{{FILE_URL}}</font>
           </li>
         </ul>
-        <el-button type="success" @click="checkUpdate" v-show="RUN_PATTERN && system !== 'Darwin'">
+        <el-button type="success" @click="checkUpdate" v-show="RUN_PATTERN">
           {{$t('public.checkUpdates')}}
         </el-button>
       </div>
