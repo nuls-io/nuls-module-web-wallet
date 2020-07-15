@@ -63,15 +63,15 @@
           if (this.failedNu === 5) {
             this.$confirm(this.$t('bottom.err0'), {
               confirmButtonText: this.$t('bottom.err1'),
-              cancelButtonText: '',
+              cancelButtonText:this.$t('bottom.err2'),
               type: 'error',
               showClose: false,
-              showCancelButton: false,
               closeOnClickModal: false,
               closeOnPressEscape: false,
             }).then(() => {
               this.toUrl('nodeService');
             }).catch(() => {
+              location.reload();
             });
           }
         }

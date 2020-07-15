@@ -955,7 +955,7 @@ const en = {
     "Backstage": "Background operation",
     "err0": "The wallet is unable to connect to the current node service, and the transaction-related functions will not work properly. Please go to the node service list and switch to the available node','Node service connection failed'.",
     "err1": "To Node Service List",
-    "": ""
+    "err2": "Refresh"
   },
 
   "TipsType": {
