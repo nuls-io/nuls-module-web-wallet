@@ -364,7 +364,7 @@
           deposit: Number(Times(this.createrForm.amount, 100000000).toString())
         };
         let data = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, '', 4, agent);
-        console.log(data);
+        //console.log(data);
         return {
           success: true,
           data: data
