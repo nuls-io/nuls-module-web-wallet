@@ -186,7 +186,7 @@
        * @param chainId 链ID default：0
        * @param assetId 资产ID default：0
        **/
-      getTxlistByAddress(pageSize, pageRows, address, type, startHigh, endHigh, chainId, assetId) {
+      getTxlistByAddress(pageSize, pageRows, address, type, startHigh=-1, endHigh=-1, chainId=0, assetId=0) {
         //console.log(pageSize, pageRows, address, type, startHigh, endHigh, chainId, assetId);
         this.$post('/', 'getAccountTxs', [pageSize, pageRows, address, type, startHigh, endHigh, chainId, assetId])
           .then((response) => {
