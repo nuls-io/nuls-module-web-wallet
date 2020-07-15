@@ -188,7 +188,7 @@
        **/
       getTxlistByAddress(pageSize, pageRows, address, type, startHigh=-1, endHigh=-1, chainId=0, assetId=0) {
         //console.log(pageSize, pageRows, address, type, startHigh, endHigh, chainId, assetId);
-        this.$post('/', 'getAccountTxs', [pageSize, pageRows, address, type, startHigh, endHigh, chainId, assetId])
+        this.$post('/', 'getAccountTxs', [pageSize, pageRows, address, type, startHigh, endHigh, Number(chainId), Number(assetId)])
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
@@ -208,7 +208,8 @@
             }
           })
           .catch((error) => {
-            console.log("getAccountTxs:" + error)
+            this.getTxlistByAddress(pageSize, pageRows, address, type, startHigh, endHigh, chainId, assetId);
+            console.log("getAccountTxs:" + error);
           })
       },
 
