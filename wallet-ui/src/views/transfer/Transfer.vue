@@ -373,14 +373,35 @@
         this.assetsList = [...basicAssets, ...newContractAssets, ...crossAssets];
         //console.log(this.assetsList);
 
-        let newInfo = this.$route.query.accountType ? this.$route.query.accountType : {type: 1, tokenSymbol: 'NULS'};
+        //console.log(this.$route.query.accountType);
+        let newInfo = this.$route.query.accountType ? this.$route.query.accountType : {type: 1, tokenSymbol: MAIN_INFO};
         if (this.$route.query.accountType === 'NULS') {
-          newInfo = {type: 1, tokenSymbol: 'NULS'};
+          newInfo = {type: 1, tokenSymbol: MAIN_INFO};
+          newInfo.tokenSymbol.symbol = 'NULS';
         }
+        if (!newInfo.contractAddress && !newInfo.tokenSymbol.symbol) {
+          newInfo.tokenSymbol.symbol = 'NULS';
+        }
+        if (newInfo.contractAddress) {
+          newInfo.symbol = newInfo.tokenSymbol;
+          newInfo.tokenSymbol = newInfo;
+        }
+        //console.log(newInfo);
+
         for (let item of this.assetsList) {
           //console.log(item);
-          if (item.type === newInfo.type && item.symbol === newInfo.tokenSymbol) {
-            this.changeType(item)
+          if (item.type === 1) {
+            if (item.assetId === newInfo.tokenSymbol.assetId && item.chainId === newInfo.tokenSymbol.chainId) {
+              this.changeType(item);
+              this.transferLoading = false;
+              return
+            }
+          } else {
+            if (item.contractAddress && item.contractAddress === newInfo.contractAddress) {
+              this.changeType(item);
+              this.transferLoading = false;
+              return;
+            }
           }
         }
         this.transferLoading = false;
@@ -957,11 +978,11 @@
           //console.log(transferInfo);
           //console.log(chainId === transferInfo.assetsChainId && transferInfo.assetsId === 1);
           if (chainId === transferInfo.assetsChainId && transferInfo.assetsId === 1) {
-            if (balanceInfo.data.balance <  Number(Plus(transferInfo.amount, newFee))) {
+            if (balanceInfo.data.balance < Number(Plus(transferInfo.amount, newFee))) {
               this.$message({message: this.$t('newConsensus.newConsensus7'), type: 'error', duration: 3000});
               return;
             }
-            inputs[0].amount =  Number(Plus(transferInfo.amount, newFee));
+            inputs[0].amount = Number(Plus(transferInfo.amount, newFee));
             if (!isMainNet(chainId)) {
               inputs[1].amount = newFee;
             }

@@ -68,7 +68,7 @@
           </el-table-column>
           <el-table-column fixed="right" :label="$t('public.operation')" align="center" min-width="120">
             <template slot-scope="scope">
-              <label class="click tab_bn" @click="toUrl('transfer', {type: 1, tokenSymbol: scope.row.symbol})">
+              <label class="click tab_bn" @click="toUrl('transfer', {type: 1, tokenSymbol: scope.row})">
                 {{$t('nav.transfer')}}
               </label>
               <span class="tab_line">|</span>

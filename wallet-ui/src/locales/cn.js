@@ -622,7 +622,7 @@ const cn = {
     "home0": "主网资产",
     "home1": "跨链资产",
     "home2": "交易记录",
-    "home3": "跨连资产",
+    "home3": "跨链资产",
   },
 
   "frozenList": {
