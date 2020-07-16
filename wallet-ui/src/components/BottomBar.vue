@@ -63,7 +63,7 @@
           if (this.failedNu === 5) {
             this.$confirm(this.$t('bottom.err0'), {
               confirmButtonText: this.$t('bottom.err1'),
-              cancelButtonText:this.$t('bottom.err2'),
+              cancelButtonText: this.$t('bottom.err2'),
               type: 'error',
               showClose: false,
               closeOnClickModal: false,
@@ -204,5 +204,22 @@
       }
     }
 
+  }
+
+  .el-message-box__wrapper {
+    .el-message-box {
+      .el-message-box__btns {
+        .el-button--default {
+          color: #FFF;
+          background-color: #409EFF;
+          border-color: #409EFF;
+        }
+        .el-button--primary {
+          background: #FFF;
+          border: 1px solid #DCDFE6;
+          color: #606266;
+        }
+      }
+    }
   }
 </style>

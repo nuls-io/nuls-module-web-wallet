@@ -129,6 +129,7 @@
     getNulsBalance,
     inputsOrOutputs,
     validateAndBroadcast,
+    commitData
   } from '@/api/requestData'
   import {MAIN_INFO} from '@/config.js'
   import {
@@ -141,7 +142,8 @@
     timesDecimalsBig,
     addressInfo,
     passwordVerification,
-    htmlEncode
+    htmlEncode,
+    getRamNumber
   } from '@/api/util'
   import Password from '@/components/PasswordBar'
 
@@ -582,8 +584,69 @@
        * @date: 2020-06-30 14:35
        * @author: Wave
        */
-      confirmTransfer() {
-        this.$refs.password.showPassword(true);
+      async confirmTransfer() {
+        if (this.addressInfo.aesPri) {
+          this.$refs.password.showPassword(true);
+        } else {
+          this.balanceInfo = await this.getNulsBalance(this.assetsInfo.chainId, 1, this.transferForm.fromAddress);
+          //console.log(this.toAddressInfo);
+          if (this.toAddressInfo.transferType !== 1) {
+            this.$message({message: this.$t('tips.tips2'), type: 'warning', duration: 3000});
+            return;
+          }
+          let txHexKey = await getRamNumber(16);
+          let signDataKey = await getRamNumber(16);
+          let assembleHex = await this.transferAssemble();
+          //console.log(assembleHex);
+          if (!assembleHex.success) {
+            this.$message({message: this.$t('tips.tips3'), type: 'error', duration: 3000});
+            return;
+          }
+          let commitDatas = await commitData(txHexKey, signDataKey, this.addressInfo.address, assembleHex.data);
+          //console.log(commitDatas);
+          if (!commitDatas.success) {
+            this.$message({
+              message: this.$t('tips.tips4') + JSON.stringify(commitDatas.data),
+              type: 'error',
+              duration: 3000
+            });
+            return;
+          }
+          this.$refs.password.showScan(commitDatas.data.txInfo, commitDatas.data.assembleHex);
+        }
+
+      },
+
+      /**
+       * @disc: 普通转账交易组装
+       * @date: 2019-12-04 17:27
+       * @author: Wave
+       */
+      async transferAssemble() {
+        let transferInfo = {
+          fromAddress: this.transferForm.fromAddress,
+          assetsChainId: this.assetsInfo.chainId,
+          assetsId: this.assetsInfo.assetId,
+          fee: 100000
+        };
+        transferInfo['toAddress'] = this.aliasToAddress ? this.aliasToAddress : this.transferForm.toAddress;
+        transferInfo['amount'] = Number(Times(this.transferForm.amount, 100000000).toString());
+        //console.log(transferInfo);
+        let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 2);
+        //console.log(inOrOutputs);
+        if (!inOrOutputs.success) {
+          this.$message({
+            message: this.$t('public.err1') + JSON.stringify(inOrOutputs.data),
+            type: 'error',
+            duration: 3000
+          });
+          return {success: false}
+        }
+        let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, this.transferForm.remarks, 2);
+        return {
+          success: true,
+          data: tAssemble
+        };
       },
 
       /**

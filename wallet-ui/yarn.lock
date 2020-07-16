@@ -6578,9 +6578,9 @@ nugget@^2.0.1:
     single-line-log "^1.1.2"
     throttleit "0.0.2"
 
-nuls-sdk-js@^2.3.8:
-  version "2.3.8"
-  resolved "https://registry.yarnpkg.com/nuls-sdk-js/-/nuls-sdk-js-2.3.8.tgz#e3b7ada63a8e0a2ceb30b99f83aec498ce8c6ea1"
+nuls-sdk-js@^2.4.5:
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/nuls-sdk-js/-/nuls-sdk-js-2.4.5.tgz#16a3330c8167843a440cae8c5a1829914876d072"
   dependencies:
     acorn "6.0.0"
     axios "^0.18.0"
