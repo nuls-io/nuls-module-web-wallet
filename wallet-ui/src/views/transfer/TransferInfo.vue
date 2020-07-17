@@ -225,7 +225,7 @@
       }, 600);
     },
     beforeRouteLeave(to, from, next) {
-      console.log(to.name);
+      //console.log(to.name);
       if (to.name === 'txList') {
         to.meta.keepAlive = true
       } else if (to.name === 'TokenTxList') {
@@ -285,7 +285,8 @@
               }
 
               if (response.result.type === 16) {
-                response.result.txData.resultInfo.price = timesDecimals(response.result.txData.resultInfo.price);
+                //response.result.txData.resultInfo.price = timesDecimals(response.result.txData.resultInfo.price).toString();
+                //response.result.txData.resultInfo.price = response.result.txData.resultInfo.price;
                 if (response.result.txData.resultInfo.nulsTransfers.length !== 0) {
                   for (let item of response.result.txData.resultInfo.nulsTransfers) {
                     item.value = timesDecimals(item.value);
@@ -303,6 +304,7 @@
               }
 
               this.txInfo = response.result;
+              console.info(this.txInfo);
               if (this.txInfo.txData && this.txInfo.txData.resultInfo) {
                 this.txInfo.txData.resultInfo.remark = this.txInfo.txData.resultInfo.remark.replace(/<[^<>]+>/g, '');
               }
