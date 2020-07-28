@@ -8,7 +8,7 @@
     </div>
 
     <div class="w1200">
-      <div v-loading="txListDataLoading">
+      <div v-loading="txListDataLoading" class="mb_100">
         <div class="filter">
           <el-select v-model="assetsValue" @change="channgeAsesets" v-show="false">
             <el-option v-for="item in assetsOptions" :key="item.value" :label="item.label" :value="item.value">

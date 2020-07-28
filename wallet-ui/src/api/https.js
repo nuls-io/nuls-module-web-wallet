@@ -4,9 +4,6 @@ import {chainID} from './util'
 
 axios.defaults.timeout = config.API_TIME;
 axios.defaults.baseURL = config.API_URL;
-setInterval(() => {
-  axios.defaults.baseURL = config.API_URL;
-}, 500);
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 import logger from "./logger-web"
 
@@ -21,6 +18,7 @@ import logger from "./logger-web"
  * @returns {Promise}
  */
 export function post(url, methodName, data = [], templateName = '') {
+  axios.defaults.baseURL = config.API_URL;
   return new Promise((resolve, reject) => {
     if (methodName !== 'getMsg' && methodName !== 'commitMsg') {
       data.unshift(chainID());

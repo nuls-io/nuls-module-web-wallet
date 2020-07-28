@@ -14,6 +14,8 @@ const cn = {
   },
 
   "public": {
+    "confirm": "确 定",
+    "cancel": "取 消",
     "copySuccess": "已复制到剪切板",
     "operation": "操作",
     "display": "显示",
@@ -72,6 +74,7 @@ const cn = {
     "checkNetwork": "没有可用服务节点，请检查网络!",
     "resetAddress": "重置地址",
     "unavailable": "(已失效)",
+    "flow": "流局",
 
     "err": "验证并广播交易失败:",
     "err0": "验证并广播交易异常:",
@@ -80,6 +83,13 @@ const cn = {
     "err3": "获取账户余额异常:",
     "err4": "跨链交易失败:",
 
+  },
+
+  "status": {
+    "statusundefined": "",
+    "status0": "确认中",
+    "status1": "已确认",
+    "": ""
   },
 
   "error": {
@@ -995,6 +1005,65 @@ const cn = {
     "tips20":"扫描备份",
     "tips21":"扫描交易",
     "tips":"",
+  },
+
+  "guessNum": {
+    "guessNum0": "第",
+    "guessNum1": "轮猜数字",
+    "guessNum2": "用户选择0-9中的一个数字参与，每轮中奖的用户平分",
+    "guessNum3": "奖池",
+    "guessNum4": "预留",
+    "guessNum5": "部分",
+    "guessNum6": "奖池（没有中奖奖池累计下一次）",
+    "guessNum7": "参与游戏将消耗",
+    "guessNum8": "游戏每",
+    "guessNum9": "块开奖一次，中间间隔",
+    "guessNum10": "块",
+    "guessNum11": "此随机数是基于",
+    "guessNum12": "NULS随机数",
+    "guessNum13": "开发的绝对公平",
+    "guessNum14": "请点击数字",
+    "guessNum15": "您猜本轮开",
+    "guessNum16": "本轮截止高度",
+    "guessNum17": "本轮开奖高度",
+    "guessNum18": "当前轮次游戏没有参与人次，参与激活本轮游戏",
+    "guessNum19": "当前参与",
+    "guessNum20": "猜数",
+    "guessNum21": "中奖历史",
+    "guessNum22": "游戏轮次",
+    "guessNum23": "参与地址",
+    "guessNum24": "奖金",
+    "guessNum25": "开奖数",
+    "guessNum26": "参与时间",
+    "guessNum27": "参与历史",
+    "guessNum28": "开奖历史",
+    "guessNum29": "轮",
+    "guessNum30": "开奖",
+    "guessNum31": "中奖金额",
+    "guessNum32": "参与信息",
+    "guessNum33": "中奖信息",
+    "guessNum34": "开奖时间",
+    "guessNum35": "手续费（调用合约费用及打包费）",
+    "guessNum": "guessNum",
+  },
+
+  "locking":{
+    "locking0":"可自定义锁定时间的转账",
+    "locking1":"付款地址：",
+    "locking2":"资产：",
+    "locking3":"收款地址：",
+    "locking4":"请再次确认收款地址（请勿填写交易所充值地址，避免造成您的资产丢失或交易所锁定您账户）",
+    "locking5":"金额：",
+    "locking6":"解锁时间：",
+    "locking7":"选择日期时间",
+    "locking8":"备注：",
+    "locking9":"手续费：",
+    "locking10":"下一步",
+    "locking11":"转账信息确认",
+    "locking12":"收款地址不能为空",
+    "locking13":"请输入正确的NULS地址",
+    "locking14":"金额不能为空",
+    "locking15":"请输入正确的金额（小数点后最多八位）"
   },
   ...zhLocale
 };
