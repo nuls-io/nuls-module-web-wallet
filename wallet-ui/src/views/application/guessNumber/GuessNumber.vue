@@ -158,7 +158,7 @@
                   </div>
                   <div class="cb"></div>
                 </div>
-                <div v-for="item of historyDataIn" style="border-bottom: 1px solid #c0c4cc">
+                <div v-for="item of historyDataIn" :key="item.txTime" style="border-bottom: 1px solid #c0c4cc">
                   <div class="fl tc" style="width: 350px">
                     <div class="click" @click="toUrl('address',item.address,1)">{{item.address}}</div>
                   </div>
@@ -192,7 +192,7 @@
                   </div>
                   <div class="cb"></div>
                 </div>
-                <div v-for="item of historyDataOut" style="border-bottom: 1px solid #c0c4cc">
+                <div v-for="item of historyDataOut" :key="item.txTime" style="border-bottom: 1px solid #c0c4cc">
                   <div class="fl tc" style="width: 300px">
                     <div class="click" @click="toUrl('address',item.address,1)">{{item.address}}</div>
                   </div>

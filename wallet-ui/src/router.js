@@ -6,13 +6,18 @@ Vue.use(Router);
 export default new Router({
   mode: 'history',
   routes: [
-    {
+    /*{
       path: '*',
+      name: 'home',
+      component: resolve => require(['@/views/Home.vue'], resolve)
+    },*/
+    {
+      path: '/',
       name: 'home',
       component: resolve => require(['@/views/Home.vue'], resolve)
     },
     {
-      path: '/',
+      path: '/wallet',
       name: 'home',
       component: resolve => require(['@/views/Home.vue'], resolve)
     },

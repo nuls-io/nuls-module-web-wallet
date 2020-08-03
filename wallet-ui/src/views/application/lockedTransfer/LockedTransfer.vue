@@ -39,8 +39,15 @@
       </el-form-item>
     </el-form>
     <div class="developers">
-      <p>开发者：<span class="click" @click="toUrl('nuls','https://www.linkedin.com/in/wave98688/',1)">wave</span></p>
-      <p>赞助地址：<span class="clicks" @click="copy('NULSd6HgbayXFPacp5zDWiCgs4goxFyy7WAVE')">NULSd6HgbayXFPacp5zDWiCgs4goxFyy7WAVE</span>
+      <p>
+        {{$t('public.developers')}}
+        <span class="click" @click="toUrl('nuls','https://www.linkedin.com/in/wave98688/',1)">wave</span>
+      </p>
+      <p>
+        {{$t('public.sponsoredAddress')}}
+        <span class="clicks" @click="copy('NULSd6HgbayXFPacp5zDWiCgs4goxFyy7WAVE')">
+          NULSd6HgbayXFPacp5zDWiCgs4goxFyy7WAVE
+        </span>
       </p>
     </div>
     <el-dialog :title="$t('locking.locking11')" center :width="dialogWidth" class="dialog"
@@ -98,7 +105,7 @@
 
         if (!value) {
           return callback(new Error(this.$t('locking.locking12')));
-        } else if (!addressInfo.right && addressInfo.chainId !== chainInfo.chainId) {
+        } else if (!addressInfo.right && addressInfo.chainId !== MAIN_INFO.chainId) {
           return callback(new Error(this.$t('locking.locking13')));
         } else {
           callback();

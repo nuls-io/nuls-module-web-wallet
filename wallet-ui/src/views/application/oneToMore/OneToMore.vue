@@ -1,22 +1,22 @@
 <template>
   <div class="w1200 one_to" v-loading="oneToMoreLoading">
-    <div class="title tc">可以转多个地址</div>
+    <div class="title tc">{{$t('oneTo.oneTo1')}}</div>
     <el-form :model="oneToMoreForm" status-icon ref="oneToMoreForm" class="w630 one_to_form">
-      <el-form-item label="付款地址">
+      <el-form-item :label="$t('transfer.transfer0')">
         <el-input v-model="oneToMoreForm.fromAddress" disabled="disabled">
         </el-input>
       </el-form-item>
       <div class="font12 fr" style="margin-top: 8px">
-        <label>余额：</label>
+        <label>{{$t('public.usableBalance')}}：</label>
         {{accontInfo.balance}}
         <span class="fCN"> NULS</span>
       </div>
-      <el-form-item label="资产">
+      <el-form-item :label="$t('transfer.transfer2')">
         <el-input v-model="oneToMoreForm.assetsType" disabled="disabled">
         </el-input>
       </el-form-item>
       <el-form-item v-for="(domain, index) in oneToMoreForm.toList" class="to_list"
-                    :label="'收款地址 / 金额 ' + index"
+                    :label="$t('transfer.transfer1') +'/ '+ $t('tab.tab6') + index"
                     :key="index">
         <el-input v-model.trim="domain.toAddress" class="to_address" @change="toAddressChange(index)">
         </el-input>
@@ -37,32 +37,45 @@
         <span class="fCN">NULS</span>
       </div>
       <div class="font14 cb" style="height: 30px; margin-top: 5px">
-        <label>小计：</label>
+        <label>{{$t('oneTo.oneTo2')}}：</label>
         <span class="fred fW600">{{total}}</span>
         <span class="fCN"> NULS</span>
       </div>
       <el-form-item class="tc">
-        <el-button type="success" @click="submitForm('oneToMoreForm')" :disabled="isSubmintForm">下一步</el-button>
+        <el-button type="success" @click="submitForm('oneToMoreForm')" :disabled="isSubmintForm">
+          {{$t('newAddress.newAddress10')}}
+        </el-button>
       </el-form-item>
     </el-form>
 
     <div class="w1200 developers">
-      <p>开发者：<span class="click" @click="toUrl('nuls','https://www.linkedin.com/in/wave98688/',1)">wave</span></p>
-      <p>赞助地址：<span class="clicks" @click="copy('NULSd6HgbayXFPacp5zDWiCgs4goxFyy7WAVE')">NULSd6HgbayXFPacp5zDWiCgs4goxFyy7WAVE</span>
+      <p>
+        {{$t('public.developers')}}
+        <span class="click" @click="toUrl('nuls','https://www.linkedin.com/in/wave98688/',1)">wave</span>
+      </p>
+      <p>
+        {{$t('public.sponsoredAddress')}}
+        <span class="clicks" @click="copy('NULSd6HgbayXFPacp5zDWiCgs4goxFyy7WAVE')">
+          NULSd6HgbayXFPacp5zDWiCgs4goxFyy7WAVE
+        </span>
       </p>
     </div>
 
-    <el-dialog title="转账信息确认" :visible.sync="oneToMoreDialog" width="45rem" class="one_to_dialog">
+    <el-dialog :title="$t('oneTo.oneTo3')" :visible.sync="oneToMoreDialog" width="45rem" class="one_to_dialog">
       <div class="dialog_info">
         <ul>
-          <li><span>付款地址：</span><font>{{oneToMoreForm.fromAddress}}</font></li>
+          <li><span>{{$t('transfer.transfer2')}}</span><font>{{oneToMoreForm.fromAddress}}</font></li>
           <li v-for="(item,index) of oneToMoreForm.toList" :key="index" class="to_list">
-            <p class="fl to_address"><span>收款地址{{index}}：</span><font>{{item.toAddress}}</font></p>
-            <p class="fl to_amount"><span>金额：</span><font>{{item.amount}} <font class="fCN">NULS</font></font></p>
+            <p class="fl to_address"><span>{{$t('transfer.transfer1')}}{{index}}</span><font>{{item.toAddress}}</font>
+            </p>
+            <p class="fl to_amount"><span>{{$t('tab.tab6')}}</span><font>{{item.amount}} <font
+                    class="fCN">NULS</font></font></p>
           </li>
-          <li class="cb"><span>手续费：</span><font>{{oneToMoreForm.fee}}<font class="fCN"> NULS</font></font></li>
-          <li class="cb"><span>小计：</span><font class="fred fW600">{{total}}<font class="fCN"> NULS</font></font></li>
-          <li><span>备注：</span><font class="remark scroll">{{oneToMoreForm.remarks}}</font></li>
+          <li class="cb"><span>{{oneToMoreForm.fee}}</span><font>{{oneToMoreForm.fee}}<font class="fCN">
+            NULS</font></font></li>
+          <li class="cb"><span>{{$t('oneTo.oneTo2')}}</span><font class="fred fW600">{{total}}<font class="fCN">
+            NULS</font></font></li>
+          <li><span>{{$t('locking.locking8')}}</span><font class="remark scroll">{{oneToMoreForm.remarks}}</font></li>
         </ul>
       </div>
       <div slot="footer" class="cb">
@@ -165,17 +178,29 @@
           let addressInfo = await nuls.verifyAddress(this.oneToMoreForm.toList[index].toAddress);
           //console.log(addressInfo);
           if (!addressInfo.right) {
-            this.$message({message: "收款地址" + index + "错误：格式错误!", type: 'error', duration: 3000});
+            this.$message({
+              message: this.$t('transfer.transfer2') + index + this.$t('oneTo.oneTo4'),
+              type: 'error',
+              duration: 3000
+            });
             this.isSubmintForm = true;
             return;
           }
           if (MAIN_INFO.chainId !== addressInfo.chainId || MAIN_INFO.assetId !== addressInfo.type) {
-            this.$message({message: "收款地址" + index + "错误：地址类型错误（只支持NULS主网地址）", type: 'error', duration: 3000});
+            this.$message({
+              message: this.$t('transfer.transfer2') + index + this.$t('oneTo.oneTo5'),
+              type: 'error',
+              duration: 3000
+            });
             this.isSubmintForm = true;
             return;
           }
         } else {
-          this.$message({message: "收款地址" + index + "错误：长度不够!", type: 'error', duration: 3000});
+          this.$message({
+            message: this.$t('transfer.transfer2') + index + this.$t('oneTo.oneTo6'),
+            type: 'error',
+            duration: 3000
+          });
           this.isSubmintForm = true;
           return;
         }
@@ -190,7 +215,11 @@
       amountChange(index) {
         let patrn = new RegExp("^([1-9][\\d]{0,20}|0)(\\.[\\d]{1,8})?$");
         if (!patrn.exec(this.oneToMoreForm.toList[index].amount)) {
-          this.$message({message: "金额" + index + "错误：金额只能为数字并且小数点前后最多八位", type: 'error', duration: 3000});
+          this.$message({
+            message: this.$t('public.amount') + index + this.$t('oneTo.oneTo7'),
+            type: 'error',
+            duration: 3000
+          });
           this.isSubmintForm = true;
           return;
         }
@@ -247,12 +276,16 @@
       submitForm() {
         for (let item in this.oneToMoreForm.toList) {
           if (!this.oneToMoreForm.toList[item].toAddress || !this.oneToMoreForm.toList[item].amount) {
-            this.$message({message: "收款地址/金额" + item + "不能为空", type: 'error', duration: 3000});
+            this.$message({
+              message: this.$t('oneTo.oneTo8') + item + this.$t('oneTo.oneTo9'),
+              type: 'error',
+              duration: 3000
+            });
             return;
           }
         }
         if (Number(Minus(this.accontInfo.balance, this.total)) < 0) {
-          this.$message({message: "对不起，您余额不足!", type: 'error', duration: 3000});
+          this.$message({message: this.$t('oneTo.oneTo10'), type: 'error', duration: 3000});
           return;
         }
         this.oneToMoreDialog = true;
@@ -393,7 +426,7 @@
 <style lang="less">
   .one_to {
     .one_to_form {
-      margin: 0 auto 100px;
+      margin: 0 auto 80px;
       .to_list {
         margin: 0 0 0 0;
         .el-form-item__label {

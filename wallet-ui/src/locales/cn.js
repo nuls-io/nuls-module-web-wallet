@@ -83,6 +83,9 @@ const cn = {
     "err3": "获取账户余额异常:",
     "err4": "跨链交易失败:",
 
+    "developers":"开发者：",
+    "sponsoredAddress":"赞助地址：",
+
   },
 
   "status": {
@@ -1064,6 +1067,41 @@ const cn = {
     "locking13":"请输入正确的NULS地址",
     "locking14":"金额不能为空",
     "locking15":"请输入正确的金额（小数点后最多八位）"
+  },
+
+  "oneTo":{
+    "oneTo0":"oneTo",
+    "oneTo1":"可以转多个地址",
+    "oneTo2":"小计",
+    "oneTo3":"转账信息确认",
+    "oneTo4":"错误：格式错误!",
+    "oneTo5":"错误：地址类型错误（只支持NULS主网地址）!",
+    "oneTo6":"错误：长度不够!",
+    "oneTo7":"错误：金额只能为数字并且小数点前后最多八位",
+    "oneTo8":"收款地址/金额",
+    "oneTo9":"不能为空",
+    "oneTo10":"对不起，您余额不足!",
+    "oneTo":"oneTo",
+  },
+
+  "application": {
+    "application0": "团队开发",
+    "application1": "社区开发",
+    "application2": "社区治理",
+    "application3": "NULS社区治理工具，1NULS=1票",
+    "application4": "进入",
+    "application5": "SCO平台，用NULS挖新项目Token",
+    "application6": "浏览器",
+    "application7": "您想要看到NULS网络上的信息，在这里都能找到",
+    "application8": "NULS的移动端钱包（使用Google play的用户可下载）",
+    "application9": "NULS的移动端钱包（所有Android用户均可下载使用）",
+    "application10": "NULS猜数字",
+    "application11": "基于NULS随机数开发的猜数游戏",
+    "application12": "可锁定NULS交易",
+    "application13": "可自定义锁定时间的NULS转账交易",
+    "application14": "一对多转账交易",
+    "application15": "可以一对多转账交易支持导入",
+    "application": "application",
   },
   ...zhLocale
 };

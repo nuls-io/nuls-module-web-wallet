@@ -83,6 +83,9 @@ const en = {
     "err3": "Obtain account balance exceptions:",
     "err4": "Cross-Chain Trading Failure: ",
 
+    "developers":"Developers：",
+    "sponsoredAddress":"Sponsored Address：",
+
   },
 
   "status": {
@@ -1060,6 +1063,41 @@ const en = {
     "locking13": "Please enter the correct NULS address",
     "locking14": "The amount cannot be empty",
     "locking15": "Please enter the correct amount (up to eight decimal places)"
+  },
+
+  "oneTo":{
+    "oneTo0":"oneTo",
+    "oneTo1":"You can go to multiple addresses",
+    "oneTo2":"Subtotal",
+    "oneTo3":"Confirmation of transfer information",
+    "oneTo4":"Error: format error!",
+    "oneTo5":"Error: Wrong address type (NULS master network addresses only supported)!",
+    "oneTo6":"Error: not long enough!",
+    "oneTo7":"Error: the amount can only be a number with a maximum of eight decimal places",
+    "oneTo8":"Collection address/amount",
+    "oneTo9":"Can't be empty",
+    "oneTo10":"Sorry, your balance is not enough!",
+    "oneTo":"oneTo",
+  },
+
+  "application": {
+    "application0": "Team development",
+    "application1": "Community development",
+    "application2": "Community governance",
+    "application3": "NULS Community Governance tool. 1NULS=1 vote",
+    "application4": "Go",
+    "application5": "SCO platform, new project Token dug with NULS",
+    "application6": "Browser",
+    "application7": "Everything you want to see on the NULS network can be found here",
+    "application8": "NULS Mobile Wallet (downloadable for Google Play users)",
+    "application9": "NULS Mobile Wallet (downloadable for all Android users)",
+    "application10": "NULS guess Numbers",
+    "application11": "A guessing game based on NULS random Numbers",
+    "application12": "NULS transactions can locked",
+    "application13": "NULS transfer transactions that can be customized to lock in time",
+    "application14": "One to many transfer",
+    "application15": "Can support import for one to many transfer transactions",
+    "application": "application",
   },
   ...enLocale
 

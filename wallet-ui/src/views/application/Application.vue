@@ -1,60 +1,60 @@
 <template>
   <div class="w1200 apps">
 
-    <div class="cb titles" style="margin-top: 40px">团队开发</div>
+    <div class="cb titles" style="margin-top: 40px">{{$t('application.application0')}}</div>
     <ul class="cb">
       <li>
         <img src="./../../assets/img/logo.svg"/>
-        <p class="title">社区治理</p>
-        <p class="info">NULS社区治理工具，1NULS=1票</p>
-        <p class="go click" @click="toUrl('nuls','https://gov.nuls.io/',1)">进入></p>
+        <p class="title">{{$t('application.application2')}}</p>
+        <p class="info">{{$t('application.application3')}}</p>
+        <p class="go click" @click="toUrl('nuls','https://gov.nuls.io/',1)">{{$t('application.application4')}}></p>
       </li>
       <li>
         <img src="./../../assets/img/logo.svg"/>
         <p class="title">POCM</p>
-        <p class="info">SCO平台，用NULS挖新项目Token</p>
-        <p class="go click" @click="toUrl('nuls','https://pocm.nuls.io/',1)">进入></p>
+        <p class="info">{{$t('application.application5')}}</p>
+        <p class="go click" @click="toUrl('nuls','http://beta.wallet.nuls.io/pocm',1)">{{$t('application.application4')}}></p>
       </li>
       <li>
         <img src="./../../assets/img/logo.svg"/>
-        <p class="title">浏览器</p>
-        <p class="info">您想要看到NULS网络上的信息，在这里都能找到</p>
-        <p class="go click" @click="toUrl('nuls',explorerUrl,1)">进入></p>
+        <p class="title">{{$t('application.application6')}}</p>
+        <p class="info">{{$t('application.application7')}}</p>
+        <p class="go click" @click="toUrl('nuls',explorerUrl,1)">{{$t('application.application4')}}></p>
       </li>
       <li>
         <img src="./../../assets/img/logo.svg"/>
         <p class="title">Google play Nabox</p>
-        <p class="info">NULS的移动端钱包（使用Google play的用户可下载）</p>
+        <p class="info">{{$t('application.application8')}}</p>
         <p class="go click" @click="toUrl('nuls','https://play.google.com/store/apps/details?id=com.nuls.nabox',1)">
-          进入></p>
+          {{$t('application.application4')}}></p>
       </li>
       <li>
         <img src="./../../assets/img/logo.svg"/>
         <p class="title">Nabox</p>
-        <p class="info">NULS的移动端钱包（所有Android用户均可下载使用）</p>
-        <p class="go click" @click="toUrl('nuls','http://nabox.io',1)">进入></p>
+        <p class="info">{{$t('application.application9')}}</p>
+        <p class="go click" @click="toUrl('nuls','http://nabox.io',1)">{{$t('application.application4')}}></p>
       </li>
     </ul>
 
-    <div class="cb titles">社区开发</div>
+    <div class="cb titles">{{$t('application.application1')}}</div>
     <ul>
       <li>
         <img src="./../../assets/img/logo.svg"/>
-        <p class="title">NULS猜数字</p>
-        <p class="info">基于NULS随机数开发的猜数游戏</p>
-        <p class="go click" @click="toUrl('guessNumber','',0)">进入></p>
+        <p class="title">{{$t('application.application10')}}</p>
+        <p class="info">{{$t('application.application11')}}</p>
+        <p class="go click" @click="toUrl('guessNumber','',0)">{{$t('application.application4')}}></p>
       </li>
       <li>
         <img src="./../../assets/img/logo.svg"/>
-        <p class="title">可锁定NULS交易</p>
-        <p class="info">可自定义锁定时间的NULS转账交易</p>
-        <p class="go click" @click="toUrl('lockedTransfer','',0)">进入></p>
+        <p class="title">{{$t('application.application12')}}</p>
+        <p class="info">{{$t('application.application13')}}</p>
+        <p class="go click" @click="toUrl('lockedTransfer','',0)">{{$t('application.application4')}}></p>
       </li>
       <li>
         <img src="./../../assets/img/logo.svg"/>
-        <p class="title">一对多转账交易</p>
-        <p class="info">可以一对多转账交易支持导入</p>
-        <p class="go click" @click="toUrl('oneToMore','',0)">进入></p>
+        <p class="title">{{$t('application.application14')}}</p>
+        <p class="info">{{$t('application.application15')}}</p>
+        <p class="go click" @click="toUrl('oneToMore','',0)">{{$t('application.application4')}}></p>
       </li>
     </ul>
 
