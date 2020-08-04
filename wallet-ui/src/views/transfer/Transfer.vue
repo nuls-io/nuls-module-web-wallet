@@ -663,13 +663,21 @@
         this.transferDiolog = false;
         this.transferLoading = true;
         this.balanceInfo = await this.getNulsBalance(this.assetsInfo.chainId, this.assetsInfo.assetId, this.transferForm.fromAddress);
+        //console.log(this.balanceInfo);
 
-        let transferInfo = this.transferForm;
-        transferInfo.toAddress = this.aliasToAddress ? this.aliasToAddress : this.transferForm.toAddress;
-        transferInfo.amount = timesDecimals0(transferInfo.amount, this.assetsInfo.decimals).toString();
-        transferInfo.fee = timesDecimals0(transferInfo.fee, this.defaultInfo.defaultAsset.decimals).toString();
-        transferInfo.assetsChainId = this.assetsInfo.chainId;
-        transferInfo.assetsId = this.assetsInfo.assetId;
+        let transferInfo = {
+          fromAddress: this.transferForm.fromAddress,
+          toAddress: this.aliasToAddress ? this.aliasToAddress : this.transferForm.toAddress,
+          assetType: this.transferForm.assetType,
+          amount: Number(timesDecimals0(this.transferForm.amount, this.assetsInfo.decimals)),
+          gas: this.transferForm.gas,
+          price: this.transferForm.price,
+          remarks: this.transferForm.remarks,
+          fee: Number(timesDecimals0(this.transferForm.fee, this.defaultInfo.defaultAsset.decimals)),
+          assetsChainId: this.assetsInfo.chainId,
+          assetsId: this.assetsInfo.assetId,
+        };
+        //console.log(transferInfo);
 
         let inOrOutputs = {};
         let tAssemble = [];

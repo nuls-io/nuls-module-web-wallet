@@ -6,13 +6,18 @@ Vue.use(Router);
 export default new Router({
   mode: 'history',
   routes: [
-    {
+    /*{
       path: '*',
+      name: 'home',
+      component: resolve => require(['@/views/Home.vue'], resolve)
+    },*/
+    {
+      path: '/',
       name: 'home',
       component: resolve => require(['@/views/Home.vue'], resolve)
     },
     {
-      path: '/',
+      path: '/wallet',
       name: 'home',
       component: resolve => require(['@/views/Home.vue'], resolve)
     },
@@ -121,6 +126,21 @@ export default new Router({
       path: '/application',
       name: 'application',
       component: resolve => require(['@/views/application/Application.vue'], resolve)
+    },
+    {
+      path: '/application/guessNumber',
+      name: 'guessNumber',
+      component: resolve => require(['@/views/application/guessNumber/GuessNumber.vue'], resolve)
+    },
+    {
+      path: '/application/lockedTransfer',
+      name: 'lockedTransfer',
+      component: resolve => require(['@/views/application/lockedTransfer/LockedTransfer.vue'], resolve)
+    },
+    {
+      path: '/application/oneToMore',
+      name: 'oneToMore',
+      component: resolve => require(['@/views/application/oneToMore/OneToMore.vue'], resolve)
     }
   ]
 })

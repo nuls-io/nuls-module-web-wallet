@@ -1,32 +1,156 @@
 <template>
   <div class="w1200 apps">
-    <el-row :gutter="20">
-      <el-col :span="8">
-        <div><img src=""/></div>
-        <h2 class="tc">社区治理</h2>
-        <p></p>
-      </el-col>
-      <el-col :span="8">
-        <div><img src=""/></div>
-        <h2 class="tc">链工厂</h2>
-        <p></p>
-      </el-col>
-      <el-col :span="8">
-        <div><img src=""/></div>
-        <h2 class="tc">pocm</h2>
-        <p></p>
-      </el-col>
 
-    </el-row>
+    <div class="cb titles" style="margin-top: 40px">{{$t('application.application0')}}</div>
+    <ul class="cb">
+      <li>
+        <img src="./../../assets/img/logo.svg"/>
+        <p class="title">{{$t('application.application2')}}</p>
+        <p class="info">{{$t('application.application3')}}</p>
+        <p class="go click" @click="toUrl('nuls','https://gov.nuls.io/',1)">{{$t('application.application4')}}></p>
+      </li>
+      <li>
+        <img src="./../../assets/img/logo.svg"/>
+        <p class="title">POCM</p>
+        <p class="info">{{$t('application.application5')}}</p>
+        <p class="go click" @click="toUrl('nuls','http://beta.wallet.nuls.io/pocm',1)">{{$t('application.application4')}}></p>
+      </li>
+      <li>
+        <img src="./../../assets/img/logo.svg"/>
+        <p class="title">{{$t('application.application6')}}</p>
+        <p class="info">{{$t('application.application7')}}</p>
+        <p class="go click" @click="toUrl('nuls',explorerUrl,1)">{{$t('application.application4')}}></p>
+      </li>
+      <li>
+        <img src="./../../assets/img/logo.svg"/>
+        <p class="title">Google play Nabox</p>
+        <p class="info">{{$t('application.application8')}}</p>
+        <p class="go click" @click="toUrl('nuls','https://play.google.com/store/apps/details?id=com.nuls.nabox',1)">
+          {{$t('application.application4')}}></p>
+      </li>
+      <li>
+        <img src="./../../assets/img/logo.svg"/>
+        <p class="title">Nabox</p>
+        <p class="info">{{$t('application.application9')}}</p>
+        <p class="go click" @click="toUrl('nuls','http://nabox.io',1)">{{$t('application.application4')}}></p>
+      </li>
+    </ul>
+
+    <div class="cb titles">{{$t('application.application1')}}</div>
+    <ul>
+      <li>
+        <img src="./../../assets/img/logo.svg"/>
+        <p class="title">{{$t('application.application10')}}</p>
+        <p class="info">{{$t('application.application11')}}</p>
+        <p class="go click" @click="toUrl('guessNumber','',0)">{{$t('application.application4')}}></p>
+      </li>
+      <li>
+        <img src="./../../assets/img/logo.svg"/>
+        <p class="title">{{$t('application.application12')}}</p>
+        <p class="info">{{$t('application.application13')}}</p>
+        <p class="go click" @click="toUrl('lockedTransfer','',0)">{{$t('application.application4')}}></p>
+      </li>
+      <li>
+        <img src="./../../assets/img/logo.svg"/>
+        <p class="title">{{$t('application.application14')}}</p>
+        <p class="info">{{$t('application.application15')}}</p>
+        <p class="go click" @click="toUrl('oneToMore','',0)">{{$t('application.application4')}}></p>
+      </li>
+    </ul>
+
+    <div class="cb" style="height: 50px"></div>
   </div>
 </template>
 
 <script>
+  import {addressInfo, connectToExplorer} from '@/api/util'
+  import {explorerUrl} from '@/config.js'
+
   export default {
-    name: "index"
+    data() {
+      return {
+        explorerUrl: explorerUrl,
+        addressInfo: '', //默认账户信息
+      };
+    },
+    created() {
+      this.addressInfo = addressInfo(1);
+    },
+    mounted() {
+    },
+    watch: {},
+    methods: {
+
+      /**
+       * 连接跳转
+       * @param name
+       * @param parameter 参数
+       * @param type 类型 0:路由跳转 1:外部链接
+       */
+      toUrl(name, parameter, type) {
+        if (type === 0) {
+          this.$router.push({
+            name: name
+          })
+        } else {
+          connectToExplorer(name, parameter)
+        }
+
+      },
+    },
+
   }
 </script>
 
-<style scoped>
+<style lang="less">
+  .apps {
+    .titles {
+      font-size: 16px;
+      line-height: 30px;
+      height: 30px;
+      text-align: left;
+      font-weight: bold;
+      color: #17202e;
+      border-bottom: 1px solid #c0c4cc;
+      margin: 10px 0 20px 0;
+    }
+    ul {
+      li {
+        width: 250px;
+        float: left;
+        height: 240px;
+        border: 1px solid #c0c4cc;
+        margin: 0 66px 40px 0;
+        &:nth-child(4n) {
+          margin: 0 0 40px 0;
+        }
+        img {
+          width: 200px;
+          height: 90px;
+          margin: 10px 20px;
+          text-align: center;
+        }
+        p {
+          padding: 0 10px;
+          line-height: 30px;
+        }
+        .title {
+          text-align: left;
+          font-weight: bold;
+          font-size: 14px;
+          height: 30px;
+        }
+        .info {
+          font-size: 12px;
+          line-height: 20px;
+          height: 50px;
+        }
+        .go {
+          text-align: right;
+          font-size: 14px;
+        }
+      }
+    }
+  }
 
 </style>

@@ -461,3 +461,23 @@ export function htmlRestore(str) {
   return s;
 }
 
+/**
+ * @disc: 判断pc和手机端
+ * @date: 2020-05-29 16:51
+ * @author: Wave
+ */
+export function IsPC() {
+  let userAgentInfo = navigator.userAgent;
+  let Agents = ["Android", "iPhone",
+    "SymbianOS", "Windows Phone",
+    "iPad", "iPod"];
+  let flag = true;
+  for (let v = 0; v < Agents.length; v++) {
+    if (userAgentInfo.indexOf(Agents[v]) > 0) {
+      flag = false;
+      break;
+    }
+  }
+  return flag;
+}
+
