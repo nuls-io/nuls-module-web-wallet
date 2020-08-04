@@ -403,9 +403,9 @@
               for (let itme of response.result.list) {
                 itme.account = itme.tokenSymbol;
                 itme.type = 2;
-                itme.total = Number(timesDecimals(itme.balance, itme.decimals)).toString();
                 itme.locking = itme.lockedBalance ? Number(timesDecimals(itme.lockedBalance, itme.decimals)).toString() : 0;
                 itme.balance = Number(timesDecimals(itme.balance, itme.decimals)).toString();
+                itme.total = Number(Plus(itme.balance, itme.locking)).toString();
                 itme.contractAddresss = superLong(itme.contractAddress, 6);
               }
             }
