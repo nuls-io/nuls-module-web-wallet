@@ -6,11 +6,11 @@ Vue.use(Router);
 export default new Router({
   mode: 'history',
   routes: [
-    /*{
+    {
       path: '*',
       name: 'home',
       component: resolve => require(['@/views/Home.vue'], resolve)
-    },*/
+    },
     {
       path: '/',
       name: 'home',
@@ -122,7 +122,7 @@ export default new Router({
       name: 'contact',
       component: resolve => require(['@/views/set/Contact.vue'], resolve)
     },
-    {
+    /*{
       path: '/application',
       name: 'application',
       component: resolve => require(['@/views/application/Application.vue'], resolve)
@@ -141,6 +141,6 @@ export default new Router({
       path: '/application/oneToMore',
       name: 'oneToMore',
       component: resolve => require(['@/views/application/oneToMore/OneToMore.vue'], resolve)
-    }
+    }*/
   ]
 })
