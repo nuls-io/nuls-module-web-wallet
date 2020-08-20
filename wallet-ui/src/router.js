@@ -17,6 +17,11 @@ export default new Router({
       component: resolve => require(['@/views/Home.vue'], resolve)
     },
     {
+      path: '/wallet',
+      name: 'home',
+      component: resolve => require(['@/views/Home.vue'], resolve)
+    },
+    {
       path: '/wallet/frozenList',
       name: 'frozenList',
       component: resolve => require(['@/views/users/FrozenList.vue'], resolve)
@@ -117,10 +122,25 @@ export default new Router({
       name: 'contact',
       component: resolve => require(['@/views/set/Contact.vue'], resolve)
     },
-    {
+    /*{
       path: '/application',
       name: 'application',
       component: resolve => require(['@/views/application/Application.vue'], resolve)
-    }
+    },
+    {
+      path: '/application/guessNumber',
+      name: 'guessNumber',
+      component: resolve => require(['@/views/application/guessNumber/GuessNumber.vue'], resolve)
+    },
+    {
+      path: '/application/lockedTransfer',
+      name: 'lockedTransfer',
+      component: resolve => require(['@/views/application/lockedTransfer/LockedTransfer.vue'], resolve)
+    },
+    {
+      path: '/application/oneToMore',
+      name: 'oneToMore',
+      component: resolve => require(['@/views/application/oneToMore/OneToMore.vue'], resolve)
+    }*/
   ]
 })

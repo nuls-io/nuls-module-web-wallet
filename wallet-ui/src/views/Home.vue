@@ -98,11 +98,7 @@
           </el-table-column>
           <el-table-column :label="$t('tab.tab3')" width="230">
             <template slot-scope="scope">
-              <span class="click" @click="toUrl('frozenList',scope.row)"
-                    v-show="scope.row.locking !== '--' && scope.row.locking !==0 ">
-                {{scope.row.locking}}
-              </span>
-              <span v-show="scope.row.locking === '--' || scope.row.locking ===0">
+              <span v-show="scope.row.locking !== '--' && scope.row.locking !==0 ">
                 {{scope.row.locking}}
               </span>
             </template>
@@ -407,9 +403,9 @@
               for (let itme of response.result.list) {
                 itme.account = itme.tokenSymbol;
                 itme.type = 2;
-                itme.total = Number(timesDecimals(itme.balance, itme.decimals)).toFixed(3);
-                itme.locking = '--';
-                itme.balance = Number(timesDecimals(itme.balance, itme.decimals)).toFixed(3);
+                itme.locking = itme.lockedBalance ? Number(timesDecimals(itme.lockedBalance, itme.decimals)).toString() : 0;
+                itme.balance = Number(timesDecimals(itme.balance, itme.decimals)).toString();
+                itme.total = Number(Plus(itme.balance, itme.locking)).toString();
                 itme.contractAddresss = superLong(itme.contractAddress, 6);
               }
             }
