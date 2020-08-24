@@ -98,9 +98,10 @@
           </el-table-column>
           <el-table-column :label="$t('tab.tab3')" width="230">
             <template slot-scope="scope">
-              <span v-show="scope.row.locking !== '--' && scope.row.locking !==0 ">
+              <!--<span v-show="scope.row.locking !== '&#45;&#45;' && scope.row.locking !==0 ">
                 {{scope.row.locking}}
-              </span>
+              </span>-->
+              <span>{{scope.row.locking}}</span>
             </template>
           </el-table-column>
           <el-table-column fixed="right" :label="$t('public.operation')" align="center" min-width="120">
@@ -151,7 +152,7 @@
 <script>
   import axios from 'axios'
   import QRCode from 'qrcodejs2'
-  import {timesDecimals, copys, addressInfo, Times, superLong, connectToExplorer, Plus} from '@/api/util'
+  import {timesDecimals, copys, addressInfo, Times, superLong, connectToExplorer, Plus, Minus} from '@/api/util'
   import {RUN_PATTERN} from '@/config'
 
   export default {
@@ -403,9 +404,15 @@
               for (let itme of response.result.list) {
                 itme.account = itme.tokenSymbol;
                 itme.type = 2;
+                //锁定
                 itme.locking = itme.lockedBalance ? Number(timesDecimals(itme.lockedBalance, itme.decimals)).toString() : 0;
-                itme.balance = Number(timesDecimals(itme.balance, itme.decimals)).toString();
-                itme.total = Number(Plus(itme.balance, itme.locking)).toString();
+                /*itme.balance = Number(timesDecimals(itme.balance, itme.decimals)).toString();
+                itme.total = Number(Plus(itme.balance, itme.locking)).toString();*/
+                //总额
+                itme.total = Number(timesDecimals(itme.balance, itme.decimals)).toString();
+                //可用
+                itme.balance =Number(timesDecimals(Minus(itme.balance, itme.lockedBalance), itme.decimals)).toString();
+
                 itme.contractAddresss = superLong(itme.contractAddress, 6);
               }
             }
