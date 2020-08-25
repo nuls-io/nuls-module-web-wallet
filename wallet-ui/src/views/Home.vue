@@ -152,7 +152,7 @@
 <script>
   import axios from 'axios'
   import QRCode from 'qrcodejs2'
-  import {timesDecimals, copys, addressInfo, Times, superLong, connectToExplorer, Plus, Minus} from '@/api/util'
+    import {timesDecimals, copys, addressInfo, Times, superLong, connectToExplorer, Plus, Minus,divisionDecimals} from '@/api/util'
   import {RUN_PATTERN} from '@/config'
 
   export default {
@@ -405,13 +405,13 @@
                 itme.account = itme.tokenSymbol;
                 itme.type = 2;
                 //锁定
-                itme.locking = itme.lockedBalance ? Number(timesDecimals(itme.lockedBalance, itme.decimals)).toString() : 0;
+                itme.locking = itme.lockedBalance ? divisionDecimals(itme.lockedBalance, itme.decimals) : 0;
                 /*itme.balance = Number(timesDecimals(itme.balance, itme.decimals)).toString();
                 itme.total = Number(Plus(itme.balance, itme.locking)).toString();*/
                 //总额
-                itme.total = Number(timesDecimals(itme.balance, itme.decimals)).toString();
+                itme.total = divisionDecimals(itme.balance, itme.decimals);
                 //可用
-                itme.balance =Number(timesDecimals(Minus(itme.balance, itme.lockedBalance), itme.decimals)).toString();
+                itme.balance = divisionDecimals(Minus(itme.balance, itme.lockedBalance), itme.decimals);
 
                 itme.contractAddresss = superLong(itme.contractAddress, 6);
               }
@@ -447,10 +447,10 @@
             this.crossLinkDataLoading = false;
             if (response.hasOwnProperty("result")) {
               for (let item of response.result) {
-                item.totalBalance = timesDecimals(item.totalBalance, item.decimals);
-                item.balance = timesDecimals(item.balance, item.decimals);
-                item.timeLock = timesDecimals(item.timeLock, item.decimals);
-                item.consensusLock = timesDecimals(item.consensusLock, item.decimals);
+                item.totalBalance = divisionDecimals(item.totalBalance, item.decimals);
+                item.balance = divisionDecimals(item.balance, item.decimals);
+                item.timeLock = divisionDecimals(item.timeLock, item.decimals);
+                item.consensusLock = divisionDecimals(item.consensusLock, item.decimals);
                 item.locking = Plus(item.consensusLock, item.timeLock).toString();
               }
               this.crossLinkData = response.result;

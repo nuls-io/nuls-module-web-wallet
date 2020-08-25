@@ -143,7 +143,8 @@
     addressInfo,
     passwordVerification,
     htmlEncode,
-    getRamNumber
+    getRamNumber,
+    divisionDecimals
   } from '@/api/util'
   import Password from '@/components/PasswordBar'
 
@@ -327,7 +328,7 @@
                   chainId: chainId,
                   assetId: 1,
                   status: itme.status,
-                  balance: timesDecimals(Minus(itme.balance, itme.lockedBalance), itme.decimals),
+                  balance: divisionDecimals(Minus(itme.balance, itme.lockedBalance), itme.decimals),
                   contractAddress: itme.contractAddress,
                   decimals: itme.decimals
                 })

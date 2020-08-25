@@ -80,6 +80,21 @@ export function timesDecimals(nu, decimals) {
 }
 
 /**
+ * 数字除以精度系数
+ */
+export function divisionDecimals(nu, decimals = '') {
+  let newInfo = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')) : '';
+  let newDecimals = decimals ? decimals : newInfo.defaultAsset.decimals;
+  if (decimals === 0) {
+    return nu
+  }
+  let newNu = new BigNumber(Division(nu, Power(newDecimals)).toString());
+  return newNu.toFixed()
+  // console.log(newNu, nu,'===--===',decimals)
+  // return newNu.toFormat().replace(/[,]/g, '');
+}
+
+/**
  * 数字乘以精度系数
  */
 export function timesDecimals0(nu, decimals) {
