@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray transfer" v-loading="transferLoading">
+  <div class="bg-gray transfer" v-loading="transferLoading" element-loading-spinner="el-icon-loading">
     <div class="title">{{$t('nav.transfer')}}</div>
     <div class="w1200 transfer_info">
       <el-form :model="transferForm" status-icon :rules="transferRules" ref="transferForm" class=" w630 transfer_form">
@@ -308,9 +308,9 @@
           .catch((error) => {
             console.log("getAccountLedgerList:" + error);
             this.assetsListLoading = false;
-            setTimeout(() => {
+            /*setTimeout(() => {
               this.getCapitalListByAddress(address)
-            }, 800);
+            }, 800);*/
             return;
           });
         ///console.log(basicAssets);
@@ -337,9 +337,9 @@
           })
           .catch((error) => {
             console.log("getAccountTokens:" + error);
-            setTimeout(() => {
+            /*setTimeout(() => {
               this.getCapitalListByAddress(address)
-            }, 800);
+            }, 800);*/
             return;
           });
 
@@ -366,9 +366,9 @@
           })
           .catch((err) => {
             console.log("getAccountCrossLedgerList:" + err);
-            setTimeout(() => {
+            /*setTimeout(() => {
               this.getCapitalListByAddress(address)
-            }, 800);
+            }, 800);*/
             return;
           });
         //console.log(crossAssets);

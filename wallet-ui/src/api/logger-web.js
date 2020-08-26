@@ -23,7 +23,7 @@ function debug(data) {
  * @param {any} data 日志数据
  */
 function info(data) {
-  console.log(data);
+  //console.log(data);
 }
 
 /**
