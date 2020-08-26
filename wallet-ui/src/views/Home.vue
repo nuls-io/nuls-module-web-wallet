@@ -7,7 +7,7 @@
       <i class="iconfont iconerweima clicks" @click="showCode"></i>
     </h3>
 
-    <div class="w1200 overview bg-white" v-loading="overviewLoading">
+    <div class="w1200 overview bg-white" v-loading="overviewLoading" element-loading-spinner="el-icon-loading">
       <div class="title">
         <img src="./../assets/img/nuls-logo.svg"/>{{symbol.toLocaleUpperCase()}}
         <span class="fr click" @click="toUrl('txList',addressNULSAssets)">{{$t('home.home2')}}</span>
@@ -43,7 +43,8 @@
         {{$t('home.home3')}}
       </div>
       <div class="home_tabs" style="padding: 0">
-        <el-table :data="crossLinkData" stripe border v-loading="txListDataLoading">
+        <el-table :data="crossLinkData" stripe border v-loading="txListDataLoading"
+                  element-loading-spinner="el-icon-loading">
           <el-table-column :label="$t('tab.tab0')" align="center" width="200">
             <template slot-scope="scope">
               <div style="margin: 0 0 0 30%">
@@ -84,7 +85,8 @@
         <img src="./../assets/img/contract-logo.svg" style="width: 20px;margin-top:11px;"/>{{$t('tab.tab25')}}
       </div>
       <div class="home_tabs">
-        <el-table :data="addressAssetsData" stripe border v-loading="assetsListLoading">
+        <el-table :data="addressAssetsData" stripe border v-loading="assetsListLoading"
+                  element-loading-spinner="el-icon-loading">
           <el-table-column :label="$t('nodeService.nodeService2')" align="center" width="200">
             <template slot-scope="scope">
               <span class="click td" @click="toUrl('contractsInfo',scope.row.contractAddress,1)">
@@ -423,7 +425,7 @@
             sessionStorage.setItem('assetsList', JSON.stringify(newList));
             this.assetsListLoading = false;
           }).catch((error) => {
-            this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
+            //this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
             console.log(error);
           })
       },
@@ -450,7 +452,7 @@
               this.txListDataLoading = false;
             }
           }).catch((err) => {
-            this.getAccountCrossLedgerList(address);
+            //this.getAccountCrossLedgerList(address);
             console.log(err);
           })
       },
