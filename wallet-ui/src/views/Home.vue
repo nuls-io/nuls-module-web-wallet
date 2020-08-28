@@ -43,8 +43,7 @@
         {{$t('home.home3')}}
       </div>
       <div class="home_tabs" style="padding: 0">
-        <el-table :data="crossLinkData" stripe border v-loading="txListDataLoading"
-                  element-loading-spinner="el-icon-loading">
+        <el-table :data="crossLinkData" stripe border v-loading="txListDataLoading" element-loading-spinner="el-icon-loading">
           <el-table-column :label="$t('tab.tab0')" align="center" width="200">
             <template slot-scope="scope">
               <div style="margin: 0 0 0 30%">
@@ -85,8 +84,7 @@
         <img src="./../assets/img/contract-logo.svg" style="width: 20px;margin-top:11px;"/>{{$t('tab.tab25')}}
       </div>
       <div class="home_tabs">
-        <el-table :data="addressAssetsData" stripe border v-loading="assetsListLoading"
-                  element-loading-spinner="el-icon-loading">
+        <el-table :data="addressAssetsData" stripe border v-loading="assetsListLoading" element-loading-spinner="el-icon-loading">
           <el-table-column :label="$t('nodeService.nodeService2')" align="center" width="200">
             <template slot-scope="scope">
               <span class="click td" @click="toUrl('contractsInfo',scope.row.contractAddress,1)">
@@ -100,9 +98,10 @@
           </el-table-column>
           <el-table-column :label="$t('tab.tab3')" width="230">
             <template slot-scope="scope">
-              <span v-show="scope.row.locking !== '--' && scope.row.locking !==0 ">
+              <!--<span v-show="scope.row.locking !== '&#45;&#45;' && scope.row.locking !==0 ">
                 {{scope.row.locking}}
-              </span>
+              </span>-->
+              <span>{{scope.row.locking}}</span>
             </template>
           </el-table-column>
           <el-table-column fixed="right" :label="$t('public.operation')" align="center" min-width="120">
@@ -153,7 +152,7 @@
 <script>
   import axios from 'axios'
   import QRCode from 'qrcodejs2'
-  import {timesDecimals, copys, addressInfo, Times, superLong, connectToExplorer, Plus} from '@/api/util'
+    import {timesDecimals, copys, addressInfo, Times, superLong, connectToExplorer, Plus, Minus,divisionDecimals} from '@/api/util'
   import {RUN_PATTERN} from '@/config'
 
   export default {
@@ -405,9 +404,15 @@
               for (let itme of response.result.list) {
                 itme.account = itme.tokenSymbol;
                 itme.type = 2;
-                itme.total = Number(timesDecimals(itme.balance, itme.decimals)).toString();
-                itme.locking = itme.lockedBalance ? Number(timesDecimals(itme.lockedBalance, itme.decimals)).toString() : 0;
-                itme.balance = Number(timesDecimals(itme.balance, itme.decimals)).toString();
+                //锁定
+                itme.locking = itme.lockedBalance ? divisionDecimals(itme.lockedBalance, itme.decimals) : 0;
+                /*itme.balance = Number(timesDecimals(itme.balance, itme.decimals)).toString();
+                itme.total = Number(Plus(itme.balance, itme.locking)).toString();*/
+                //总额
+                itme.total = divisionDecimals(itme.balance, itme.decimals);
+                //可用
+                itme.balance = divisionDecimals(Minus(itme.balance, itme.lockedBalance), itme.decimals);
+
                 itme.contractAddresss = superLong(itme.contractAddress, 6);
               }
             }
@@ -442,10 +447,10 @@
             this.crossLinkDataLoading = false;
             if (response.hasOwnProperty("result")) {
               for (let item of response.result) {
-                item.totalBalance = timesDecimals(item.totalBalance, item.decimals);
-                item.balance = timesDecimals(item.balance, item.decimals);
-                item.timeLock = timesDecimals(item.timeLock, item.decimals);
-                item.consensusLock = timesDecimals(item.consensusLock, item.decimals);
+                item.totalBalance = divisionDecimals(item.totalBalance, item.decimals);
+                item.balance = divisionDecimals(item.balance, item.decimals);
+                item.timeLock = divisionDecimals(item.timeLock, item.decimals);
+                item.consensusLock = divisionDecimals(item.consensusLock, item.decimals);
                 item.locking = Plus(item.consensusLock, item.timeLock).toString();
               }
               this.crossLinkData = response.result;

@@ -7,7 +7,7 @@
         <img src="./../../assets/img/logo.svg"/>
         <p class="title">{{$t('application.application2')}}</p>
         <p class="info">{{$t('application.application3')}}</p>
-        <p class="go click" @click="toUrl('nuls','https://gov.nuls.io/',1)">{{$t('application.application4')}}></p>
+        <p class="go click" @click="toUrl('nuls','http://beta.wallet.nuls.io/gov',1)">{{$t('application.application4')}}></p>
       </li>
       <li>
         <img src="./../../assets/img/logo.svg"/>

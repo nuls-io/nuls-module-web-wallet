@@ -143,7 +143,8 @@
     addressInfo,
     passwordVerification,
     htmlEncode,
-    getRamNumber
+    getRamNumber,
+    divisionDecimals
   } from '@/api/util'
   import Password from '@/components/PasswordBar'
 
@@ -327,7 +328,7 @@
                   chainId: chainId,
                   assetId: 1,
                   status: itme.status,
-                  balance: timesDecimals(itme.balance, itme.decimals),
+                  balance: divisionDecimals(Minus(itme.balance, itme.lockedBalance), itme.decimals),
                   contractAddress: itme.contractAddress,
                   decimals: itme.decimals
                 })
@@ -365,9 +366,9 @@
           })
           .catch((err) => {
             console.log("getAccountCrossLedgerList:" + err);
-            setTimeout(() => {
+            /*setTimeout(() => {
               this.getCapitalListByAddress(address)
-            }, 800);
+            }, 800);*/
             return;
           });
         //console.log(crossAssets);

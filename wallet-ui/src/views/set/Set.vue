@@ -18,7 +18,7 @@
             <font v-if="RUN_DEV"> {{version}}</font>
             <font v-else>Beta-{{version}}</font>
           </li>
-          <li v-show="RUN_PATTERN">
+          <li v-show="false">
             <span>{{$t('public.version1')}}:</span>
             <font v-if="RUN_DEV">{{newVersion}}</font>
             <font v-else>Beta-{{newVersion}}</font>
@@ -57,6 +57,7 @@
   import axios from 'axios'
   import packages from './../../../package'
   import {RUN_PATTERN, RUN_DEV, FILE_URL} from '@/config.js'
+  import openner from "@/api/opener-desktop";
 
   export default {
     data() {
@@ -87,7 +88,8 @@
        * 检查更新
        **/
       async checkUpdate() {
-        this.updateDialogVisible = true;
+        openner('https://github.com/nuls-io/nuls-v2/releases')
+        /*this.updateDialogVisible = true;
         this.tips = {};
         this.downloadPercent = 0;
         const _this = this;
@@ -100,7 +102,7 @@
         });
         _this.$electron.ipcRenderer.on("isUpdateNow", () => {
           _this.$electron.ipcRenderer.send("isUpdateNow");
-        });
+        });*/
       },
 
       /**
