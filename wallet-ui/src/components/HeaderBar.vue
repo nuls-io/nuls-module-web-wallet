@@ -14,7 +14,7 @@
           <el-menu-item index="contract" :disabled="addressList.length === 0 || !nodeServiceInfo.isRunSmartContract">
             {{$t('nav.contracts')}}
           </el-menu-item>
-          <el-menu-item index="application" v-show="false">{{$t('nav.application')}}</el-menu-item>
+          <el-menu-item index="application">{{$t('nav.application')}}</el-menu-item>
         </el-menu>
       </div>
       <div class="tool">

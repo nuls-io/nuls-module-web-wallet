@@ -1,4 +1,3 @@
-
 /**
  * trace级别
  * @kind AnyProcess [任意进程调用]
@@ -22,7 +21,8 @@ function debug(data) {
  * @kind AnyProcess [任意进程调用]
  * @param {any} data 日志数据
  */
-function info(data) {
+function info() {
+//function info(data) {
   //console.log(data);
 }
 
