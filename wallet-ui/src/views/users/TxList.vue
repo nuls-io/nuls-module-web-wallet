@@ -50,7 +50,7 @@
           <el-table-column :label="$t('tab.tab6')" align="center">
             <template slot-scope="scope">
               <span :class="scope.row.transferType === -1 ? 'fred':'fCN'">
-                {{scope.row.amount*scope.row.transferType}}
+                {{scope.row.amount * scope.row.transferType}}
               </span>
             </template>
           </el-table-column>
@@ -186,7 +186,7 @@
        * @param chainId 链ID default：0
        * @param assetId 资产ID default：0
        **/
-      getTxlistByAddress(pageSize, pageRows, address, type, startHigh=-1, endHigh=-1, chainId=0, assetId=0) {
+      getTxlistByAddress(pageSize, pageRows, address, type, startHigh = -1, endHigh = -1, chainId = 0, assetId = 0) {
         //console.log(pageSize, pageRows, address, type, startHigh, endHigh, chainId, assetId);
         this.$post('/', 'getAccountTxs', [pageSize, pageRows, address, type, startHigh, endHigh, Number(chainId), Number(assetId)])
           .then((response) => {
@@ -199,7 +199,8 @@
                 if (item.type === 16) {
                   item.amount = Number(timesDecimals(item.fee.value, item.decimals)).toFixed(3);
                 } else {
-                  item.amount = Number(timesDecimals(item.values, item.decimals)).toFixed(3);
+                  //item.amount = Number(timesDecimals(item.values, item.decimals)).toFixed(3);'
+                  item.amount = item.values / 100000000
                 }
               }
               this.txListData = response.result.list;
