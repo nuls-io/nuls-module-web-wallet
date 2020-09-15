@@ -1003,6 +1003,8 @@ const en = {
     "tips19": "Scan login",
     "tips20": "Scan backup",
     "tips21": "Scan transactions",
+    "tips22":"The asset is not an NRC20 contract asset or is not registered for a cross-chain transaction",
+    "tips23":"There is no transferCrossChain method for this asset",
     "tips": "tips",
   },
 

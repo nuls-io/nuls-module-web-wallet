@@ -1007,6 +1007,8 @@ const cn = {
     "tips19":"扫描登录",
     "tips20":"扫描备份",
     "tips21":"扫描交易",
+    "tips22":"该资产不是NRC20合约资产或没有注册跨链交易",
+    "tips23":"该资产没有transferCrossChain方法",
     "tips":"",
   },
 

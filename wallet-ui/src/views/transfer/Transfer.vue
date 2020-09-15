@@ -208,8 +208,8 @@
               //console.log(this.assetsInfo);
               let contractInfo = await this.contractInfoByContractAddress(this.assetsInfo.contractAddress);
               //console.log(contractInfo);
-              if (!contractInfo.nrc20) {
-                this.$message({message: "该合约资产不是NRC20合约资产暂时不资产跨链交易", type: 'warning', duration: 3000});
+              if (!contractInfo.nrc20 || !contractInfo.crossAsset) {
+                this.$message({message: this.$t('tips.tips22'), type: 'warning', duration: 3000});
                 this.transferForm.amount = '';
                 return;
               }
@@ -217,7 +217,7 @@
               let isCrossChain = contractInfo.methods.findIndex((value) => value.name === 'transferCrossChain');
               //console.log(isCrossChain);
               if (isCrossChain === -1) {
-                this.$message({message: "该合约资产不是NRC20合约资产暂时不资产跨链交易", type: 'error', duration: 3000});
+                this.$message({message: this.$t('tips.tips23'), type: 'error', duration: 3000});
                 this.transferForm.amount = '';
                 return;
               }
