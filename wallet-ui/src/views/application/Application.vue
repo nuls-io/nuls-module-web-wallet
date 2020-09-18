@@ -121,7 +121,7 @@
         width: 250px;
         float: left;
         height: 240px;
-        border: 1px solid #c0c4cc;
+        border: 1px solid #dfe4ef;
         margin: 0 66px 40px 0;
         &:nth-child(4n) {
           margin: 0 0 40px 0;

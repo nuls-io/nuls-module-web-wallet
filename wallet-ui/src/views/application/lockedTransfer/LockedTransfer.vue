@@ -125,9 +125,9 @@
         accontInfo: {}, //账户信息
         transferForm: {
           fromAddress: '',
-          toAddress: 'tNULSeBaMnrs6JKrCy6TQdzYJZkMZJDng7QAsD',
+          toAddress: '',
           assets: 'NULS',
-          amount: '33',
+          amount: '',
           time: '',
           remarks: '',
           fee: 0.001
