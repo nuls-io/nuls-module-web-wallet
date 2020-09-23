@@ -66,7 +66,7 @@
 
 <script>
   import {addressInfo, connectToExplorer} from '@/api/util'
-  import {explorerUrl} from '@/config.js'
+  import {explorerUrl, walletUrl} from '@/config.js'
 
   export default {
     data() {
@@ -102,7 +102,7 @@
         } else {
           if (name === 'community' || name === 'pocm') {
             name = 'nuls';
-            parameter = explorerUrl + parameter
+            parameter = walletUrl + parameter
           }
           connectToExplorer(name, parameter)
         }

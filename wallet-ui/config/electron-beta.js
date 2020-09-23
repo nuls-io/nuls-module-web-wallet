@@ -17,9 +17,12 @@ export const RUN_PATTERN = true;
 export const FILE_URL = 'http://file.wallet.nuls.io/download/test';
 //正式、测试网络的api
 export let API_URL = 'https://beta.wallet.nuls.io/api';
-setInterval(() => {
+setInterval(() = > {
   API_URL = localStorage.hasOwnProperty("url") && localStorage.getItem('url') !== 'undefined' ? JSON.parse(localStorage.getItem("url")).urls : 'https://beta.wallet.nuls.io/api';
-}, 500);
+},
+500
+)
+;
 //请求最迟时间
 export const API_TIME = '8000';
 
@@ -111,3 +114,5 @@ export const defaultData = RUN_PATTERN ? electronData : explorerData;
 export const defaultUrl = RUN_PATTERN ? electronData[0] : explorerData[0];
 //默认浏览器地址（跳转地址）
 export const explorerUrl = 'http://beta.nulscan.io/';
+//默认钱包地址（跳转地址）
+export const walletUrl = 'http://beta.wallet.nuls.io/';

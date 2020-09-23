@@ -109,3 +109,6 @@ export const defaultData = RUN_PATTERN ? electronData : explorerData;
 export const defaultUrl = RUN_PATTERN ? electronData[0] : explorerData[0];
 //默认浏览器地址（跳转地址）
 export const explorerUrl = 'http://beta.nulscan.io/';
+//默认钱包地址（跳转地址）
+export const walletUrl = 'http://beta.wallet.nuls.io/';
+
