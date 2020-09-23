@@ -83,8 +83,8 @@ const en = {
     "err3": "Obtain account balance exceptions:",
     "err4": "Cross-Chain Trading Failure: ",
 
-    "developers":"Developers：",
-    "sponsoredAddress":"Sponsored Address：",
+    "developers": "Developers：",
+    "sponsoredAddress": "Sponsored Address：",
 
   },
 
@@ -606,6 +606,7 @@ const en = {
 
   "lockType": {
     "undefined": "",
+    "2": "Time Lock",
     "4": "Create Node Lock",
     "5": "Join consensus lock-in",
     "8": "Red card penalty lock-in",
@@ -1008,8 +1009,9 @@ const en = {
     "tips201": "The balance of this account is insufficient, please recharge or import again!",
     "tips21": "Scan transactions",
     "tips211": "Please import or create an account",
-    "tips22":"The asset is not an NRC20 contract asset or is not registered for a cross-chain transaction",
-    "tips23":"There is no transferCrossChain method for this asset",
+    "tips22": "The asset is not an NRC20 contract asset or is not registered for a cross-chain transaction",
+    "tips23": "There is no transferCrossChain method for this asset",
+    "tips24": "The application does not support the test network",
     "tips": "tips",
   },
 
@@ -1072,19 +1074,19 @@ const en = {
     "locking15": "Please enter the correct amount (up to eight decimal places)"
   },
 
-  "oneTo":{
-    "oneTo0":"oneTo",
-    "oneTo1":"You can go to multiple addresses",
-    "oneTo2":"Subtotal",
-    "oneTo3":"Confirmation of transfer information",
-    "oneTo4":"Error: format error!",
-    "oneTo5":"Error: Wrong address type (NULS master network addresses only supported)!",
-    "oneTo6":"Error: not long enough!",
-    "oneTo7":"Error: the amount can only be a number with a maximum of eight decimal places",
-    "oneTo8":"Collection address/amount",
-    "oneTo9":"Can't be empty",
-    "oneTo10":"Sorry, your balance is not enough!",
-    "oneTo":"oneTo",
+  "oneTo": {
+    "oneTo0": "oneTo",
+    "oneTo1": "You can go to multiple addresses",
+    "oneTo2": "Subtotal",
+    "oneTo3": "Confirmation of transfer information",
+    "oneTo4": "Error: format error!",
+    "oneTo5": "Error: Wrong address type (NULS master network addresses only supported)!",
+    "oneTo6": "Error: not long enough!",
+    "oneTo7": "Error: the amount can only be a number with a maximum of eight decimal places",
+    "oneTo8": "Collection address/amount",
+    "oneTo9": "Can't be empty",
+    "oneTo10": "Sorry, your balance is not enough!",
+    "oneTo": "oneTo",
   },
 
   "application": {

@@ -129,6 +129,11 @@ export async function inputsOrOutputs(transferInfo, balanceInfo, type) {
     }
     return {success: true, data: {inputs: inputs, outputs: outputs}};
   }
+
+  if (transferInfo.times && type === 2) {
+    newLockTime = Date.parse(transferInfo.times) / 1000
+  }
+
   outputs = [{
     address: transferInfo.toAddress ? transferInfo.toAddress : transferInfo.fromAddress,
     assetsChainId: transferInfo.assetsChainId,

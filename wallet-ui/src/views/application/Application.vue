@@ -41,19 +41,19 @@
     <div class="cb titles">{{$t('application.application1')}}</div>
     <ul>
       <li>
-        <img src="./../../assets/img/logo.svg"/>
+        <img src="./../../assets/img/number.jpg"/>
         <p class="title">{{$t('application.application10')}}</p>
         <p class="info">{{$t('application.application11')}}</p>
         <p class="go click" @click="toUrl('guessNumber','',0)">{{$t('application.application4')}}></p>
       </li>
       <li>
-        <img src="./../../assets/img/logo.svg"/>
+        <img src="./../../assets/img/suoding.jpg"/>
         <p class="title">{{$t('application.application12')}}</p>
         <p class="info">{{$t('application.application13')}}</p>
         <p class="go click" @click="toUrl('lockedTransfer','',0)">{{$t('application.application4')}}></p>
       </li>
       <li>
-        <img src="./../../assets/img/logo.svg"/>
+        <img src="./../../assets/img/yiduiduo.jpg"/>
         <p class="title">{{$t('application.application14')}}</p>
         <p class="info">{{$t('application.application15')}}</p>
         <p class="go click" @click="toUrl('oneToMore','',0)">{{$t('application.application4')}}></p>
@@ -90,6 +90,12 @@
        * @param type 类型 0:路由跳转 1:外部链接
        */
       toUrl(name, parameter, type) {
+        let urlInfo = window.location.href;
+        if (name === 'guessNumber' && urlInfo.includes('beta')) {
+          this.$message({message: this.$t('tips.tips24'), type: 'error', duration: 3000});
+          return;
+        }
+
         if (type === 0) {
           this.$router.push({
             name: name

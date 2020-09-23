@@ -85,6 +85,7 @@
   import {
     Plus,
     timesDecimals,
+    timesDecimals0,
     getLocalTime,
     connectToExplorer,
     htmlEncode,
@@ -247,24 +248,26 @@
         }
         this.dialogVisible = false;
         this.lockedLoading = true;
-
+        //console.log(this.transferForm);
         let transferInfo = this.transferForm;
-        transferInfo.amount = Number(timesDecimals(transferInfo.amount, 8)).toString();
-        transferInfo.fee = Number(timesDecimals(transferInfo.fee, 8));
+
+        transferInfo.amount = Number(timesDecimals0(transferInfo.amount, 8)).toString();
+        transferInfo.fee = Number(timesDecimals0(transferInfo.fee, 8));
         transferInfo.assetsChainId = MAIN_INFO.chainId;
         transferInfo.assetsId = MAIN_INFO.assetId;
-
-        let balanceInfo = await getNulsBalance(newAccountInfo.address, MAIN_INFO.chainId, MAIN_INFO.assetId);
-        console.log(balanceInfo);
+        //console.log(MAIN_INFO);
+        let balanceInfo = await getNulsBalance(MAIN_INFO.chainId, MAIN_INFO.assetId, newAccountInfo.address);
+        //console.log(balanceInfo);
         let minValue = Number(Plus(transferInfo.amount, transferInfo.fee));
         transferInfo.minValue = minValue;
         if (balanceInfo.success && balanceInfo.data.balance < minValue) {
           this.$message({message: this.$t('tips.tips20'), type: 'error'});
           return {success: false}
         }
+        //console.log(transferInfo);
 
         //交易组装
-        let inOrOutputs = await inputsOrOutputs(transferInfo, balanceInfo, 2);
+        let inOrOutputs = await inputsOrOutputs(transferInfo, balanceInfo.data, 2);
         //console.log(inOrOutputs);
 
         let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, htmlEncode(transferInfo.remarks), 2);
