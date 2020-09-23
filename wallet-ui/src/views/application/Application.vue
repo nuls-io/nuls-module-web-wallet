@@ -4,16 +4,18 @@
     <div class="cb titles" style="margin-top: 40px">{{$t('application.application0')}}</div>
     <ul class="cb">
       <li>
-        <img src="./../../assets/img/logo.svg"/>
+        <img src="./../../assets/img/community.png"/>
         <p class="title">{{$t('application.application2')}}</p>
         <p class="info">{{$t('application.application3')}}</p>
-        <p class="go click" @click="toUrl('nuls','https://gov.nuls.io/',1)">{{$t('application.application4')}}></p>
+        <p class="go click" @click="toUrl('nuls','http://beta.wallet.nuls.io/gov',1)">
+          {{$t('application.application4')}}></p>
       </li>
       <li>
-        <img src="./../../assets/img/logo.svg"/>
+        <img src="./../../assets/img/pocm.png"/>
         <p class="title">POCM</p>
         <p class="info">{{$t('application.application5')}}</p>
-        <p class="go click" @click="toUrl('nuls','http://beta.wallet.nuls.io/pocm',1)">{{$t('application.application4')}}></p>
+        <p class="go click" @click="toUrl('nuls','http://beta.wallet.nuls.io/pocm',1)">
+          {{$t('application.application4')}}></p>
       </li>
       <li>
         <img src="./../../assets/img/logo.svg"/>
@@ -22,14 +24,14 @@
         <p class="go click" @click="toUrl('nuls',explorerUrl,1)">{{$t('application.application4')}}></p>
       </li>
       <li>
-        <img src="./../../assets/img/logo.svg"/>
-        <p class="title">Google play Nabox</p>
+        <img src="./../../assets/img/goole.png"/>
+        <p class="title">Google Play Nabox</p>
         <p class="info">{{$t('application.application8')}}</p>
         <p class="go click" @click="toUrl('nuls','https://play.google.com/store/apps/details?id=com.nuls.nabox',1)">
           {{$t('application.application4')}}></p>
       </li>
       <li>
-        <img src="./../../assets/img/logo.svg"/>
+        <img src="./../../assets/img/nabox.png"/>
         <p class="title">Nabox</p>
         <p class="info">{{$t('application.application9')}}</p>
         <p class="go click" @click="toUrl('nuls','http://nabox.io',1)">{{$t('application.application4')}}></p>
@@ -39,19 +41,19 @@
     <div class="cb titles">{{$t('application.application1')}}</div>
     <ul>
       <li>
-        <img src="./../../assets/img/logo.svg"/>
+        <img src="./../../assets/img/number.jpg"/>
         <p class="title">{{$t('application.application10')}}</p>
         <p class="info">{{$t('application.application11')}}</p>
         <p class="go click" @click="toUrl('guessNumber','',0)">{{$t('application.application4')}}></p>
       </li>
       <li>
-        <img src="./../../assets/img/logo.svg"/>
+        <img src="./../../assets/img/suoding.jpg"/>
         <p class="title">{{$t('application.application12')}}</p>
         <p class="info">{{$t('application.application13')}}</p>
         <p class="go click" @click="toUrl('lockedTransfer','',0)">{{$t('application.application4')}}></p>
       </li>
       <li>
-        <img src="./../../assets/img/logo.svg"/>
+        <img src="./../../assets/img/yiduiduo.jpg"/>
         <p class="title">{{$t('application.application14')}}</p>
         <p class="info">{{$t('application.application15')}}</p>
         <p class="go click" @click="toUrl('oneToMore','',0)">{{$t('application.application4')}}></p>
@@ -88,6 +90,12 @@
        * @param type 类型 0:路由跳转 1:外部链接
        */
       toUrl(name, parameter, type) {
+        let urlInfo = window.location.href;
+        if (name === 'guessNumber' && urlInfo.includes('beta')) {
+          this.$message({message: this.$t('tips.tips24'), type: 'error', duration: 3000});
+          return;
+        }
+
         if (type === 0) {
           this.$router.push({
             name: name
@@ -119,15 +127,15 @@
         width: 250px;
         float: left;
         height: 240px;
-        border: 1px solid #c0c4cc;
+        border: 1px solid #dfe4ef;
         margin: 0 66px 40px 0;
         &:nth-child(4n) {
           margin: 0 0 40px 0;
         }
         img {
-          width: 200px;
-          height: 90px;
-          margin: 10px 20px;
+          width: 227px;
+          height: 97px;
+          margin: 10px 10px;
           text-align: center;
         }
         p {

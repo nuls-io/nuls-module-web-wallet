@@ -8,6 +8,7 @@ export default new Vuex.Store({
   state: {
     addressInfo: {},
     urlData: [],
+    height: 0, //最新高度
   },
   mutations: {
     setAddressInfo(state, data) {
@@ -17,6 +18,10 @@ export default new Vuex.Store({
       state.urlData = data;
       let urlName = RUN_DEV ? 'mainUrlData' :'TestUrlData';
       localStorage.setItem(urlName, JSON.stringify(data));
+    },
+    setHeight(state, data) {
+      state.height = data;
+      sessionStorage.setItem('height', JSON.stringify(data));
     },
   },
   getters: {
@@ -29,6 +34,12 @@ export default new Vuex.Store({
         localStorage.setItem(urlName, JSON.stringify(state.urlData));
       }
       return state.urlData
+    },
+
+    getHeight(state) {
+      state.height = sessionStorage.hasOwnProperty('height') ? JSON.parse(sessionStorage.getItem('height')) : 0;
+      sessionStorage.setItem('height', JSON.stringify(state.height));
+      return state.height
     }
   },
   actions: {}

@@ -27,7 +27,7 @@
           <p>2、{{$t('guessNum.guessNum7')}} <span class="fred fW600">2.1</span>+{{$t('guessNum.guessNum35')}} NULS</p>
           <p>
             3、{{$t('guessNum.guessNum8')}}
-            <span class="fyellow fW600"> 20 </span>
+            <span class="fyellow fW600"> 60 </span>
             {{$t('guessNum.guessNum9')}}
             <span class="fyellow fW600"> 5 </span>
             {{$t('guessNum.guessNum10')}}
@@ -366,12 +366,13 @@
           axios.defaults.baseURL = '';
           let resData = await axios.get(url);
           //console.log(resData);
+          //console.log(this.$store.getters.getHeight);
           if (resData.data.success) {
             if (resData.data.data) {
               this.gameCurrentInfo = resData.data.data;
               this.gameDetail(this.gameCurrentInfo.id);
               if (this.gameCurrentInfo.endHeight && this.gameCurrentInfo.endHeight <= this.$store.getters.getHeight) {
-                this.loadingText = this.$t('tips.tips17');
+                this.loadingText = this.$t('tips.tips171');
                 this.loading = true;
                 sessionStorage.removeItem(this.gameCurrentInfo.id.toString())
               } else {
@@ -387,7 +388,7 @@
                 txTime: 0,
               };
               this.loading = true;
-              this.loadingText = this.$t('tips.tips18');
+              this.loadingText = this.$t('tips.tips181');
               this.userLotteryHistory(this.accontInfo.address);
             }
           }
@@ -549,7 +550,7 @@
         let balanceInfo = await getNulsBalance(MAIN_INFO.chainId, MAIN_INFO.assetId, accountInfo.address);
         //console.log(balanceInfo);
         if (balanceInfo.success && balanceInfo.data.balance < 10000) {
-          this.$message({message: this.$t('tips.tips20'), type: 'error', duration: 3000});
+          this.$message({message: this.$t('tips.tips201'), type: 'error', duration: 3000});
           return {success: false}
         }
         //交易组装
@@ -784,7 +785,7 @@
             item.txTime = moment(getLocalTime(item.txTime * 1000)).format('YYYY-MM-DD HH:mm:ss');
           }
           this.historyData = historyData.data.data.list;
-          console.log(this.historyData)
+          //console.log(this.historyData)
         }
       },
 

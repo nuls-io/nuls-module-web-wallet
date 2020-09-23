@@ -1,5 +1,6 @@
 <template>
-  <div class="node_service bg-gray cb" v-loading="loading" :element-loading-text="$t('nodeService.nodeService0')">
+  <div class="node_service bg-gray cb" v-loading="loading" :element-loading-text="$t('nodeService.nodeService0')"
+       element-loading-spinner="el-icon-loading">
     <h3 class="title">{{$t('nodeService.nodeService1')}}</h3>
 
     <div class="w1200 mt_20" v-loading="nodeServiceLoading">

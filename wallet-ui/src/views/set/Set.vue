@@ -57,12 +57,13 @@
   import axios from 'axios'
   import packages from './../../../package'
   import {RUN_PATTERN, RUN_DEV, FILE_URL} from '@/config.js'
-  import openner from "@/api/opener-desktop";
+  import openner from "@/api/opener-web";
+  //import openner from "@/api/opener-desktop";
 
   export default {
     data() {
       return {
-        symbol: sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'BBAI',
+        symbol: sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS',
         updateDialogVisible: false,//更新弹框
         tips: {},//提示信息
         downloadPercent: 0,//下载进度
@@ -76,7 +77,7 @@
       };
     },
     created() {
-      this.seeLog();
+      //this.seeLog();
     },
     mounted() {
 

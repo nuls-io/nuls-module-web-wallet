@@ -94,7 +94,8 @@
             //console.log(response.data);
             if (response.data.hasOwnProperty("result")) {
               this.heightInfo = response.data.result;
-              sessionStorage.setItem("info", JSON.stringify(response.data.result))
+              sessionStorage.setItem("info", JSON.stringify(response.data.result));
+              this.$store.commit('setHeight', this.heightInfo.networkHeight);
             } else {
               this.heightInfo = {localHeight: 0, networkHeight: 0};
               sessionStorage.removeItem("info")

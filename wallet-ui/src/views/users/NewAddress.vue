@@ -379,6 +379,10 @@
         this.$refs[formName].validate(async (valid) => {
           if (valid) {
             const newAddressInfo = nuls.importByKey(chainID(), this.importForm.keys, this.importForm.pass, this.prefix);
+            if (newAddressInfo.hasOwnProperty('success') && !newAddressInfo.success) {
+              this.$message({message: newAddressInfo.data, type: 'error', duration: 3000});
+              return;
+            }
             let keyAddressInfo = defaultAddressInfo;
             keyAddressInfo.address = newAddressInfo.address;
             keyAddressInfo.aesPri = newAddressInfo.aesPri;

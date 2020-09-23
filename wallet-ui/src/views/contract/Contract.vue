@@ -6,7 +6,8 @@
       <i class="iconfont icon-fuzhi clicks"></i>
     </h3>
     <el-tabs v-model="contractActive" class="w1200" @tab-click="handleClick">
-      <el-tab-pane :label="$t('contract.contract1')" name="contractFirst" v-loading="myContractDataLoading">
+      <el-tab-pane :label="$t('contract.contract1')" name="contractFirst" v-loading="myContractDataLoading"
+                   element-loading-spinner="el-icon-loading">
         <div class="my_contract">
           <el-table :data="myContractData" stripe border>
             <el-table-column :label="$t('contract.contract2')" align="center" min-width="220">

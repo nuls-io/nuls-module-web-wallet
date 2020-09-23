@@ -68,12 +68,12 @@
           <li v-for="(item,index) of oneToMoreForm.toList" :key="index" class="to_list">
             <p class="fl to_address"><span>{{$t('transfer.transfer1')}}{{index}}</span><font>{{item.toAddress}}</font>
             </p>
-            <p class="fl to_amount"><span>{{$t('tab.tab6')}}</span><font>{{item.amount}} <font
+            <p class="fl to_amount"><span>{{$t('tab.tab6')}}</span><font> {{item.amount}} <font
                     class="fCN">NULS</font></font></p>
           </li>
           <li class="cb"><span>{{oneToMoreForm.fee}}</span><font>{{oneToMoreForm.fee}}<font class="fCN">
             NULS</font></font></li>
-          <li class="cb"><span>{{$t('oneTo.oneTo2')}}</span><font class="fred fW600">{{total}}<font class="fCN">
+          <li class="cb"><span>{{$t('oneTo.oneTo2')}}</span><font class="fred fW600"> {{total}} <font class="fCN">
             NULS</font></font></li>
           <li><span>{{$t('locking.locking8')}}</span><font class="remark scroll">{{oneToMoreForm.remarks}}</font></li>
         </ul>
@@ -469,6 +469,7 @@
                   display: block;
                   float: left;
                   text-align: right;
+                  padding: 0 10px 0 0;
                 }
                 p {
                   margin: 0;
@@ -483,7 +484,7 @@
                   width: 200px;
                   span {
                     width: auto;
-                    padding: 0 0 0 5px;
+                    padding: 0 5px 0 5px;
                   }
                 }
                 .remark {

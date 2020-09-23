@@ -63,7 +63,7 @@
             <i class="iconfont icon-search_icon fr click"></i>
           </el-input>
         </div>
-        <div class="node" v-loading="allNodeLoading">
+        <div class="node" v-loading="allNodeLoading" element-loading-spinner="el-icon-loading">
           <div class="node_info" v-for="item in searchData" :key="item.agentId">
             <h4 class="bg-gray">
               <i class="iconfont iconwo" v-show="item.isNew"></i>&nbsp;

@@ -122,7 +122,7 @@ export default new Router({
       name: 'contact',
       component: resolve => require(['@/views/set/Contact.vue'], resolve)
     },
-    /*{
+    {
       path: '/application',
       name: 'application',
       component: resolve => require(['@/views/application/Application.vue'], resolve)
@@ -141,6 +141,6 @@ export default new Router({
       path: '/application/oneToMore',
       name: 'oneToMore',
       component: resolve => require(['@/views/application/oneToMore/OneToMore.vue'], resolve)
-    }*/
+    }
   ]
 })
