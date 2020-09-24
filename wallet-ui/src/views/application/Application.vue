@@ -7,14 +7,14 @@
         <img src="./../../assets/img/community.png"/>
         <p class="title">{{$t('application.application2')}}</p>
         <p class="info">{{$t('application.application3')}}</p>
-        <p class="go click" @click="toUrl('nuls','http://beta.wallet.nuls.io/gov',1)">
+        <p class="go click" @click="toUrl('community','gov',1)">
           {{$t('application.application4')}}></p>
       </li>
       <li>
         <img src="./../../assets/img/pocm.png"/>
         <p class="title">POCM</p>
         <p class="info">{{$t('application.application5')}}</p>
-        <p class="go click" @click="toUrl('nuls','http://beta.wallet.nuls.io/pocm',1)">
+        <p class="go click" @click="toUrl('pocm','pocm',1)">
           {{$t('application.application4')}}></p>
       </li>
       <li>
@@ -66,7 +66,7 @@
 
 <script>
   import {addressInfo, connectToExplorer} from '@/api/util'
-  import {explorerUrl} from '@/config.js'
+  import {explorerUrl, walletUrl} from '@/config.js'
 
   export default {
     data() {
@@ -95,12 +95,15 @@
           this.$message({message: this.$t('tips.tips24'), type: 'error', duration: 3000});
           return;
         }
-
         if (type === 0) {
           this.$router.push({
             name: name
           })
         } else {
+          if (name === 'community' || name === 'pocm') {
+            name = 'nuls';
+            parameter = walletUrl + parameter
+          }
           connectToExplorer(name, parameter)
         }
 
