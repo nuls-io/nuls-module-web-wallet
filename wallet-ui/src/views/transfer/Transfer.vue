@@ -207,7 +207,7 @@
             if (fromAddressInfo.chainId !== toAddressInfo.chainId && this.assetsInfo.type === 2) {
               //console.log(this.assetsInfo);
               let contractInfo = await this.contractInfoByContractAddress(this.assetsInfo.contractAddress);
-              //console.log(contractInfo);
+              console.log(contractInfo);
               if (!contractInfo.nrc20 || !contractInfo.crossAsset) {
                 this.$message({message: this.$t('tips.tips22'), type: 'warning', duration: 3000});
                 this.transferForm.amount = '';

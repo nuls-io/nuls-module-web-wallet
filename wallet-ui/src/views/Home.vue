@@ -43,7 +43,8 @@
         {{$t('home.home3')}}
       </div>
       <div class="home_tabs" style="padding: 0">
-        <el-table :data="crossLinkData" stripe border v-loading="txListDataLoading" element-loading-spinner="el-icon-loading">
+        <el-table :data="crossLinkData" stripe border v-loading="txListDataLoading"
+                  element-loading-spinner="el-icon-loading">
           <el-table-column :label="$t('tab.tab0')" align="center" width="200">
             <template slot-scope="scope">
               <div style="margin: 0 0 0 30%">
@@ -84,7 +85,8 @@
         <img src="./../assets/img/contract-logo.svg" style="width: 20px;margin-top:11px;"/>{{$t('tab.tab25')}}
       </div>
       <div class="home_tabs">
-        <el-table :data="addressAssetsData" stripe border v-loading="assetsListLoading" element-loading-spinner="el-icon-loading">
+        <el-table :data="addressAssetsData" stripe border v-loading="assetsListLoading"
+                  element-loading-spinner="el-icon-loading">
           <el-table-column :label="$t('nodeService.nodeService2')" align="center" width="200">
             <template slot-scope="scope">
               <span class="click td" @click="toUrl('contractsInfo',scope.row.contractAddress,1)">
@@ -152,7 +154,17 @@
 <script>
   import axios from 'axios'
   import QRCode from 'qrcodejs2'
-    import {timesDecimals, copys, addressInfo, Times, superLong, connectToExplorer, Plus, Minus,divisionDecimals} from '@/api/util'
+  import {
+    timesDecimals,
+    copys,
+    addressInfo,
+    Times,
+    superLong,
+    connectToExplorer,
+    Plus,
+    Minus,
+    divisionDecimals
+  } from '@/api/util'
   import {RUN_PATTERN} from '@/config'
 
   export default {
@@ -373,7 +385,8 @@
         this.NULSUsdt = Number(Times(news, number)).toFixed(2);
         axios.defaults.baseURL = '';
         let url = '';
-        if (RUN_PATTERN) {
+        //console.log(process.env.NODE_ENV ==='development');
+        if (process.env.NODE_ENV === 'development') {
           url = "http://binanceapi.zhoulijun.top/api/v3/ticker/price?symbol=NULSUSDT"
         } else {
           url = "/market-api/nuls-price"

@@ -37,30 +37,8 @@
         <p class="go click" @click="toUrl('nuls','http://nabox.io',1)">{{$t('application.application4')}}></p>
       </li>
     </ul>
-
-    <div class="cb titles">{{$t('application.application1')}}</div>
-    <ul>
-      <li>
-        <img src="./../../assets/img/number.jpg"/>
-        <p class="title">{{$t('application.application10')}}</p>
-        <p class="info">{{$t('application.application11')}}</p>
-        <p class="go click" @click="toUrl('guessNumber','',0)">{{$t('application.application4')}}></p>
-      </li>
-      <li>
-        <img src="./../../assets/img/suoding.jpg"/>
-        <p class="title">{{$t('application.application12')}}</p>
-        <p class="info">{{$t('application.application13')}}</p>
-        <p class="go click" @click="toUrl('lockedTransfer','',0)">{{$t('application.application4')}}></p>
-      </li>
-      <li>
-        <img src="./../../assets/img/yiduiduo.jpg"/>
-        <p class="title">{{$t('application.application14')}}</p>
-        <p class="info">{{$t('application.application15')}}</p>
-        <p class="go click" @click="toUrl('oneToMore','',0)">{{$t('application.application4')}}></p>
-      </li>
-    </ul>
-
     <div class="cb" style="height: 50px"></div>
+
   </div>
 </template>
 
