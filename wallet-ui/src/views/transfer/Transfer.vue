@@ -207,7 +207,7 @@
             if (fromAddressInfo.chainId !== toAddressInfo.chainId && this.assetsInfo.type === 2) {
               //console.log(this.assetsInfo);
               let contractInfo = await this.contractInfoByContractAddress(this.assetsInfo.contractAddress);
-              console.log(contractInfo);
+              //console.log(contractInfo);
               if (!contractInfo.nrc20 || !contractInfo.crossAsset) {
                 this.$message({message: this.$t('tips.tips22'), type: 'warning', duration: 3000});
                 this.transferForm.amount = '';
@@ -602,7 +602,7 @@
         let contractAddress = this.assetsInfo.contractAddress;
         let methodName = 'transferCrossChain';
         let methodDesc = '';
-        let args = [this.transferForm.toAddress, Number(timesDecimals0(this.transferForm.amount, this.assetsInfo.decimals))];
+        let args = [this.transferForm.toAddress,this.assetsInfo.decimals <= 9 ? Number(timesDecimals0(this.transferForm.amount, this.assetsInfo.decimals)) : timesDecimalsBig(this.transferForm.amount, this.assetsInfo.decimals)];
         let newValue = Number(timesDecimals0(0.1, 8));
         this.validateContractCall(this.addressInfo.address, newValue, gasLimit, price, contractAddress, methodName, methodDesc, args);
       },
