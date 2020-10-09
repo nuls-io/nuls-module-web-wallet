@@ -165,7 +165,6 @@
     Minus,
     divisionDecimals
   } from '@/api/util'
-  import {RUN_PATTERN} from '@/config'
 
   export default {
     name: 'home',
