@@ -742,10 +742,11 @@
         let inOrOutputs = {};
         let tAssemble = [];
         let txHex = "";//交易签名
-        /*console.log(transferInfo);
-        console.log(this.toAddressInfo.transferType);*/
+        //console.log(transferInfo);
+        //console.log(this.toAddressInfo.transferType);
         if (this.toAddressInfo.transferType === 1) { //1:NULS转账
           inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 2);
+          //console.log(inOrOutputs);
           tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, htmlEncode(this.transferForm.remarks), 2);
         } else if (this.toAddressInfo.transferType === 2) { //2：token转账
           transferInfo.amount = Number(Plus(0, Number(Times(this.transferForm.gas, this.transferForm.price)))).toString();

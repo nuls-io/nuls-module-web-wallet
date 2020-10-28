@@ -44,7 +44,7 @@
 
 <script>
   import {addressInfo, connectToExplorer} from '@/api/util'
-  import {explorerUrl, walletUrl} from '@/config.js'
+  import {explorerUrl} from '@/config.js'
 
   export default {
     data() {
@@ -80,7 +80,8 @@
         } else {
           if (name === 'community' || name === 'pocm') {
             name = 'nuls';
-            parameter = walletUrl + parameter
+            //parameter = walletUrl + parameter
+            parameter = '' + parameter
           }
           connectToExplorer(name, parameter)
         }

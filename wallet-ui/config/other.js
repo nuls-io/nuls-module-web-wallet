@@ -8,7 +8,7 @@ export const API_BURNING_ADDRESS_PUB = '0000000000000000000000000000000000000000
 //默认浏览器地址（跳转地址）
 export const explorerUrl = ''; //请填写正确的浏览器地址
 //ChainId和资产ID
-export const MAIN_INFO = {chainId: 1, assetId: 1};  //连接不到服务器会取这个
+export const MAIN_INFO = {chainId: 10, assetId: 1};  //连接不到服务器会取这个
 //运行环境（true:正式环境，false:测试环境）
 export const RUN_DEV = true;
 //运行模式（true:electron窗体模式，false:浏览器模式）
