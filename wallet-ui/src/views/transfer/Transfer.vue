@@ -602,7 +602,7 @@
         let contractAddress = this.assetsInfo.contractAddress;
         let methodName = 'transferCrossChain';
         let methodDesc = '';
-        let args = [this.transferForm.toAddress,this.assetsInfo.decimals <= 9 ? Number(timesDecimals0(this.transferForm.amount, this.assetsInfo.decimals)) : timesDecimalsBig(this.transferForm.amount, this.assetsInfo.decimals)];
+        let args = [this.transferForm.toAddress, this.assetsInfo.decimals <= 9 ? Number(timesDecimals0(this.transferForm.amount, this.assetsInfo.decimals)) : timesDecimalsBig(this.transferForm.amount, this.assetsInfo.decimals)];
         let newValue = Number(timesDecimals0(0.1, 8));
         this.validateContractCall(this.addressInfo.address, newValue, gasLimit, price, contractAddress, methodName, methodDesc, args);
       },
