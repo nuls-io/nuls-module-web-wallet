@@ -24,8 +24,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.http.HttpClient;
-import java.time.Duration;
 import java.util.Map;
 
 /**
@@ -36,11 +34,6 @@ import java.util.Map;
 @Path("/market-api/")
 @Component
 public class MarketApiController {
-
-    static HttpClient client1 = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofMillis(5000))
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .build();
 
     static final String URL = "https://public.nerve.network";
 //    @Path("/nuls-price")
