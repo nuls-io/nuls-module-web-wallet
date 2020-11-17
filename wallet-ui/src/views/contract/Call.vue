@@ -12,7 +12,8 @@
                     :prop="'parameterList.' + index + '.value'"
                     :rules="{required: domain.required,message:domain.name+$t('call.call2'), trigger: 'blur'}"
       >
-        <el-input v-model="domain.value" @change="changeParameter"></el-input>
+        <el-input v-model.trim="domain.value" @change="changeParameter">
+        </el-input>
       </el-form-item>
 
       <div class="div-senior" v-if="!selectionData.view">
