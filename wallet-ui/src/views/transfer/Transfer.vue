@@ -159,6 +159,7 @@
         //根据长度验证地址或者别名验证
         let aliasRes = {};
         if (value.length > 30) {
+          this.aliasToAddress = '';
           this.toAddressInfo = nuls.verifyAddress(value);
           if (this.toAddressInfo.type === 1) { //主链地址
             let verifyToAddress = await this.verifyToAddress();
@@ -201,9 +202,11 @@
         } else if (value > this.available) {
           callback(new Error(this.$t('transfer.transfer131') + ": " + this.available))
         } else {
+          //console.log(this.transferForm.toAddress);
+          //console.log(this.aliasToAddress);
           if (this.transferForm.toAddress) {
             let fromAddressInfo = nuls.verifyAddress(this.transferForm.fromAddress);
-            let toAddressInfo = nuls.verifyAddress(this.transferForm.toAddress);
+            let toAddressInfo = nuls.verifyAddress(this.aliasToAddress ? this.aliasToAddress : this.transferForm.toAddress);
             if (fromAddressInfo.chainId !== toAddressInfo.chainId && this.assetsInfo.type === 2) {
               //console.log(this.assetsInfo);
               let contractInfo = await this.contractInfoByContractAddress(this.assetsInfo.contractAddress);
@@ -470,8 +473,10 @@
           let resData = await this.$post('/', 'getAccountByAlias', [alias]);
           //console.log(resData);
           if (resData.hasOwnProperty("result")) {
+            //this.toAddressInfo.toAddress = resData.result.address;
             this.aliasToAddress = resData.result.address;
             this.toAddressInfo = nuls.verifyAddress(this.aliasToAddress);
+            //console.log(this.toAddressInfo);
             if (this.toAddressInfo.type === 1) { //主链地址
               await this.verifyToAddress();
             }
@@ -602,7 +607,7 @@
         let contractAddress = this.assetsInfo.contractAddress;
         let methodName = 'transferCrossChain';
         let methodDesc = '';
-        let args = [this.transferForm.toAddress,this.assetsInfo.decimals <= 9 ? Number(timesDecimals0(this.transferForm.amount, this.assetsInfo.decimals)) : timesDecimalsBig(this.transferForm.amount, this.assetsInfo.decimals)];
+        let args = [this.transferForm.toAddress, this.assetsInfo.decimals <= 9 ? Number(timesDecimals0(this.transferForm.amount, this.assetsInfo.decimals)) : timesDecimalsBig(this.transferForm.amount, this.assetsInfo.decimals)];
         let newValue = Number(timesDecimals0(0.1, 8));
         this.validateContractCall(this.addressInfo.address, newValue, gasLimit, price, contractAddress, methodName, methodDesc, args);
       },

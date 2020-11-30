@@ -304,7 +304,7 @@
               }
 
               this.txInfo = response.result;
-              console.info(this.txInfo);
+              //console.info(this.txInfo);
               if (this.txInfo.txData && this.txInfo.txData.resultInfo) {
                 this.txInfo.txData.resultInfo.remark = this.txInfo.txData.resultInfo.remark.replace(/<[^<>]+>/g, '');
               }

@@ -6,7 +6,7 @@
 //链ID
 export const API_CHAIN_ID = localStorage.hasOwnProperty('chainID') ? Number(localStorage.getItem('chainID')) : 2;
 //燃烧地址的公钥
-export const API_BURNING_ADDRESS_PUB = '000000000000000000000000000000000000000000000000000000000000000000';
+export const black_address = 'tNULSeBaMhZnRteniCy3UZqPjTbnWKBPHX1a5d';
 //运行环境（true:正式环境，false:测试环境）
 export const RUN_DEV = false;
 //ChainId和资产ID
@@ -17,12 +17,9 @@ export const RUN_PATTERN = true;
 export const FILE_URL = 'http://file.wallet.nuls.io/download/test';
 //正式、测试网络的api
 export let API_URL = 'https://beta.wallet.nuls.io/api';
-setInterval(() = > {
-  API_URL = localStorage.hasOwnProperty("url") && localStorage.getItem('url') !== 'undefined' ? JSON.parse(localStorage.getItem("url")).urls : 'https://beta.wallet.nuls.io/api';
-},
-500
-)
-;
+setInterval(() => {
+  API_URL = localStorage.hasOwnProperty("url") && localStorage.getItem('url') !== 'undefined' ? JSON.parse(localStorage.getItem("url")).urls : '/api';
+}, 500);
 //请求最迟时间
 export const API_TIME = '8000';
 
