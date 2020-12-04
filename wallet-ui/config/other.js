@@ -4,7 +4,7 @@
 "use strict";
 
 //燃烧地址的公钥
-export const API_BURNING_ADDRESS_PUB = '000000000000000000000000000000000000000000000000000000000000000000';
+export const black_address = 'NULSd6HgWSU1iR6BfNoQi85mAMT52JMFzpnok';
 //默认浏览器地址（跳转地址）
 export const explorerUrl = ''; //请填写正确的浏览器地址
 //ChainId和资产ID

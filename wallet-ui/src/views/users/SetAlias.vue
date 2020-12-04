@@ -182,17 +182,16 @@
         const newAddressInfo = nuls.importByKey(chainID(), pri, password, this.prefix);
         if (newAddressInfo.address === this.addressInfo.address) {
           //根据公钥获取地址
-          let burningAddress = nuls.getAddressByPub(chainID(), 1, config.API_BURNING_ADDRESS_PUB, this.prefix);
-          //console.log(burningAddress);
           let transferInfo = {
             fromAddress: this.addressInfo.address,
-            toAddress: burningAddress,
+            toAddress: config.black_address,
             assetsChainId: chainID(),
             assetsId: 1,
             amount: 100000000,
             fee: 100000
           };
           let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 3);
+          //console.log(inOrOutputs);
           let aliasInfo = {
             fromAddress: this.addressInfo.address,
             alias: this.aliasForm.alias
@@ -223,12 +222,9 @@
        * @author: Wave
        */
       async setAliasAssemble() {
-        //根据燃烧地址公钥获取地址
-        let burningAddress = nuls.getAddressByPub(chainID(), 1, config.API_BURNING_ADDRESS_PUB, this.prefix);
-        //console.log(burningAddress);
         let transferInfo = {
           fromAddress: this.addressInfo.address,
-          toAddress: burningAddress,
+          toAddress: config.black_address,
           assetsChainId: chainID(),
           assetsId: 1,
           amount: 100000000,

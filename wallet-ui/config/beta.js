@@ -4,7 +4,7 @@
 "use strict";
 
 //燃烧地址的公钥
-export const API_BURNING_ADDRESS_PUB = '000000000000000000000000000000000000000000000000000000000000000000';
+export const black_address = 'tNULSeBaMhZnRteniCy3UZqPjTbnWKBPHX1a5d';
 //运行环境（true:正式环境，false:测试环境）
 export const RUN_DEV = false;
 //ChainId和资产ID
