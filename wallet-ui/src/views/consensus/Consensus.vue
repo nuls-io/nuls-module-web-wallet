@@ -333,10 +333,9 @@
                 itme.agentReward = Number(timesDecimals(itme.agentReward)).toFixed(3);
                 itme.totalDeposit = Number(timesDecimals(itme.totalDeposit)).toFixed(3);
                 itme.totalReward = Number(timesDecimals(itme.totalReward)).toFixed(3);
+                //console.log(this.addressInfo.address);
                 if (itme.agentAddress === this.addressInfo.address) {
                   this.isNew = true;//创建的节点
-                } else {
-                  this.isNew = false;
                 }
               }
               this.allNodeData = response.result.list;

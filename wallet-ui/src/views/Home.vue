@@ -80,42 +80,56 @@
       </div>
     </div>
     <div class="cb"></div>
-    <div class="w1200 overview bg-white" style="margin: 20px auto 0">
-      <div class="title">
-        <img src="./../assets/img/contract-logo.svg" style="width: 20px;margin-top:11px;"/>{{$t('tab.tab25')}}
-      </div>
-      <div class="home_tabs">
-        <el-table :data="addressAssetsData" stripe border v-loading="assetsListLoading"
-                  element-loading-spinner="el-icon-loading">
-          <el-table-column :label="$t('nodeService.nodeService2')" align="center" width="200">
-            <template slot-scope="scope">
-              <span class="click td" @click="toUrl('contractsInfo',scope.row.contractAddress,1)">
-                {{ scope.row.account }}
-              </span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="total" :label="$t('tab.tab2')" align="left" width="230">
-          </el-table-column>
-          <el-table-column prop="balance" :label="$t('tab.tab4')" width="230">
-          </el-table-column>
-          <el-table-column :label="$t('tab.tab3')" width="230">
-            <template slot-scope="scope">
-              <!--<span v-show="scope.row.locking !== '&#45;&#45;' && scope.row.locking !==0 ">
-                {{scope.row.locking}}
-              </span>-->
-              <span>{{scope.row.locking}}</span>
-            </template>
-          </el-table-column>
-          <el-table-column fixed="right" :label="$t('public.operation')" align="center" min-width="120">
-            <template slot-scope="scope">
-              <label class="click tab_bn" @click="toUrl('transfer',scope.row)">{{$t('nav.transfer')}}</label>
-              <span class="tab_line">|</span>
-              <label class="click tab_bn" @click="toUrl('txList',scope.row)">{{$t('home.home2')}}</label>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
+
+    <div class="w1200" style="margin: 40px auto 0">
+      <el-tabs v-model="activeContract" @tab-click="handleClick">
+        <el-tab-pane :label="$t('home.home4')" name="nrc20">
+          <div class="w1200 overview bg-white" style="margin: 20px auto 0">
+            <!--<div class="title">
+              <img src="./../assets/img/contract-logo.svg" style="width: 20px;margin-top:11px;"/>{{$t('tab.tab25')}}
+            </div>-->
+            <div class="home_tabs">
+              <el-table :data="addressAssetsData" stripe border v-loading="assetsListLoading"
+                        element-loading-spinner="el-icon-loading">
+                <el-table-column :label="$t('nodeService.nodeService2')" align="center" width="200">
+                  <template slot-scope="scope">
+                  <span class="click td" @click="toUrl('contractsInfo',scope.row.contractAddress,1)">
+                    {{ scope.row.account }}
+                  </span>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="total" :label="$t('tab.tab2')" align="left" width="230">
+                </el-table-column>
+                <el-table-column prop="balance" :label="$t('tab.tab4')" width="230">
+                </el-table-column>
+                <el-table-column :label="$t('tab.tab3')" width="230">
+                  <template slot-scope="scope">
+                    <span>{{scope.row.locking}}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column fixed="right" :label="$t('public.operation')" align="center" min-width="120">
+                  <template slot-scope="scope">
+                    <label class="click tab_bn" @click="toUrl('transfer',scope.row)">{{$t('nav.transfer')}}</label>
+                    <span class="tab_line">|</span>
+                    <label class="click tab_bn" @click="toUrl('txList',scope.row)">{{$t('home.home2')}}</label>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+          </div>
+        </el-tab-pane>
+        <el-tab-pane :label="$t('home.home5')" name="nrc721">
+          <el-tabs tab-position="left">
+            <el-tab-pane v-for="item in token721List" :label="item.tokenSymbol +'('+item.tokenSet.length +')'"
+                         :key="item.contractAddress">
+              <NFTTransfer :NFTInfo="item">
+              </NFTTransfer>
+            </el-tab-pane>
+          </el-tabs>
+        </el-tab-pane>
+      </el-tabs>
     </div>
+
     <el-dialog title="" :visible.sync="qrcodeDialog" width="22.5rem" center class="payee_dialog">
       <el-tabs v-model="activeName" @tab-click="payeeHandleClick">
         <el-tab-pane :label="$t('tips.tips12')" name="payeeInfo">
@@ -154,6 +168,7 @@
 <script>
   import axios from 'axios'
   import QRCode from 'qrcodejs2'
+  import NFTTransfer from '@/components/NFTTransfer'
   import {
     timesDecimals,
     copys,
@@ -199,11 +214,15 @@
           amount: 100,
           currency: 'NULS',
           decimals: 8
-        }
+        },
+
+        activeContract: 'nrc20',
+
+        token721List: [],//724数据
 
       };
     },
-    components: {},
+    components: {NFTTransfer},
     created() {
       this.addressInfo = addressInfo(1);
       setInterval(() => {
@@ -217,6 +236,7 @@
           setTimeout(() => {
             this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
             this.getAccountCrossLedgerList(this.addressInfo.address);
+            this.getAccountToken721List(this.addressInfo.address);
           }, 400);
         }, 600);
       } else {
@@ -236,6 +256,7 @@
             setTimeout(() => {
               this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
               this.getAccountCrossLedgerList(this.addressInfo.address);
+              this.getAccountToken721List(this.addressInfo.address);
             }, 200);
           }
         }
@@ -475,31 +496,20 @@
       },
 
       /**
-       * 资产列表分页功能
-       * @param val
+       * 获取地址721资产信息
+       * @param address
        **/
-      addressAssetsListPages(val) {
-        this.pageNumber = val;
-        this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
-      },
-
-      /**
-       * 隐藏共识奖励
-       * @param e
-       **/
-      changeHide(e) {
-        this.isHide = e;
-        this.pageNumber = 1;
-        this.getTxlistByAddress(this.pageNumber, this.pageSize, this.addressInfo.address, this.type, this.isHide)
-      },
-
-      /**
-       * 交易列表分页功能
-       * @param val
-       **/
-      txListPages(val) {
-        this.pageNumber = val;
-        this.getTxlistByAddress(this.pageNumber, this.pageSize, this.addressInfo.address, this.type, this.isHide)
+      async getAccountToken721List(address) {
+        await this.$post('/', 'getAccountToken721s', [1, 100, address], 'Home')
+          .then((response) => {
+            //console.log(response);
+            if (response.hasOwnProperty("result")) {
+              this.token721List = response.result.list.filter(obj => obj.tokenSet.length !== 0); //隐藏数量为零的资产
+              //this.token721List = response.result.list;
+            }
+          }).catch((err) => {
+            console.log(err);
+          })
       },
 
       /**

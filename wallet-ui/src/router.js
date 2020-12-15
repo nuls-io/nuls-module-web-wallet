@@ -35,6 +35,14 @@ export default new Router({
       }
     },
     {
+      path: '/wallet/txLis721',
+      name: 'txLis721',
+      component: resolve => require(['@/views/users/TxListNRC721.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
       path: '/wallet/tokenTxList',
       name: 'tokenTxList',
       component: resolve => require(['@/views/users/TokenTxList.vue'], resolve),

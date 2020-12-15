@@ -76,7 +76,7 @@ export function timesDecimals(nu, decimals) {
   }
   let fmt = {groupSeparator: ',',};
   BigNumber.config({FORMAT: fmt});
-  return Number(Division(nu,Number(Power(newDecimals))))
+  return Number(Division(nu, Number(Power(newDecimals))))
 }
 
 /**

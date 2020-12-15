@@ -57,6 +57,7 @@ export async function inputsOrOutputs(transferInfo, balanceInfo, type) {
   let newAmount = Number(Plus(transferInfo.amount, transferInfo.fee));
   let newLocked = 0;
   let newNonce = balanceInfo.nonce;
+  //console.log(newNonce);
   let newoutputAmount = transferInfo.amount;
   let newLockTime = 0;
   if (type === 4) {
@@ -90,6 +91,7 @@ export async function inputsOrOutputs(transferInfo, balanceInfo, type) {
     locked: newLocked,
     nonce: newNonce
   }];
+  //console.log(inputs);
 
   if (type === 2 && transferInfo.assetsChainId !== chainID()) {
     inputs[0].amount = transferInfo.amount;
