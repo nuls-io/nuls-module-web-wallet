@@ -126,10 +126,9 @@
                   <el-link :underline="false">{{item.tokenSymbol +'('+item.tokenSet.length +')'}}</el-link>
                 </el-tooltip>
               </div>
-              <NFTTransfer :NFTInfo="item">
+              <NFTTransfer :NFTInfo="item" v-if="reFresh">
               </NFTTransfer>
             </el-tab-pane>
-
           </el-tabs>
         </el-tab-pane>
       </el-tabs>
@@ -224,8 +223,10 @@
         activeContract: 'nrc20',
 
         token721List: [],//724数据
+        active721: '',
         homeSetIntervalOne: null,//定时器
         homeSetInterval: null,//定时器
+        reFresh: true,
 
       };
     },
@@ -269,12 +270,16 @@
       addressInfo(val, old) {
         if (val) {
           if (val.address !== old.address && old.address) {
+            this.token721List = [];
+            this.active721 = '';
             this.getAddressInfoByNode(this.addressInfo.address);
-            setTimeout(() => {
-              this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
-              this.getAccountCrossLedgerList(this.addressInfo.address);
-              this.getAccountToken721List(this.addressInfo.address);
-            }, 200);
+            this.reFresh = false;
+            this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
+            this.getAccountCrossLedgerList(this.addressInfo.address);
+            this.getAccountToken721List(this.addressInfo.address);
+            this.$nextTick(() => {
+              this.reFresh = true
+            })
           }
         }
       }
@@ -522,6 +527,9 @@
             //console.log(response);
             if (response.hasOwnProperty("result")) {
               this.token721List = response.result.list.filter(obj => obj.tokenSet.length !== 0); //隐藏数量为零的资产
+              /*console.log(this.token721List);
+              this.active721 = this.token721List[0].contractAddress;
+              console.log(this.active721);*/
               //this.token721List = response.result.list;
             }
           }).catch((err) => {

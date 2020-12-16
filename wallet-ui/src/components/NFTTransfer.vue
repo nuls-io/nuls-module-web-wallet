@@ -6,19 +6,12 @@
         <span class="click" @click="toUrl('contractsInfo',NFTInfo.contractAddress,1)">{{NFTInfo.contractAddress}}</span>
       </div>
       <div class="click fr" @click="toUrl('txLis721')">{{$t('home.home2')}}</div>
-
     </div>
     <el-form :model="nftForm" status-icon :rules="nftRules" ref="nftForm" class="cb nftForm"
              hide-required-asterisk="false">
       <el-form-item :label="$t('home.home6') + NFTInfo.tokenSymbol " prop="id" class="send fl">
-        <!--el-input v-model="nftForm.id" autocomplete="off">
-        </el-input>-->
         <el-select v-model="nftForm.id" filterable placeholder="" @change="changeId">
-          <el-option
-                  v-for="item in sendList"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value">
+          <el-option v-for="item in sendList" :key="item.value" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
       </el-form-item>
@@ -103,15 +96,20 @@
         }
       },
     },
+    watch: {},
     created() {
       this.addressInfo = addressInfo(1);
-      //console.log(this.NFTInfo)
     },
     mounted() {
       this.init();
     },
     components: {
       Password,
+    },
+    destroyed() {
+      this.sendList = [];
+      this.nftForm.id = '';
+      this.nftForm.toAddress = '';
     },
     methods: {
 
@@ -120,6 +118,7 @@
           let newArr = {value: item, label: '#' + item};
           this.sendList.push(newArr);
         }
+        //console.log(this.sendList);
         this.nftForm.id = this.sendList[0].value;
         this.getToken721Id(this.NFTInfo.contractAddress, this.nftForm.id);
         this.contractAddress = this.NFTInfo.contractAddress;
