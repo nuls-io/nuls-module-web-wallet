@@ -639,7 +639,7 @@ const cn = {
     "home3": "跨链资产",
     "home4": "NRC20资产",
     "home5": "NRC721资产",
-    "home6": "发送Hena",
+    "home6": "发送 ",
     "home7": "至地址",
     "home8": "发送",
   },
@@ -1022,6 +1022,7 @@ const cn = {
     "tips23": "该资产没有transferCrossChain方法",
     "tips24": "改应用暂不支持测试网络",
     "tips25": "请输入正确的地址!",
+    "tips26": "请选择交易的ID",
     "tips": "",
   },
 

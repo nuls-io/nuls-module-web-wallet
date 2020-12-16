@@ -638,7 +638,7 @@ const en = {
     "home3": "Across assets",
     "home4": "NRC20 Assets",
     "home5": "NRC721 Assets",
-    "home6": "Send Hena",
+    "home6": "Send ",
     "home7": "To address",
     "home8": "Send",
   },
@@ -1018,6 +1018,7 @@ const en = {
     "tips23": "There is no transferCrossChain method for this asset",
     "tips24": "The application does not support the test network",
     "tips25": "Please enter the correct address!",
+    "tips26": "Please select the ID of the transaction",
     "tips": "tips",
   },
 

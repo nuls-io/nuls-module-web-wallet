@@ -118,13 +118,18 @@
             </div>
           </div>
         </el-tab-pane>
-        <el-tab-pane :label="$t('home.home5')" name="nrc721">
+        <el-tab-pane :label="$t('home.home5')" name="nrc721" class="tab_nrc721">
           <el-tabs tab-position="left">
-            <el-tab-pane v-for="item in token721List" :label="item.tokenSymbol +'('+item.tokenSet.length +')'"
-                         :key="item.contractAddress">
+            <el-tab-pane v-for="item in token721List" :key="item.contractAddress">
+              <div slot="label">
+                <el-tooltip :content="item.contractAddress" placement="right" effect="light">
+                  <el-link :underline="false">{{item.tokenSymbol +'('+item.tokenSet.length +')'}}</el-link>
+                </el-tooltip>
+              </div>
               <NFTTransfer :NFTInfo="item">
               </NFTTransfer>
             </el-tab-pane>
+
           </el-tabs>
         </el-tab-pane>
       </el-tabs>
@@ -219,13 +224,15 @@
         activeContract: 'nrc20',
 
         token721List: [],//724数据
+        homeSetIntervalOne: null,//定时器
+        homeSetInterval: null,//定时器
 
       };
     },
     components: {NFTTransfer},
     created() {
       this.addressInfo = addressInfo(1);
-      setInterval(() => {
+      this.homeSetIntervalOne = setInterval(() => {
         this.addressInfo = addressInfo(1);
       }, 500);
 
@@ -247,6 +254,16 @@
     },
     mounted() {
       this.symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
+
+      this.homeSetInterval = setInterval(() => {
+        this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
+        this.getAccountCrossLedgerList(this.addressInfo.address);
+        this.getAccountToken721List(this.addressInfo.address);
+      }, 10000);
+    },
+    destroyed() {
+      clearInterval(this.homeSetIntervalOne);
+      clearInterval(this.homeSetInterval);
     },
     watch: {
       addressInfo(val, old) {
@@ -684,6 +701,9 @@
           margin: 5px 10px 15px 0;
         }
       }
+    }
+    .tab_nrc721 {
+      margin: 0 0 5rem 0;
     }
     .payee_dialog {
       .el-dialog {

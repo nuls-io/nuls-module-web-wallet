@@ -1,8 +1,15 @@
 <template>
   <div class="nft">
-    <div class="click fr txlist" @click="toUrl('txLis721')">{{$t('home.home2')}}</div>
+    <div class="txlist" @click="toUrl('txLis721')">
+      <div class="fl">
+        合约地址：
+        <span class="click" @click="toUrl('contractsInfo',NFTInfo.contractAddress,1)">{{NFTInfo.contractAddress}}</span>
+      </div>
+      <div class="click fr">{{$t('home.home2')}}</div>
+
+    </div>
     <el-form :model="nftForm" status-icon :rules="nftRules" ref="nftForm" class="cb nftForm">
-      <el-form-item :label="$t('home.home6')" prop="id" class="send fl">
+      <el-form-item :label="$t('home.home6') + NFTInfo.tokenSymbol " prop="id" class="send fl">
         <!--el-input v-model="nftForm.id" autocomplete="off">
         </el-input>-->
         <el-select v-model="nftForm.id" filterable placeholder="" @change="changeId">
@@ -15,7 +22,7 @@
         </el-select>
       </el-form-item>
       <el-form-item :label="$t('home.home7')" prop="toAddress" class="to fl">
-        <el-input v-model="nftForm.toAddress" autocomplete="off">
+        <el-input v-model.trim="nftForm.toAddress" autocomplete="off">
         </el-input>
       </el-form-item>
       <div class="cb"></div>
@@ -39,7 +46,7 @@
   import nuls from 'nuls-sdk-js'
   import Password from '@/components/PasswordBar'
   import {MAIN_INFO} from '@/config.js'
-  import {addressInfo, getArgs, Times, Plus, passwordVerification,} from '@/api/util'
+  import {addressInfo, getArgs, Times, Plus, passwordVerification, connectToExplorer} from '@/api/util'
   import {
     countFee, inputsOrOutputs, validateAndBroadcast, getNulsBalance, //validateTx
   } from '@/api/requestData'
@@ -49,14 +56,18 @@
     data() {
       let validateToAddress = (rule, value, callback) => {
         let toAddressInfo = {};
-        if (value) {
+        if (value && value.length > 20) {
           toAddressInfo = nuls.verifyAddress(value);
         }
 
         //console.log(toAddressInfo);
         if (!value) {
           return callback(new Error(this.$t('tips.tips25')));
+        } else if (value.length < 20) {
+          return callback(new Error(this.$t('tips.tips25')));
         } else if (!toAddressInfo.right) {
+          return callback(new Error(this.$t('tips.tips25')));
+        } else if (toAddressInfo.chainId !== MAIN_INFO.chainId) {
           return callback(new Error(this.$t('tips.tips25')));
         } else {
           callback();
@@ -70,6 +81,9 @@
           toAddress: '',
         },
         nftRules: {
+          id: [
+            {required: true, message: this.$t('tips.tips26'), trigger: 'change'}
+          ],
           toAddress: [
             {validator: validateToAddress, trigger: 'blur'}
           ],
@@ -90,6 +104,7 @@
     },
     created() {
       this.addressInfo = addressInfo(1);
+      //console.log(this.NFTInfo)
     },
     mounted() {
       this.init();
@@ -256,6 +271,8 @@
           //console.log(response);
           if (response.success) {
             this.$message({message: this.$t('tips.tips0'), type: 'success', duration: 1000});
+            this.sendList.splice(this.sendList.findIndex(item => item.value === this.nftForm.id), 1);
+            this.nftForm.id = this.sendList.length !== 0 ? this.sendList[0].value : ''
           } else {
             if (response.data.code === 'err_0014') {
               this.$message({message: response.data.message, type: 'error', duration: 3000});
@@ -281,7 +298,8 @@
       toUrl(name, parms, type = 0) {
         //console.log(name, parms, type);
         if (type === 1) {
-          console.log(name, parms, type);
+          parms = parms + '&tabName=first';
+          connectToExplorer(name, parms);
         } else {
           let newParms = {accountType: parms};
           this.$router.push({
@@ -297,7 +315,8 @@
 <style lang="less">
   .nft {
     .txlist {
-      height: 40px;
+      margin: 0 0 0 100px;
+      height: 50px;
       line-height: 40px;
       font-size: 14px;
     }
