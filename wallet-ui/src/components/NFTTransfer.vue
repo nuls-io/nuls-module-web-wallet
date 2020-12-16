@@ -1,14 +1,15 @@
 <template>
   <div class="nft">
-    <div class="txlist" @click="toUrl('txLis721')">
+    <div class="txlist">
       <div class="fl">
-        合约地址：
+        {{$t('contract.contract2')}}：
         <span class="click" @click="toUrl('contractsInfo',NFTInfo.contractAddress,1)">{{NFTInfo.contractAddress}}</span>
       </div>
-      <div class="click fr">{{$t('home.home2')}}</div>
+      <div class="click fr" @click="toUrl('txLis721')">{{$t('home.home2')}}</div>
 
     </div>
-    <el-form :model="nftForm" status-icon :rules="nftRules" ref="nftForm" class="cb nftForm">
+    <el-form :model="nftForm" status-icon :rules="nftRules" ref="nftForm" class="cb nftForm"
+             hide-required-asterisk="false">
       <el-form-item :label="$t('home.home6') + NFTInfo.tokenSymbol " prop="id" class="send fl">
         <!--el-input v-model="nftForm.id" autocomplete="off">
         </el-input>-->
@@ -300,6 +301,7 @@
         if (type === 1) {
           parms = parms + '&tabName=first';
           connectToExplorer(name, parms);
+          return;
         } else {
           let newParms = {accountType: parms};
           this.$router.push({
