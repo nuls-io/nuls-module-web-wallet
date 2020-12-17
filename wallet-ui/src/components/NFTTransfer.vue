@@ -316,7 +316,7 @@
 <style lang="less">
   .nft {
     .txlist {
-      margin: 0 0 0 100px;
+      margin: 0 40px 0 100px;
       height: 50px;
       line-height: 40px;
       font-size: 14px;
@@ -325,7 +325,7 @@
     .nftForm {
       margin: 0 0 0 100px;
       .send, .to {
-        width: 400px;
+        width: 350px;
         .el-form-item__content {
           .el-select {
             width: 100%;
@@ -357,9 +357,10 @@
       }
 
       .btn {
+        margin: 0 0 40px 0;
         .el-form-item__content {
           text-align: right;
-          width: 830px;
+          width: 730px;
         }
         .el-button--success {
           width: auto;
