@@ -81,7 +81,7 @@
     </div>
     <div class="cb"></div>
 
-    <div class="w1200" style="margin: 35px auto 5rem;">
+    <div class="w1200" style="margin: 35px auto 6rem;">
       <el-tabs v-model="activeContract" @tab-click="handleClick">
         <el-tab-pane :label="$t('home.home4')" name="nrc20">
           <div class="w1200 cb overview bg-white" style="margin: 12px auto 0; height: auto">
