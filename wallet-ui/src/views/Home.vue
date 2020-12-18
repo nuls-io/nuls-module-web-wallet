@@ -81,7 +81,7 @@
     </div>
     <div class="cb"></div>
 
-    <div class="w1200" style="margin: 35px auto 6rem;">
+    <div class="w1200 tabs" style="margin: 35px auto 6rem;">
       <el-tabs v-model="activeContract" @tab-click="handleClick">
         <el-tab-pane :label="$t('home.home4')" name="nrc20">
           <div class="w1200 cb overview bg-white" style="margin: 12px auto 0; height: auto">
@@ -119,7 +119,7 @@
           </div>
         </el-tab-pane>
         <el-tab-pane :label="$t('home.home5')" name="nrc721" class="tab_nrc721">
-          <el-tabs tab-position="left" v-model="active721">
+          <el-tabs tab-position="left" v-model="active721" v-if="token721List.length !==0">
             <el-tab-pane v-for="item in token721List" :key="item.contractAddress" :name="item.contractAddress">
               <div slot="label">
                 <el-tooltip :content="item.contractAddress" placement="right" effect="light">
@@ -130,6 +130,7 @@
               </NFTTransfer>
             </el-tab-pane>
           </el-tabs>
+          <div class="tc font12" style="line-height: 60px; color: #909399;" v-else>暂无数据</div>
         </el-tab-pane>
       </el-tabs>
     </div>
@@ -529,7 +530,7 @@
               this.token721List = response.result.list.filter(obj => obj.tokenSet.length !== 0); //隐藏数量为零的资产
               //console.log(this.token721List);
               if (this.token721List.length !== 0) {
-                this.active721 = this.token721List[0].contractAddress;
+                this.active721 = this.active721 !== '' ? this.active721 : this.token721List[0].contractAddress;
               } else {
                 this.active721 = '';
               }
@@ -720,6 +721,18 @@
         color: #6ab71a;
       }
     }
+    .tabs {
+      .el-tabs .el-tabs__header .el-tabs__nav-wrap .el-tabs__active-bar {
+        height: 2px;
+        background-color: #6ab71a;
+      }
+      .el-tabs {
+        .el-tabs__header {
+          .el-tabs__nav-wrap {
+          }
+        }
+      }
+    }
     .tab_nrc721 {
       margin: 13px 0 0 0;
       background-color: #ffffff;
@@ -727,6 +740,8 @@
       .el-tabs {
         margin: 40px 0 0 0;
         .el-tabs__header {
+          min-height: 250px;
+          border-right: 2px solid #E4E7ED;
           .el-tabs__nav-wrap {
             width: 200px;
             .el-tabs__item {
@@ -734,12 +749,18 @@
               height: 25px;
               line-height: 25px;
             }
+            .is-right::after {
+              width: 1px;
+            }
           }
         }
         .el-tabs__active-bar {
           background-color: #6ab71a;
         }
 
+      }
+      .el-tabs--left .el-tabs__nav-wrap.is-left::after {
+        width: 1px;
       }
     }
     .payee_dialog {

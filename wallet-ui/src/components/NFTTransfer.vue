@@ -320,12 +320,18 @@
       height: 50px;
       line-height: 40px;
       font-size: 14px;
+      .fl {
+        color: #8794b1;
+      }
     }
 
     .nftForm {
       margin: 0 0 0 100px;
       .send, .to {
         width: 350px;
+        .el-form-item__label {
+          color: #8794b1;
+        }
         .el-form-item__content {
           .el-select {
             width: 100%;
@@ -342,7 +348,7 @@
       .tokenURL {
         .titles {
           font-size: 14px;
-          color: #606266;
+          color: #8794b1;
         }
         .text {
           margin: 0 0 0 0;
