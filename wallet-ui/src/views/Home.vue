@@ -37,7 +37,7 @@
       </div>
     </div>
     <div class="cb"></div>
-    <div class="w1200 overview bg-white" style="margin: 20px auto 0; height: auto">
+    <div class="w1200 overview bg-white" style="margin: 35px auto 0; height: auto">
       <div class="title">
         <img src="./../assets/img/across-logo.svg" style="width: 20px; margin-top:11px; "/>
         {{$t('home.home3')}}
@@ -58,14 +58,14 @@
           </el-table-column>
           <el-table-column prop="totalBalance" :label="$t('tab.tab2')" align="left" width="230">
           </el-table-column>
-          <el-table-column prop="balance" :label="$t('tab.tab4')" width="230">
-          </el-table-column>
           <el-table-column :label="$t('tab.tab3')" width="230">
             <template slot-scope="scope">
               <span class="click" @click="toUrl('frozenList',scope.row)"
                     v-show="scope.row.locking !== '--' && scope.row.locking !==0 ">{{scope.row.locking}}</span>
               <span v-show="scope.row.locking === '--' || scope.row.locking ===0">{{scope.row.locking}}</span>
             </template>
+          </el-table-column>
+          <el-table-column prop="balance" :label="$t('tab.tab4')" width="230">
           </el-table-column>
           <el-table-column fixed="right" :label="$t('public.operation')" align="center" min-width="120">
             <template slot-scope="scope">
@@ -80,42 +80,61 @@
       </div>
     </div>
     <div class="cb"></div>
-    <div class="w1200 overview bg-white" style="margin: 20px auto 0">
-      <div class="title">
-        <img src="./../assets/img/contract-logo.svg" style="width: 20px;margin-top:11px;"/>{{$t('tab.tab25')}}
-      </div>
-      <div class="home_tabs">
-        <el-table :data="addressAssetsData" stripe border v-loading="assetsListLoading"
-                  element-loading-spinner="el-icon-loading">
-          <el-table-column :label="$t('nodeService.nodeService2')" align="center" width="200">
-            <template slot-scope="scope">
-              <span class="click td" @click="toUrl('contractsInfo',scope.row.contractAddress,1)">
-                {{ scope.row.account }}
-              </span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="total" :label="$t('tab.tab2')" align="left" width="230">
-          </el-table-column>
-          <el-table-column prop="balance" :label="$t('tab.tab4')" width="230">
-          </el-table-column>
-          <el-table-column :label="$t('tab.tab3')" width="230">
-            <template slot-scope="scope">
-              <!--<span v-show="scope.row.locking !== '&#45;&#45;' && scope.row.locking !==0 ">
-                {{scope.row.locking}}
-              </span>-->
-              <span>{{scope.row.locking}}</span>
-            </template>
-          </el-table-column>
-          <el-table-column fixed="right" :label="$t('public.operation')" align="center" min-width="120">
-            <template slot-scope="scope">
-              <label class="click tab_bn" @click="toUrl('transfer',scope.row)">{{$t('nav.transfer')}}</label>
-              <span class="tab_line">|</span>
-              <label class="click tab_bn" @click="toUrl('txList',scope.row)">{{$t('home.home2')}}</label>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
+
+    <div class="w1200 tabs" style="margin: 35px auto 6rem;">
+      <el-tabs v-model="activeContract" @tab-click="handleClick">
+        <el-tab-pane :label="$t('home.home4')" name="nrc20">
+          <div class="w1200 cb overview bg-white" style="margin: 12px auto 0; height: auto">
+            <!--<div class="title">
+              <img src="./../assets/img/contract-logo.svg" style="width: 20px;margin-top:11px;"/>{{$t('tab.tab25')}}
+            </div>-->
+            <div class="home_tabs" style="padding: 0">
+              <el-table :data="addressAssetsData" stripe border v-loading="assetsListLoading"
+                        element-loading-spinner="el-icon-loading">
+                <el-table-column :label="$t('nodeService.nodeService2')" align="center" width="200">
+                  <template slot-scope="scope">
+                  <span class="click td" @click="toUrl('contractsInfo',scope.row.contractAddress,1)">
+                    {{ scope.row.account }}
+                  </span>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="total" :label="$t('tab.tab2')" align="left" width="230">
+                </el-table-column>
+                <el-table-column prop="balance" :label="$t('tab.tab4')" width="230">
+                </el-table-column>
+                <el-table-column :label="$t('tab.tab3')" width="230">
+                  <template slot-scope="scope">
+                    <span>{{scope.row.locking}}</span>
+                  </template>
+                </el-table-column>
+                <el-table-column fixed="right" :label="$t('public.operation')" align="center" min-width="120">
+                  <template slot-scope="scope">
+                    <label class="click tab_bn" @click="toUrl('transfer',scope.row)">{{$t('nav.transfer')}}</label>
+                    <span class="tab_line">|</span>
+                    <label class="click tab_bn" @click="toUrl('txList',scope.row)">{{$t('home.home2')}}</label>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+          </div>
+        </el-tab-pane>
+        <el-tab-pane :label="$t('home.home5')" name="nrc721" class="tab_nrc721">
+          <el-tabs tab-position="left" v-model="active721" v-if="token721List.length !==0">
+            <el-tab-pane v-for="item in token721List" :key="item.contractAddress" :name="item.contractAddress">
+              <div slot="label">
+                <el-tooltip :content="item.contractAddress" placement="right" effect="light">
+                  <el-link :underline="false">{{item.tokenSymbol +'('+item.tokenSet.length +')'}}</el-link>
+                </el-tooltip>
+              </div>
+              <NFTTransfer :NFTInfo="item" v-if="reFresh">
+              </NFTTransfer>
+            </el-tab-pane>
+          </el-tabs>
+          <div class="tc font12" style="line-height: 60px; color: #909399;" v-else>暂无数据</div>
+        </el-tab-pane>
+      </el-tabs>
     </div>
+
     <el-dialog title="" :visible.sync="qrcodeDialog" width="22.5rem" center class="payee_dialog">
       <el-tabs v-model="activeName" @tab-click="payeeHandleClick">
         <el-tab-pane :label="$t('tips.tips12')" name="payeeInfo">
@@ -154,6 +173,7 @@
 <script>
   import axios from 'axios'
   import QRCode from 'qrcodejs2'
+  import NFTTransfer from '@/components/NFTTransfer'
   import {
     timesDecimals,
     copys,
@@ -199,14 +219,22 @@
           amount: 100,
           currency: 'NULS',
           decimals: 8
-        }
+        },
+
+        activeContract: 'nrc20',
+
+        token721List: [],//724数据
+        active721: '',
+        homeSetIntervalOne: null,//定时器
+        homeSetInterval: null,//定时器
+        reFresh: true,
 
       };
     },
-    components: {},
+    components: {NFTTransfer},
     created() {
       this.addressInfo = addressInfo(1);
-      setInterval(() => {
+      this.homeSetIntervalOne = setInterval(() => {
         this.addressInfo = addressInfo(1);
       }, 500);
 
@@ -217,6 +245,7 @@
           setTimeout(() => {
             this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
             this.getAccountCrossLedgerList(this.addressInfo.address);
+            this.getAccountToken721List(this.addressInfo.address);
           }, 400);
         }, 600);
       } else {
@@ -227,16 +256,31 @@
     },
     mounted() {
       this.symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
+
+      this.homeSetInterval = setInterval(() => {
+        //this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
+        //this.getAccountCrossLedgerList(this.addressInfo.address);
+        this.getAccountToken721List(this.addressInfo.address);
+      }, 10000);
+    },
+    destroyed() {
+      clearInterval(this.homeSetIntervalOne);
+      clearInterval(this.homeSetInterval);
     },
     watch: {
       addressInfo(val, old) {
         if (val) {
           if (val.address !== old.address && old.address) {
+            this.token721List = [];
+            this.active721 = '';
             this.getAddressInfoByNode(this.addressInfo.address);
-            setTimeout(() => {
-              this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
-              this.getAccountCrossLedgerList(this.addressInfo.address);
-            }, 200);
+            this.reFresh = false;
+            this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
+            this.getAccountCrossLedgerList(this.addressInfo.address);
+            this.getAccountToken721List(this.addressInfo.address);
+            this.$nextTick(() => {
+              this.reFresh = true
+            })
           }
         }
       }
@@ -475,31 +519,26 @@
       },
 
       /**
-       * 资产列表分页功能
-       * @param val
+       * 获取地址721资产信息
+       * @param address
        **/
-      addressAssetsListPages(val) {
-        this.pageNumber = val;
-        this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
-      },
-
-      /**
-       * 隐藏共识奖励
-       * @param e
-       **/
-      changeHide(e) {
-        this.isHide = e;
-        this.pageNumber = 1;
-        this.getTxlistByAddress(this.pageNumber, this.pageSize, this.addressInfo.address, this.type, this.isHide)
-      },
-
-      /**
-       * 交易列表分页功能
-       * @param val
-       **/
-      txListPages(val) {
-        this.pageNumber = val;
-        this.getTxlistByAddress(this.pageNumber, this.pageSize, this.addressInfo.address, this.type, this.isHide)
+      async getAccountToken721List(address) {
+        await this.$post('/', 'getAccountToken721s', [1, 100, address], 'Home')
+          .then((response) => {
+            //console.log(response);
+            if (response.hasOwnProperty("result")) {
+              this.token721List = response.result.list.filter(obj => obj.tokenSet.length !== 0); //隐藏数量为零的资产
+              //console.log(this.token721List);
+              if (this.token721List.length !== 0) {
+                this.active721 = this.active721 !== '' ? this.active721 : this.token721List[0].contractAddress;
+              } else {
+                this.active721 = '';
+              }
+              //console.log(this.active721);
+            }
+          }).catch((err) => {
+            console.log(err);
+          })
       },
 
       /**
@@ -668,11 +707,60 @@
     }
     .home_tabs {
       padding-bottom: 100px;
+      .el-table td {
+        padding: 16px 0 !important;
+      }
+      .el-table .el-table__body-wrapper .el-table__body tr td {
+        border-right: 0;
+        padding: 16px 0 !important;
+      }
+    }
+    .el-tabs .el-tabs__header .el-tabs__nav-wrap .is-active {
+      color: #6ab71a;
+      span {
+        color: #6ab71a;
+      }
+    }
+    .tabs {
+      .el-tabs .el-tabs__header .el-tabs__nav-wrap .el-tabs__active-bar {
+        height: 2px;
+        background-color: #6ab71a;
+      }
       .el-tabs {
-        margin: 30px auto 0;
-        .el-select {
-          margin: 5px 10px 15px 0;
+        .el-tabs__header {
+          .el-tabs__nav-wrap {
+          }
         }
+      }
+    }
+    .tab_nrc721 {
+      margin: 13px 0 0 0;
+      background-color: #ffffff;
+      border: 1px solid #EBEEF5;
+      .el-tabs {
+        margin: 40px 0 0 0;
+        .el-tabs__header {
+          min-height: 250px;
+          border-right: 2px solid #E4E7ED;
+          .el-tabs__nav-wrap {
+            width: 200px;
+            .el-tabs__item {
+              padding: 0 40px 0 0;
+              height: 25px;
+              line-height: 25px;
+            }
+            .is-right::after {
+              width: 1px;
+            }
+          }
+        }
+        .el-tabs__active-bar {
+          background-color: #6ab71a;
+        }
+
+      }
+      .el-tabs--left .el-tabs__nav-wrap.is-left::after {
+        width: 1px;
       }
     }
     .payee_dialog {

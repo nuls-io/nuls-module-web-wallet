@@ -636,6 +636,11 @@ const en = {
     "home1": "Cross assets",
     "home2": "Transaction record",
     "home3": "Across assets",
+    "home4": "NRC20 Assets",
+    "home5": "NRC721 Assets",
+    "home6": "Send ",
+    "home7": "To address",
+    "home8": "Send",
   },
 
   "frozenList": {
@@ -1012,6 +1017,8 @@ const en = {
     "tips22": "The asset is not an NRC20 contract asset or is not registered for a cross-chain transaction",
     "tips23": "There is no transferCrossChain method for this asset",
     "tips24": "The application does not support the test network",
+    "tips25": "Please enter the correct address!",
+    "tips26": "Please select the ID of the transaction",
     "tips": "tips",
   },
 

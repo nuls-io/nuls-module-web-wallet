@@ -637,6 +637,11 @@ const cn = {
     "home1": "跨链资产",
     "home2": "交易记录",
     "home3": "跨链资产",
+    "home4": "NRC20资产",
+    "home5": "NRC721资产",
+    "home6": "发送 ",
+    "home7": "至地址",
+    "home8": "发送",
   },
 
   "frozenList": {
@@ -1016,6 +1021,8 @@ const cn = {
     "tips22": "该资产不是NRC20合约资产或没有注册跨链交易",
     "tips23": "该资产没有transferCrossChain方法",
     "tips24": "改应用暂不支持测试网络",
+    "tips25": "请输入正确的地址!",
+    "tips26": "请选择交易的ID",
     "tips": "",
   },
 

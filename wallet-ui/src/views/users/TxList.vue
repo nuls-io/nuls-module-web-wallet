@@ -118,6 +118,7 @@
           {value: '23', label: '23'},
           {value: '24', label: '24'},
           {value: '25', label: '25'},
+          {value: '26', label: '26'},
         ], //交易类型
         typeValue: '0',
         inAndOutOptions: [
@@ -200,7 +201,7 @@
                   item.amount = Number(timesDecimals(item.fee.value, item.decimals)).toFixed(3);
                 } else {
                   //item.amount = Number(timesDecimals(item.values, item.decimals)).toFixed(3);'
-                  item.amount = item.values / 100000000
+                  item.amount = parseFloat(Number(timesDecimals(item.values, item.decimals)).toFixed(3));
                 }
               }
               this.txListData = response.result.list;
