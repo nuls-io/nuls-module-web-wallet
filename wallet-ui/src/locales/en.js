@@ -629,6 +629,7 @@ const en = {
     "password1": "Please input  password",
     "password2": "Cancel",
     "password3": "Confirm",
+    "password4": "Remember password (browser closes and clears)",
   },
 
   "home": {

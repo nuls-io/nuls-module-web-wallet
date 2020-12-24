@@ -27,6 +27,9 @@
             <el-input v-model="passwordForm.password" type="password" :maxlength="22" ref="inpus"
                       @keyup.enter.native="enterSubmit('passwordForm')">
             </el-input>
+            <div class="cb" style="position: absolute;margin: 10px 0 0 0 ">
+              <el-checkbox v-model="isKeep">{{$t('password.password4')}}</el-checkbox>
+            </div>
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
@@ -43,8 +46,9 @@
 <script>
   import QRCode from 'qrcodejs2'
   import nuls from 'nuls-sdk-js'
-  import {connectToExplorer} from '@/api/util.js'
-  import {validateAndBroadcast, getScanAutograph} from '@/api/requestData'
+  import {connectToExplorer, passwordVerification, addressInfo} from '@/api/util.js'
+  import {validateAndBroadcast, getScanAutograph, getPrefixByChainId} from '@/api/requestData'
+  import {MAIN_INFO} from '@/config'
 
   export default {
     props: {},
@@ -69,14 +73,14 @@
             {validator: validatePass, trigger: ['blur', 'change']}
           ]
         },
+        isKeep: false,//记住密码
+        addressInfo: {},//账户信息
+        prefix: {},//地址前缀
       }
     },
     created() {
     },
     mounted() {
-      if (process.env.NODE_ENV !== 'production') {
-        this.passwordForm.password = 'nuls123456'
-      }
     },
     watch: {
       passwordVisible(val) {
@@ -186,6 +190,21 @@
        * @author: Wave
        */
       showPassword(boolean) {
+        this.addressInfo = addressInfo(1);
+        getPrefixByChainId(MAIN_INFO.chainId).then((response) => {
+          this.prefix = response
+        }).catch((err) => {
+          console.log(err);
+          this.prefix = '';
+        });
+
+        let keepList = sessionStorage.hasOwnProperty('keepData') ? JSON.parse(sessionStorage.getItem('keepData')) : [];
+        let keepInfo = keepList.filter(obj => obj.address === this.addressInfo.address);
+        if (keepInfo.length !== 0) {
+          this.passwordForm.password = keepInfo[0].password;
+          this.isKeep = true;
+        }
+
         this.passwordVisible = boolean;
       },
 
@@ -195,9 +214,28 @@
        * @author: Wave
        */
       dialogSubmit(formName) {
-        this.$refs[formName].validate((valid) => {
+        this.$refs[formName].validate(async (valid) => {
           if (valid) {
             this.$emit('passwordSubmit', this.passwordForm.password);
+            let keepList = sessionStorage.hasOwnProperty('keepData') ? JSON.parse(sessionStorage.getItem('keepData')) : [];
+            let resData = await passwordVerification(this.addressInfo, this.passwordForm.password, this.prefix);
+            let oldKeepInfo = keepList.filter(obj => obj.address === resData.address);
+            //console.log(resData);
+            if (this.isKeep) {
+              if (resData.success) {
+                if (oldKeepInfo.length === 0) {
+                  keepList.push({address: resData.address, password: this.passwordForm.password})
+                }
+              }
+            } else {
+              if (oldKeepInfo.length === 1) {
+                keepList.splice(keepList.findIndex(item => item.address === resData.address), 1);
+              }
+            }
+            //console.log(keepList);
+            sessionStorage.setItem('keepData', JSON.stringify(keepList));
+            this.$refs[formName].resetFields();
+            this.isKeep = false;
             this.passwordVisible = false;
           } else {
             return false
@@ -262,7 +300,7 @@
       .el-dialog {
         .el-dialog__body {
           height: 330px;
-          .qrcode{
+          .qrcode {
             width: 250px;
           }
         }

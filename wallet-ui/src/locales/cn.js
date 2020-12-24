@@ -630,6 +630,7 @@ const cn = {
     "password1": "请输入密码",
     "password2": "取 消",
     "password3": "确 定",
+    "password4": "记住密码(浏览器关闭会清除)",
   },
 
   "home": {
