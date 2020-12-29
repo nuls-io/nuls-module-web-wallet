@@ -642,6 +642,12 @@ const en = {
     "home6": "Send ",
     "home7": "To address",
     "home8": "Send",
+    "home9": "Token management",
+    "home10": "Please enter the Token",
+    "home11": "Hide tokens with 0 holdings",
+    "home12": "Name",
+    "home13": "Holdings",
+    "home14": "Contract address",
   },
 
   "frozenList": {
