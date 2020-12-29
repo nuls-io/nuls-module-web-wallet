@@ -271,7 +271,7 @@
         },
         transferRules: {
           toAddress: [{validator: validateToAddress, trigger: ['blur']}],
-          amount: [{validator: validateAmount, trigger: ['blur']}],
+          amount: [{validator: validateAmount, trigger: ['blur', 'change']}],
           gas: [{validator: validateGas, trigger: ['blur', 'change']}],
           price: [{validator: validatePrice, trigger: ['blur', 'change']}],
         },
@@ -750,6 +750,7 @@
         //console.log(transferInfo);
         //console.log(this.toAddressInfo.transferType);
         if (this.toAddressInfo.transferType === 1) { //1:NULS转账
+          //console.log(this.balanceInfo);
           inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 2);
           //console.log(inOrOutputs);
           tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, htmlEncode(this.transferForm.remarks), 2);

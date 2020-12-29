@@ -97,7 +97,7 @@ export async function inputsOrOutputs(transferInfo, balanceInfo, type) {
     inputs[0].amount = transferInfo.amount;
     //账户转出资产余额
     let nulsbalance = await getNulsBalance(chainID(), 1, transferInfo.fromAddress);
-    //console.log(nulsbalance);
+    console.log(nulsbalance);
     if (nulsbalance.data.balance < 100000) {
       console.log("余额小于手续费");
       return

@@ -404,6 +404,18 @@ export function equalsObj(oldData, newData) {
 }
 
 /**
+ * @disc: 根据数组对象的某个字段去重
+ * @params: arr
+ * @params: name
+ * @date: 2020-12-28 17:15
+ * @author: Wave
+ */
+export function unique(arr,name) {
+  const res = new Map();
+  return arr.filter(item => !res.has(item[name]) && res.set(item[name], 1))
+}
+
+/**
  * 判断此对象是否是Object类型
  * @param {Object} obj
  */

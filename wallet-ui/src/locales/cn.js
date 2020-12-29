@@ -643,6 +643,12 @@ const cn = {
     "home6": "发送 ",
     "home7": "至地址",
     "home8": "发送",
+    "home9": "Token管理",
+    "home10": "请输入Token",
+    "home11": "隐藏持有量为0的Token",
+    "home12": "名称",
+    "home13": "持有量",
+    "home14": "合约地址",
   },
 
   "frozenList": {

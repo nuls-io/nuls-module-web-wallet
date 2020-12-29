@@ -248,11 +248,11 @@
         this.txInfoLoading = true;
         this.$post('/', 'getTx', [hash])
           .then((response) => {
-            //console.log(response);
+            console.log(response);
             if (response.hasOwnProperty("result")) {
               response.result.createTime = moment(getLocalTime(response.result.createTime * 1000)).format('YYYY-MM-DD HH:mm:ss');
               response.result.fees = timesDecimals(response.result.fee.value);
-              response.result.value = timesDecimals(response.result.value);
+              response.result.value = timesDecimals(response.result.value,response.result.decimal);
               //输入
               if (response.result.coinFroms) {
                 let assetsList = sessionStorage.hasOwnProperty('assetsList') ? JSON.parse(sessionStorage.getItem('assetsList')) : [];
@@ -261,7 +261,7 @@
                   if (_acData) {
                     itme.amount = timesDecimals(itme.amount, _acData.decimals);
                   } else {
-                    itme.amount = timesDecimals(itme.amount);
+                    itme.amount = timesDecimals(itme.amount,itme.decimal);
                   }
                 }
                 this.inputData = response.result.coinFroms
@@ -274,7 +274,7 @@
                   if (_acData) {
                     itme.amount = timesDecimals(itme.amount, _acData.decimals);
                   } else {
-                    itme.amount = timesDecimals(itme.amount);
+                    itme.amount = timesDecimals(itme.amount,itme.decimal);
                   }
                 }
                 this.outputData = response.result.coinTos
