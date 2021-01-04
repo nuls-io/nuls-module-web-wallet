@@ -129,7 +129,6 @@
   import utils from 'nuls-sdk-js/lib/utils/utils'
   import {
     isMainNet,
-    countCtxFee,
     getNulsBalance,
     inputsOrOutputs,
     validateAndBroadcast,
@@ -271,7 +270,7 @@
         },
         transferRules: {
           toAddress: [{validator: validateToAddress, trigger: ['blur']}],
-          amount: [{validator: validateAmount, trigger: ['blur']}],
+          amount: [{validator: validateAmount, trigger: ['blur', 'change']}],
           gas: [{validator: validateGas, trigger: ['blur', 'change']}],
           price: [{validator: validatePrice, trigger: ['blur', 'change']}],
         },
@@ -504,7 +503,7 @@
           return {success: true}
         } else { //跨链交易
           this.toAddressInfo.transferType = 5;
-          this.transferForm.fee = 0.1;
+          this.transferForm.fee = 0.01;
           return {success: true}
         }
       },
@@ -750,6 +749,7 @@
         //console.log(transferInfo);
         //console.log(this.toAddressInfo.transferType);
         if (this.toAddressInfo.transferType === 1) { //1:NULS转账
+          //console.log(this.balanceInfo);
           inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 2);
           //console.log(inOrOutputs);
           tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, htmlEncode(this.transferForm.remarks), 2);
@@ -772,19 +772,27 @@
         } else if (this.toAddressInfo.transferType === 5) { //5：跨链交易
           transferInfo.amount = Number(transferInfo.amount).toString();
           transferInfo.fee = Number(transferInfo.fee);
+          //console.log(transferInfo);
           let crossTxHex = await this.crossTxhexs(passwordInfo.pri, passwordInfo.pub, this.addressInfo.chainId, transferInfo);
           //console.log(crossTxHex);
           try {
             let resData = await this.$post('/', 'sendCrossTx', [crossTxHex]);
             //console.log(resData);
-            if (!resData.result.success) {
-              this.$message({message: this.$t('tips.tips14') + JSON.stringify(resData), type: 'error', duration: 3000});
+            if (!resData.hasOwnProperty('result')) {
+              this.$message({
+                message: this.$t('tips.tips00') + JSON.stringify(resData.error),
+                type: 'error',
+                duration: 3000
+              });
+              this.transferLoading = false;
             } else {
               this.toUrl("txList");
               this.transferLoading = false;
             }
           } catch (err) {
-            this.$message({message: this.$t('tips.tips14') + JSON.stringify(err), type: 'error', duration: 3000});
+            //console.log(err);
+            this.$message({message: this.$t('tips.tips00') + JSON.stringify(err), type: 'error', duration: 3000});
+            this.transferLoading = false;
           }
           return;
         } else if (this.toAddressInfo.transferType === 6) { //5：NRC20跨链交易
@@ -804,7 +812,7 @@
         //console.log(broadcastResult);
         if (!broadcastResult.success) {
           this.$message({
-            message: this.$t('tips.tips14') + JSON.stringify(broadcastResult.data),
+            message: this.$t('tips.tips00') + JSON.stringify(broadcastResult.data),
             type: 'error',
             duration: 3000
           });
@@ -983,8 +991,9 @@
           }
         }
         //如果转出资产为本链主资产，则直接将手续费加到转出金额上
+        //console.log(chainId === transferInfo.assetsChainId && transferInfo.assetsId === 1);
         if (chainId === transferInfo.assetsChainId && transferInfo.assetsId === 1) {
-          let newAmount = Number(Plus(transferInfo.amount, transferInfo.fee));
+          let newAmount = Plus(transferInfo.amount, transferInfo.fee).toString();
           //console.log(newAmount);
           if (balanceInfo.data.balance < newAmount) {
             this.$message({message: this.$t('newConsensus.newConsensus7'), type: 'error', duration: 3000});
@@ -999,7 +1008,9 @@
             locked: 0,
             nonce: balanceInfo.data.nonce
           });
+          //console.log(inputs);
           //如果不是主网需收取主网NULS手续费
+          //console.log(!isMainNet(chainId));
           if (!isMainNet(chainId)) {
             inputs.push({
               address: transferInfo.fromAddress,
@@ -1018,8 +1029,9 @@
             return;
           }
           //如果转出的是NULS，则需要把NULS手续费添加到转出金额上
+          //console.log(transferInfo.assetsChainId === MAIN_INFO.chainId && transferInfo.assetsId === 1);
           if (transferInfo.assetsChainId === MAIN_INFO.chainId && transferInfo.assetsId === 1) {
-            let newAmount = transferInfo.amount + transferInfo.fee;
+            let newAmount = Plus(transferInfo.amount, transferInfo.fee).toString();
             if (mainNetBalanceInfo.data.balance < newAmount) {
               this.$message({message: this.$t('newConsensus.newConsensus7'), type: 'error', duration: 3000});
               return;
@@ -1051,6 +1063,7 @@
             });
           }
           //本链主资产手续费
+          //console.log(!isMainNet(chainId));
           if (!isMainNet(chainId)) {
             inputs.push({
               address: transferInfo.fromAddress,
@@ -1062,6 +1075,7 @@
             });
           }
         }
+        //console.log(transferInfo);
         //console.log(inputs);
         //console.log(outputs);
 
@@ -1073,98 +1087,41 @@
         let bw = new Serializers();
         let mainCtx = new txs.CrossChainTransaction();
         let pubHex = Buffer.from(pub, 'hex');
-        let newFee = 0;
+        let newFee = 100000;
         //console.log(isMainNet(chainId));
-        if (isMainNet(chainId)) {
-          await countCtxFee(tAssemble, 1).then((result) => {
-            ///console.log(result);
-            newFee = result;
-          }).catch((err) => {
-            this.$message({message: this.$t('newConsensus.newConsensus7'), type: 'error', duration: 3000});
-            console.log(err);
-            return;
+        mainCtx.time = tAssemble.time;
+        mainCtx.remark = tAssemble.remark;
+        let mainNetInputs = [];
+        //console.log(transferInfo);
+        if (transferInfo.assetsChainId === MAIN_INFO.chainId && transferInfo.assetsId === 1) {
+          mainNetInputs.push({
+            address: transferInfo.fromAddress,
+            assetsChainId: transferInfo.assetsChainId,
+            assetsId: transferInfo.assetsId,
+            amount: transferInfo.amount + newFee,
+            locked: 0,
+            nonce: mainNetBalanceInfo.data.nonce
           });
         } else {
-          await countCtxFee(tAssemble, 2).then((result) => {
-            newFee = result;
-          }).catch((err) => {
-            this.$message({message: this.$t('newConsensus.newConsensus7'), type: 'error', duration: 3000});
-            console.log(err);
-            return;
-          });
-          mainCtx.time = tAssemble.time;
-          mainCtx.remark = tAssemble.remark;
-          let mainNetInputs = [];
-          //console.log(transferInfo);
-          if (transferInfo.assetsChainId === MAIN_INFO.chainId && transferInfo.assetsId === 1) {
-            mainNetInputs.push({
-              address: transferInfo.fromAddress,
-              assetsChainId: transferInfo.assetsChainId,
-              assetsId: transferInfo.assetsId,
-              amount: transferInfo.amount + newFee,
-              locked: 0,
-              nonce: mainNetBalanceInfo.data.nonce
-            });
-          } else {
-            mainNetInputs = [{
-              address: transferInfo.fromAddress,
-              assetsChainId: transferInfo.assetsChainId,
-              assetsId: transferInfo.assetsId,
-              amount: transferInfo.amount,
-              locked: 0,
-              nonce: balanceInfo.data.nonce
-            }, {
-              address: transferInfo.fromAddress,
-              assetsChainId: MAIN_INFO.chainId,
-              assetsId: MAIN_INFO.assetId,
-              amount: newFee,
-              locked: 0,
-              nonce: mainNetBalanceInfo.data.nonce
-            }];
-          }
-          mainCtx.setCoinData(mainNetInputs, outputs);
+          mainNetInputs = [{
+            address: transferInfo.fromAddress,
+            assetsChainId: transferInfo.assetsChainId,
+            assetsId: transferInfo.assetsId,
+            amount: transferInfo.amount,
+            locked: 0,
+            nonce: balanceInfo.data.nonce
+          }, {
+            address: transferInfo.fromAddress,
+            assetsChainId: MAIN_INFO.chainId,
+            assetsId: MAIN_INFO.assetId,
+            amount: newFee,
+            locked: 0,
+            nonce: mainNetBalanceInfo.data.nonce
+          }];
         }
-        //console.log(transferInfo.fee !== newFee);
-        //如果手续费发生改变，重新组装CoinData
-        if (transferInfo.fee !== newFee) {
-          //console.log(transferInfo);
-          //console.log(chainId === transferInfo.assetsChainId && transferInfo.assetsId === 1);
-          if (chainId === transferInfo.assetsChainId && transferInfo.assetsId === 1) {
-            if (balanceInfo.data.balance < Number(Plus(transferInfo.amount, newFee))) {
-              this.$message({message: this.$t('newConsensus.newConsensus7'), type: 'error', duration: 3000});
-              return;
-            }
-            inputs[0].amount = Number(Plus(transferInfo.amount, newFee));
-            if (!isMainNet(chainId)) {
-              inputs[1].amount = newFee;
-            }
-          } else {
-            //console.log(localBalanceInfo.data.balance < transferInfo.fee);
-            if (localBalanceInfo.data.balance < transferInfo.fee) {
-              this.$message({message: this.$t('transfer.transfer20'), type: 'error', duration: 3000});
-              return;
-            }
-            //console.log(transferInfo.assetsChainId === MAIN_INFO.chainId && transferInfo.assetsId === 1);
-            if (transferInfo.assetsChainId === MAIN_INFO.chainId && transferInfo.assetsId === 1) {
-              if (mainNetBalanceInfo.data.balance < Number(Plus(transferInfo.amount, newFee))) {
-                this.$message({message: this.$t('newConsensus.newConsensus7'), type: 'error', duration: 3000});
-                return;
-              }
-              inputs[0].amount = Number(Plus(transferInfo.amount, newFee));
-              inputs[1].amount = newFee;
-            } else {
-              //console.log(inputs);
-              inputs[0].amount = Number(transferInfo.amount);
-              inputs[1].amount = newFee;
-            }
-          }
-          //console.log(inputs);
-          //console.log(outputs);
-          tAssemble = await nuls.transactionAssemble(inputs, outputs, transferInfo.remark, 10);
-          ctxSign = nuls.transactionSignature(pri, tAssemble);
-        } else {
-          ctxSign = nuls.transactionSignature(pri, tAssemble);
-        }
+        mainCtx.setCoinData(mainNetInputs, outputs);
+        //}
+        ctxSign = nuls.transactionSignature(pri, tAssemble);
         bw.writeBytesWithLength(pubHex);
         bw.writeBytesWithLength(ctxSign);
         if (!isMainNet(chainId)) {

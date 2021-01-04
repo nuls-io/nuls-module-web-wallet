@@ -356,9 +356,10 @@
           line-height: 22px;
           width: 830px;
           font-size: 13px;
-          padding: 5px 0;
+          padding: 8px;
           height: 60px;
           overflow-y: auto;
+          word-wrap:break-word;
         }
       }
 

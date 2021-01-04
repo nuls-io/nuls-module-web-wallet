@@ -629,6 +629,7 @@ const en = {
     "password1": "Please input  password",
     "password2": "Cancel",
     "password3": "Confirm",
+    "password4": "Remember password (browser closes and clears)",
   },
 
   "home": {
@@ -641,6 +642,12 @@ const en = {
     "home6": "Send ",
     "home7": "To address",
     "home8": "Send",
+    "home9": "Token management",
+    "home10": "Please enter the Token",
+    "home11": "Hide tokens with 0 holdings",
+    "home12": "Name",
+    "home13": "Holdings",
+    "home14": "Contract address",
   },
 
   "frozenList": {
@@ -987,6 +994,7 @@ const en = {
 
   "tips": {
     "tips0": "Transaction has been sent, waiting for block confirmation",
+    "tips00": "Broadcast transaction error :",
     "tips1": "Scan signature broadcast transaction error:",
     "tips2": "Scan code contract transfer and cross chain transaction are not supported temporarily",
     "tips3": "Scanning signature assembly transaction error",

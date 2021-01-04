@@ -84,10 +84,10 @@
     <div class="w1200 tabs" style="margin: 35px auto 6rem;">
       <el-tabs v-model="activeContract" @tab-click="handleClick">
         <el-tab-pane :label="$t('home.home4')" name="nrc20">
+          <div class="fr">
+            <i class="el-icon-circle-plus-outline click" @click="plusToken"></i>
+          </div>
           <div class="w1200 cb overview bg-white" style="margin: 12px auto 0; height: auto">
-            <!--<div class="title">
-              <img src="./../assets/img/contract-logo.svg" style="width: 20px;margin-top:11px;"/>{{$t('tab.tab25')}}
-            </div>-->
             <div class="home_tabs" style="padding: 0">
               <el-table :data="addressAssetsData" stripe border v-loading="assetsListLoading"
                         element-loading-spinner="el-icon-loading">
@@ -123,7 +123,7 @@
             <el-tab-pane v-for="item in token721List" :key="item.contractAddress" :name="item.contractAddress">
               <div slot="label">
                 <el-tooltip :content="item.contractAddress" placement="right" effect="light">
-                  <el-link :underline="false">{{item.tokenSymbol +'('+item.tokenSet.length +')'}}</el-link>
+                  <el-link :underline="false">{{item.tokenSymbol +' ('+item.tokenSet.length +')'}}</el-link>
                 </el-tooltip>
               </div>
               <NFTTransfer :NFTInfo="item" v-if="reFresh">
@@ -135,7 +135,7 @@
       </el-tabs>
     </div>
 
-    <el-dialog title="" :visible.sync="qrcodeDialog" width="22.5rem" center class="payee_dialog">
+    <el-dialog title="" :visible.sync="qrcodeDialog" width="22.5rem" center class="token-diolog">
       <el-tabs v-model="activeName" @tab-click="payeeHandleClick">
         <el-tab-pane :label="$t('tips.tips12')" name="payeeInfo">
           <el-form :model="payeeForm" class="payee_form">
@@ -167,6 +167,34 @@
         </el-tab-pane>
       </el-tabs>
     </el-dialog>
+
+    <el-dialog :title="$t('home.home9')" class="token-diolog" width="37rem"
+               :visible.sync="tokenDialog"
+               :close-on-click-modal="false"
+               :close-on-press-escape="false"
+               @close="tokenDioloClose">
+      <el-input :placeholder="$t('home.home10')" class="token-search" suffix-icon="el-icon-search" v-model="tokenSearch"
+                @input="changeToken">
+      </el-input>
+      <!--<el-checkbox v-model="isShowZero" @change="changeShowZero">{{$t('home.home11')}}</el-checkbox>-->
+      <ul class="token-list scroll">
+        <li v-for="item in showList" :key="item.contractAddress" class="cb">
+          <div class="fl">
+            <h5 class="fl">{{$t('home.home12')}}:<span>{{item.symbol}}</span></h5>
+            <h5 class="fl">{{$t('home.home13')}}:<span>{{item.total}}</span></h5>
+            <h6 class="cb">{{$t('home.home14')}}:<span>{{item.contractAddress}}</span></h6>
+          </div>
+          <div class="fr">
+            <el-checkbox v-model="item.isShow" @change="changeShow(item)">
+            </el-checkbox>
+          </div>
+        </li>
+      </ul>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="tokenDialog = false">{{$t('public.cancel')}}</el-button>
+        <el-button type="primary" @click="tokenDialog = false">{{$t('public.confirm')}}</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -183,7 +211,9 @@
     connectToExplorer,
     Plus,
     Minus,
-    divisionDecimals
+    divisionDecimals,
+    chainID,
+    unique
   } from '@/api/util'
 
   export default {
@@ -191,19 +221,18 @@
     data() {
       return {
         symbol: 'NULS', //symbol
-        homeActive: 'homeFirst',   //tab默认选中
+        homeActive: 'homeFirst',  //tab默认选中
         addressInfo: {},//默认账户信息
         addressNULSAssets: {},//账户NULS资产信息
         overviewLoading: true,//nuls资产加载动画
         addressAssetsData: [],//账户资产列表
         NULSUsdt: 0,//nuls美元值
         assetsListLoading: true,//账户资产列表加载动画
-        //资产类型
         assetsOptions: [
           {value: '0', label: '0'},
           {value: '1', label: '1'},
           {value: '2', label: '2'}
-        ],
+        ], //资产类型
         assetsValue: "0",
         txListDataLoading: true,  //资产加载动画
         txListData: [], //交易数据
@@ -213,21 +242,22 @@
         crossLinkData: [],//跨链资产
         crossLinkDataLoading: true, //资产加载动画
         qrcodeDialog: false,//二维码弹框
-
         activeName: 'payeeInfo', //tab
         payeeForm: {
           amount: 100,
           currency: 'NULS',
           decimals: 8
         },
-
         activeContract: 'nrc20',
-
         token721List: [],//724数据
         active721: '',
         homeSetIntervalOne: null,//定时器
         homeSetInterval: null,//定时器
         reFresh: true,
+        allNRC20List: [],//所有nrc20资产
+        showList: [],//显示的nrc20资产
+        tokenSearch: '',//搜索内容
+        isShowZero: false,//是否隐藏为零的token
 
       };
     },
@@ -242,6 +272,8 @@
       if (this.addressInfo) {
         setTimeout(() => {
           this.getAddressInfoByNode(this.addressInfo.address);
+          this.allNRC20List = [];
+          this.allList();
           setTimeout(() => {
             this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
             this.getAccountCrossLedgerList(this.addressInfo.address);
@@ -258,8 +290,6 @@
       this.symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
 
       this.homeSetInterval = setInterval(() => {
-        //this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
-        //this.getAccountCrossLedgerList(this.addressInfo.address);
         this.getAccountToken721List(this.addressInfo.address);
       }, 10000);
     },
@@ -458,24 +488,21 @@
             if (response.hasOwnProperty("result")) {
               this.addressAssetsData = [];
               for (let itme of response.result.list) {
+                itme.key = itme.contractAddress;
                 itme.account = itme.tokenSymbol;
                 itme.type = 2;
                 //锁定
                 itme.locking = itme.lockedBalance ? divisionDecimals(itme.lockedBalance, itme.decimals) : 0;
-                /*itme.balance = Number(timesDecimals(itme.balance, itme.decimals)).toString();
-                itme.total = Number(Plus(itme.balance, itme.locking)).toString();*/
                 //总额
                 itme.total = divisionDecimals(itme.balance, itme.decimals);
                 //可用
                 itme.balance = divisionDecimals(Minus(itme.balance, itme.lockedBalance), itme.decimals);
-
                 itme.contractAddresss = superLong(itme.contractAddress, 6);
               }
             }
             const newAssetsList = response.result.list.filter(obj => obj.status !== 3); //隐藏已经删除合约
-            this.addressAssetsData.push(...newAssetsList);
             this.addressInfo.tokens = [];
-            this.addressInfo.tokens = this.addressAssetsData;
+            this.addressInfo.tokens = newAssetsList;
 
             let newList = [];
             for (let item of this.addressInfo.tokens) {
@@ -484,9 +511,24 @@
             }
             sessionStorage.removeItem('assetsList');
             sessionStorage.setItem('assetsList', JSON.stringify(newList));
+
+            //浏览器记录显示nrc20合约
+            let newShowData = newAssetsList.filter(obj => Number(obj.total) > 0);
+            //console.log(newShowData);
+            let nrc20Name = 'nrc20List' + chainID();
+            //console.log(nrc20Name);
+            if (localStorage.hasOwnProperty(nrc20Name)) {
+              let newData = [...newShowData, ...JSON.parse(localStorage.getItem(nrc20Name))];
+              this.addressAssetsData = newData;
+              localStorage.setItem(nrc20Name, JSON.stringify(unique(newData, 'contractAddress')))
+            } else {
+              this.addressAssetsData = newShowData;
+              localStorage.setItem(nrc20Name, JSON.stringify(unique(newShowData, 'contractAddress')));
+            }
+            this.addressAssetsData = unique(this.addressAssetsData, 'contractAddress');
+            //console.log(this.addressAssetsData);
             this.assetsListLoading = false;
           }).catch((error) => {
-            //this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
             console.log(error);
           })
       },
@@ -557,6 +599,128 @@
       },
 
       /**
+       * @disc: 获取所有list
+       * @params:
+       * @date: 2020-12-15 15:53
+       * @author: Wave
+       */
+      async allList(pageIndex = 1, pageSize = 100) {
+        let resDatas = await this.getAllNRC20(pageIndex, pageSize);
+        //console.log(resDatas);
+        if (resDatas.success) {
+          let newAssetsList = resDatas.data.list.filter(obj => obj.status !== 3); //隐藏已经删除合约
+          this.allNRC20List = [...this.allNRC20List, ...newAssetsList];
+          if (resDatas.data.totalCount > pageIndex * pageSize) {
+            this.allList(pageIndex + 1, pageSize)
+          }
+        }
+      },
+
+      /**
+       * 获取所有的NRC20合约
+       **/
+      async getAllNRC20(pageIndex = 1, pageSize = 100) {
+        return await this.$post('/', 'getContractList', [pageIndex, pageSize, 1, false])
+          .then((response) => {
+            //console.log(response);
+            if (response.hasOwnProperty("result")) {
+              //this.contractInfo = response.result;
+              for (let item of response.result.list) {
+                item.value = item.symbol;
+                item.total = 0;
+                item.isShow = false;
+              }
+              return {success: true, data: response.result}
+            } else {
+              return {success: false, data: response}
+            }
+          })
+          .catch((error) => {
+            return {success: false, data: error}
+          });
+      },
+
+      /**
+       * @disc:显示 token管理弹框
+       * @params:
+       * @date: 2020-12-28 15:26
+       * @author: Wave
+       */
+      plusToken() {
+        let nrc20Name = 'nrc20List' + chainID();
+        let newData = JSON.parse(localStorage.getItem(nrc20Name));
+        for (let item of newData) {
+          let newList = this.allNRC20List.findIndex(k => k.contractAddress === item.contractAddress);
+          if (newList) {
+            this.allNRC20List[newList].isShow = true;
+            this.allNRC20List[newList].total = item.total
+          }
+        }
+        this.showList = this.allNRC20List;
+        this.tokenDialog = true;
+      },
+
+      /**
+       * @disc: 搜索Token
+       * @params:
+       * @date: 2020-12-28 17:36
+       * @author: Wave
+       */
+      changeToken(e) {
+        this.isShowZero = false;
+        let newList = this.allNRC20List.filter(item => item.symbol.toLowerCase().includes(e.toLowerCase()) || item.contractAddress.toLowerCase().includes(e.toLowerCase()));
+        this.showList = newList;
+      },
+
+      /**
+       * @disc: 隐藏为零的 token
+       * @params:
+       * @date: 2020-12-28 17:38
+       * @author: Wave
+       */
+      changeShowZero() {
+        let newList = [];
+        if (this.isShowZero) {
+          this.tokenSearch = '';
+          newList = this.allNRC20List.filter(item => Number(item.total) > 0);
+        } else {
+          newList = this.allNRC20List
+        }
+        this.showList = newList;
+      },
+
+      /**
+       * @disc: token选中或者隐藏
+       * @params:
+       * @date: 2020-12-28 17:50
+       * @author: Wave
+       */
+      changeShow(info) {
+        //console.log(info);
+        let nrc20Name = 'nrc20List' + chainID();
+        let newData = JSON.parse(localStorage.getItem(nrc20Name));
+        if (info.isShow) {
+          newData.push(info)
+        } else {
+          let newIndex = newData.findIndex(k => k.contractAddress === info.contractAddress);
+          newData.splice(newIndex, 1);
+        }
+        localStorage.setItem(nrc20Name, JSON.stringify(newData))
+      },
+
+      /**
+       * @disc: token管理弹框关闭
+       * @params:
+       * @date: 2020-12-28 18:04
+       * @author: Wave
+       */
+      tokenDioloClose() {
+        let nrc20Name = 'nrc20List' + chainID();
+        let newData = JSON.parse(localStorage.getItem(nrc20Name));
+        this.addressAssetsData = newData;
+      },
+
+      /**
        * 连接跳转
        * @param name
        * @param parms
@@ -607,6 +771,7 @@
     }
   }
 </script>
+
 <style lang="less">
   @import "./../assets/css/style";
 
@@ -704,6 +869,10 @@
         }
       }
 
+    }
+    .el-icon-circle-plus-outline {
+      font-size: 22px;
+      margin: 0 10px 10px 0;
     }
     .home_tabs {
       padding-bottom: 100px;
@@ -813,6 +982,56 @@
         span {
           color: #ffffff;
         }
+      }
+    }
+
+    .token-diolog {
+      .el-dialog__header {
+      }
+      .el-dialog__body {
+        .token-search {
+          .el-input__suffix {
+            .el-input__icon {
+              line-height: 32px;
+            }
+          }
+        }
+        .token-list {
+          margin: 20px 0 0 0;
+          height: 500px;
+          padding: 0 10px 0 0;
+          overflow-y: auto;
+          li {
+            height: 60px;
+            border-bottom: 1px solid #dfe4ef;
+            h5 {
+              width: 250px;
+              font-size: 12px;
+              line-height: 26px;
+              padding: 4px 0 0 0;
+              color: #5e6983;
+              span {
+                font-size: 14px;
+                color: #5e6983;
+                padding: 0 0 0 5px;
+              }
+            }
+            h6 {
+              font-size: 12px;
+              line-height: 26px;
+              color: #5e6983;
+              span {
+                font-size: 12px;
+                color: #5e6983;
+              }
+            }
+            .fr {
+              margin: 15px 10px 0 0;
+            }
+          }
+        }
+      }
+      .el-dialog__footer {
       }
     }
   }

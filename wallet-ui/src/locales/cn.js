@@ -630,6 +630,7 @@ const cn = {
     "password1": "请输入密码",
     "password2": "取 消",
     "password3": "确 定",
+    "password4": "记住密码(浏览器关闭会清除)",
   },
 
   "home": {
@@ -642,6 +643,12 @@ const cn = {
     "home6": "发送 ",
     "home7": "至地址",
     "home8": "发送",
+    "home9": "Token管理",
+    "home10": "请输入Token",
+    "home11": "隐藏持有量为0的Token",
+    "home12": "名称",
+    "home13": "持有量",
+    "home14": "合约地址",
   },
 
   "frozenList": {
@@ -991,6 +998,7 @@ const cn = {
 
   "tips": {
     "tips0": "交易已发出，等待区块确认",
+    "tips00": "广播交易错误:",
     "tips1": "扫码签名广播交易错误:",
     "tips2": "暂不支持扫码合约转账、跨链交易",
     "tips3": "扫码签名组装交易错误",

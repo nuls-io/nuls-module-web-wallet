@@ -2,7 +2,8 @@
   <div class="consensus_info bg-gray">
     <div class="bg-white">
       <div class="w1200">
-        <BackBar :backTitle="$t('nav.consensus')"></BackBar>
+        <BackBar :backTitle="$t('nav.consensus')">
+        </BackBar>
         <h3 class="title uppercase">{{nodeInfo.agentId}}<i class="el-icon-star-off click" v-show="false"></i></h3>
       </div>
     </div>
