@@ -27,10 +27,24 @@ export function countFee(tx, signatrueCount) {
  * @param signatrueCount 签名数量，默认为1
  **/
 export async function countCtxFee(tx, signatrueCount) {
-  let resultValue = 0;
-  await post('/', 'getByzantineCount', [tx.txSerialize().toString('hex')])
+  console.log(tx.txSerialize().toString('hex'));
+  let res = {};
+  try {
+    let resData = await post('/', 'getByzantineCount', [tx.txSerialize().toString('hex')]);
+    console.log(resData);
+    if (resData.hasOwnProperty("result")) {
+      let txSize = tx.txSerialize().length;
+      txSize += (signatrueCount + resData.result.value) * 110;
+      res = {success: true, data: 1000000 * Math.ceil(txSize / 1024)}
+    } else {
+      res = {success: false, data: JSON.stringify(resData)}
+    }
+  } catch (error) {
+    res = {success: false, data: JSON.stringify(error)}
+  }
+  /*await post('/', 'getByzantineCount', [tx.txSerialize().toString('hex')])
     .then((response) => {
-      //console.log(response);
+      console.log(response);
       if (response.hasOwnProperty("result")) {
         let txSize = tx.txSerialize().length;
         txSize += (signatrueCount + response.result.value) * 110;
@@ -42,8 +56,8 @@ export async function countCtxFee(tx, signatrueCount) {
     .catch((error) => {
       console.log(error);
       resultValue = -100
-    });
-  return resultValue;
+    });*/
+  return res;
 }
 
 /**

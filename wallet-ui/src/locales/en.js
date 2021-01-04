@@ -994,6 +994,7 @@ const en = {
 
   "tips": {
     "tips0": "Transaction has been sent, waiting for block confirmation",
+    "tips00": "Broadcast transaction error :",
     "tips1": "Scan signature broadcast transaction error:",
     "tips2": "Scan code contract transfer and cross chain transaction are not supported temporarily",
     "tips3": "Scanning signature assembly transaction error",
