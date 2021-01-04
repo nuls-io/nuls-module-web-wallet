@@ -7,6 +7,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 module.exports = {
 
   publicPath: process.env.NODE_ENV === 'production' ? 'dist/' : '/',
+
   pluginOptions: {
     i18n: {
       locale: 'en',
@@ -17,19 +18,15 @@ module.exports = {
   },
 
   configureWebpack: config => {
-    //console.log(isProduction);
     if (isProduction) {
-      config.plugins = [
-        new CompressionWebpackPlugin({
-          algorithm: 'gzip',
-          test: new RegExp('\\.(' + productionGzipExtensions.join('|') + ')$'),
-          threshold: 10240,
-          minRatio: 0.8
-        })
-      ];
-      /*config.plugins.push();*/
-    }
+      config.plugins.push(new CompressionWebpackPlugin({
+        algorithm: 'gzip',
+        test: new RegExp('\\.(' + productionGzipExtensions.join('|') + ')$'),
+        threshold: 10240,
+        minRatio: 0.8
+      }));
 
+    }
     config.externals = {
       'vue': 'Vue',
       'vue-router': 'VueRouter',
