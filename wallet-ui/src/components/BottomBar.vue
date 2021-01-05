@@ -119,6 +119,7 @@
             .then((response) => {
               //console.log(response);
               if (response.hasOwnProperty("result")) {
+                let newAssetsList = addressList.filter(obj => obj.address === addressInfos.address); //隐藏已经删除合约
                 for (let item of addressList) {
                   if (item.address === addressInfos.address) {
                     item.alias = response.result.alias;
@@ -132,6 +133,7 @@
                     }
                     item.tokens = [];
                     item.chainId = nuls.verifyAddress(item.address).chainId;
+                    item.nrc20List = newAssetsList[0].nrc20List;
                   }
                 }
                 //console.log(addressList);

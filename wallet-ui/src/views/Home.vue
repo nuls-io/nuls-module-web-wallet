@@ -212,7 +212,6 @@
     Plus,
     Minus,
     divisionDecimals,
-    chainID,
     unique,
     chainIdNumber
   } from '@/api/util'
@@ -518,16 +517,25 @@
             //console.log(newShowData);
             let addressList = addressInfo(0);
             for (let item of addressList) {
+              //console.log(item.nrc20List);
               //item.nrc20List = unique(item.nrc20List, 'contractAddress');
-              for (let ks in item.nrc20List) {
-                let newIndex = this.allNRC20List.findIndex(k => k.contractAddress === item.nrc20List[ks].contractAddress);
-                if (newIndex === -1) {
-                  item.nrc20List.splice(ks, 1);
+              if (!item.nrc20List) {
+                item.nrc20List = []
+              }
+
+              if (item.nrc20List && item.nrc20List.length !== 0) {
+                for (let ks in item.nrc20List) {
+                  let newIndex = this.allNRC20List.findIndex(k => k.contractAddress === item.nrc20List[ks].contractAddress);
+                  if (newIndex === -1) {
+                    item.nrc20List.splice(ks, 1);
+                  }
                 }
               }
+
               if (item.address === this.addressInfo.address) {
                 item.nrc20List = [...newShowData, ...item.nrc20List];
                 item.nrc20List = unique(item.nrc20List, 'contractAddress');
+                //console.log( item.nrc20List);
                 this.addressAssetsData = unique(item.nrc20List, 'contractAddress');
               }
             }
@@ -700,21 +708,23 @@
        */
       changeShow(info) {
         //console.log(info);
+
         if (info.isShow) {
           info.locking = 0;
-          this.addressInfo.nrc20List.push(info);
+          this.addressAssetsData.push(info);
         } else {
-          let newIndex = this.addressInfo.nrc20List.findIndex(k => k.contractAddress === info.contractAddress);
-          this.addressInfo.nrc20List.splice(newIndex, 1);
+          let newIndex = this.addressAssetsData.findIndex(k => k.contractAddress === info.contractAddress);
+          this.addressAssetsData.splice(newIndex, 1);
         }
 
         let addressList = addressInfo(0);
         for (let item of addressList) {
           if (item.address === this.addressInfo.address) {
-            item.nrc20List = this.addressInfo.nrc20List;
-            this.addressAssetsData = unique(item.nrc20List, 'contractAddress');
+            item.nrc20List = this.addressAssetsData;
+            //this.addressAssetsData = unique(item.nrc20List, 'contractAddress');
           }
         }
+        //console.log(addressList);
         localStorage.setItem(chainIdNumber(), JSON.stringify(addressList));
       },
 
@@ -725,6 +735,10 @@
        * @author: Wave
        */
       tokenDioloClose() {
+        this.pageNumber = 1;
+        this.pageSize = 100;
+        this.pageCount = 0;
+        this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address)
       },
 
       /**
