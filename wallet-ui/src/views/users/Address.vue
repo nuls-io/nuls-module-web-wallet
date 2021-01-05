@@ -154,6 +154,7 @@
                   addressInfo.balance = timesDecimals(response.result.balance);
                   addressInfo.consensusLock = timesDecimals(response.result.consensusLock);
                   addressInfo.totalReward = timesDecimals(response.result.totalReward);
+                  addressInfo.nrc20List = item.nrc20List;
                   addressInfo.tokens = [];
                   addressInfo.chainId = nuls.verifyAddress(item.address).chainId;
                 }

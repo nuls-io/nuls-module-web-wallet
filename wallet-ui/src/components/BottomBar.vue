@@ -134,6 +134,7 @@
                     item.chainId = nuls.verifyAddress(item.address).chainId;
                   }
                 }
+                //console.log(addressList);
                 localStorage.setItem(chainIdNumber(), JSON.stringify(addressList));
                 //this.$store.commit('setAddressInfo', addressList);
               }

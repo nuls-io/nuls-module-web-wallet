@@ -94,7 +94,7 @@
                 <el-table-column :label="$t('nodeService.nodeService2')" align="center" width="200">
                   <template slot-scope="scope">
                   <span class="click td" @click="toUrl('contractsInfo',scope.row.contractAddress,1)">
-                    {{ scope.row.account }}
+                    {{ scope.row.symbol ? scope.row.symbol : scope.row.tokenSymbol }}
                   </span>
                   </template>
                 </el-table-column>
@@ -213,7 +213,8 @@
     Minus,
     divisionDecimals,
     chainID,
-    unique
+    unique,
+    chainIdNumber
   } from '@/api/util'
 
   export default {
@@ -515,18 +516,22 @@
             //浏览器记录显示nrc20合约
             let newShowData = newAssetsList.filter(obj => Number(obj.total) > 0);
             //console.log(newShowData);
-            let nrc20Name = 'nrc20List' + chainID();
-            //console.log(nrc20Name);
-            if (localStorage.hasOwnProperty(nrc20Name)) {
-              let newData = [...newShowData, ...JSON.parse(localStorage.getItem(nrc20Name))];
-              this.addressAssetsData = newData;
-              localStorage.setItem(nrc20Name, JSON.stringify(unique(newData, 'contractAddress')))
-            } else {
-              this.addressAssetsData = newShowData;
-              localStorage.setItem(nrc20Name, JSON.stringify(unique(newShowData, 'contractAddress')));
+            let addressList = addressInfo(0);
+            for (let item of addressList) {
+              //item.nrc20List = unique(item.nrc20List, 'contractAddress');
+              for (let ks in item.nrc20List) {
+                let newIndex = this.allNRC20List.findIndex(k => k.contractAddress === item.nrc20List[ks].contractAddress);
+                if (newIndex === -1) {
+                  item.nrc20List.splice(ks, 1);
+                }
+              }
+              if (item.address === this.addressInfo.address) {
+                item.nrc20List = [...newShowData, ...item.nrc20List];
+                item.nrc20List = unique(item.nrc20List, 'contractAddress');
+                this.addressAssetsData = unique(item.nrc20List, 'contractAddress');
+              }
             }
-            this.addressAssetsData = unique(this.addressAssetsData, 'contractAddress');
-            //console.log(this.addressAssetsData);
+            localStorage.setItem(chainIdNumber(), JSON.stringify(addressList));
             this.assetsListLoading = false;
           }).catch((error) => {
             console.log(error);
@@ -647,9 +652,7 @@
        * @author: Wave
        */
       plusToken() {
-        let nrc20Name = 'nrc20List' + chainID();
-        let newData = JSON.parse(localStorage.getItem(nrc20Name));
-        for (let item of newData) {
+        for (let item of this.addressInfo.nrc20List) {
           let newList = this.allNRC20List.findIndex(k => k.contractAddress === item.contractAddress);
           if (newList) {
             this.allNRC20List[newList].isShow = true;
@@ -697,15 +700,22 @@
        */
       changeShow(info) {
         //console.log(info);
-        let nrc20Name = 'nrc20List' + chainID();
-        let newData = JSON.parse(localStorage.getItem(nrc20Name));
         if (info.isShow) {
-          newData.push(info)
+          info.locking = 0;
+          this.addressInfo.nrc20List.push(info);
         } else {
-          let newIndex = newData.findIndex(k => k.contractAddress === info.contractAddress);
-          newData.splice(newIndex, 1);
+          let newIndex = this.addressInfo.nrc20List.findIndex(k => k.contractAddress === info.contractAddress);
+          this.addressInfo.nrc20List.splice(newIndex, 1);
         }
-        localStorage.setItem(nrc20Name, JSON.stringify(newData))
+
+        let addressList = addressInfo(0);
+        for (let item of addressList) {
+          if (item.address === this.addressInfo.address) {
+            item.nrc20List = this.addressInfo.nrc20List;
+            this.addressAssetsData = unique(item.nrc20List, 'contractAddress');
+          }
+        }
+        localStorage.setItem(chainIdNumber(), JSON.stringify(addressList));
       },
 
       /**
@@ -715,9 +725,6 @@
        * @author: Wave
        */
       tokenDioloClose() {
-        let nrc20Name = 'nrc20List' + chainID();
-        let newData = JSON.parse(localStorage.getItem(nrc20Name));
-        this.addressAssetsData = newData;
       },
 
       /**
