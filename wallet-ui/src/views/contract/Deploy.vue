@@ -252,11 +252,11 @@
             if (response.result.success) {
               this.imputedContractCreateGas(createAddress, contractCode, args);
             } else {
-              this.$message({message: this.$t('deploy.deploy11') + response.error, type: 'error', duration: 1000});
+              this.$message({message: this.$t('deploy.deploy11') + response.result.msg, type: 'error', duration: 3000});
             }
           })
           .catch((error) => {
-            this.$message({message: this.$t('deploy.deploy12') + error, type: 'error', duration: 1000});
+            this.$message({message: this.$t('deploy.deploy12') + JSON.stringify(error), type: 'error', duration: 3000});
           });
       },
 
@@ -290,7 +290,7 @@
        */
       async makeContractConstructorArgsTypes(constructor) {
         let newArr = [];
-        for(let item of constructor){
+        for (let item of constructor) {
           newArr.push(item.value)
         }
         return newArr
@@ -357,7 +357,7 @@
           if (valid) {
             let newArgs = getArgs(this.deployForm.parameterList);
             if (newArgs.allParameter) {
-              this.testDeploy(this.createAddress, this.deployForm.gas, sdk.CONTRACT_MINIMUM_PRICE, this.deployForm.hex, newArgs.args);
+              this.testDeploy(this.createAddress, sdk.CONTRACT_MAX_GASLIMIT, sdk.CONTRACT_MINIMUM_PRICE, this.deployForm.hex, newArgs.args);
             }
           } else {
             return false;
@@ -373,11 +373,11 @@
             if (response.result.success) {
               this.$message({message: this.$t('deploy.deploy16'), type: 'success', duration: 1000});
             } else {
-              this.$message({message: this.$t('deploy.deploy11') + response.error, type: 'error', duration: 1000});
+              this.$message({message: this.$t('deploy.deploy11') + response.result.msg, type: 'error', duration: 3000});
             }
           })
           .catch((error) => {
-            this.$message({message: this.$t('deploy.deploy12') + error, type: 'error', duration: 1000});
+            this.$message({message: this.$t('deploy.deploy12') + JSON.stringify(error), type: 'error', duration: 3000});
           });
 
       },
@@ -398,7 +398,7 @@
                 this.$message({message: this.$t('tips.tips3'), type: 'error', duration: 3000});
                 return;
               }
-              let commitDatas = await commitData(this.txHexRandom, this.signDataKeyRandom,this.addressInfo.address, assembleHex.data);
+              let commitDatas = await commitData(this.txHexRandom, this.signDataKeyRandom, this.addressInfo.address, assembleHex.data);
               if (!commitDatas.success) {
                 this.$message({
                   message: this.$t('tips.tips4') + JSON.stringify(commitDatas.data),
