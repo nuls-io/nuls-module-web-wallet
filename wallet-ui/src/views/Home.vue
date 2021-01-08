@@ -754,9 +754,10 @@
         } else {
           let newParms = {accountType: parms};
           if (name === 'transfer') {
+            let newQuery = {contractAddress: newParms.accountType.contractAddress};
             this.$router.push({
               name: name,
-              query: newParms
+              query: newQuery
             })
           } else if (name === 'frozenList') {
             newParms = {accountInfo: parms};

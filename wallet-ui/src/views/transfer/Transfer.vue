@@ -410,8 +410,24 @@
         this.assetsList = [...basicAssets, ...newContractAssets, ...crossAssets];
         //console.log(this.assetsList);
 
-        //console.log(this.$route.query.accountType);
-        let newInfo = this.$route.query.accountType ? this.$route.query.accountType : {type: 1, tokenSymbol: MAIN_INFO};
+        let newInfo = {type: 1, tokenSymbol: MAIN_INFO};
+        if (this.$route.query.contractAddress) {
+          let newAssetsInfo = this.assetsList.filter(obj => obj.contractAddress === this.$route.query.contractAddress)[0];
+          //console.log(newAssetsInfo);
+          newInfo.type = newAssetsInfo.type;
+          newInfo.tokenSymbol = {
+            chainId: newAssetsInfo.chainId,
+            assetId: newAssetsInfo.assetId,
+            symbol: newAssetsInfo.symbol
+          };
+          newInfo.type = newAssetsInfo.type;
+          newInfo.contractAddress = newAssetsInfo.contractAddress;
+          //console.log(newInfo);
+          this.transferForm.assetType = newInfo.tokenSymbol.symbol;
+
+          this.assetsInfo = newAssetsInfo;
+          //console.log(this.assetsInfo);
+        }
         if (this.$route.query.accountType === 'NULS') {
           newInfo = {type: 1, tokenSymbol: MAIN_INFO};
           newInfo.tokenSymbol.symbol = 'NULS';
@@ -419,23 +435,19 @@
         if (!newInfo.contractAddress && !newInfo.tokenSymbol.symbol) {
           newInfo.tokenSymbol.symbol = 'NULS';
         }
-        if (newInfo.contractAddress) {
-          newInfo.symbol = newInfo.tokenSymbol;
-          newInfo.tokenSymbol = newInfo;
-        }
         //console.log(newInfo);
-
         for (let item of this.assetsList) {
-          //console.log(item);
           if (item.type === 1) {
             if (item.assetId === newInfo.tokenSymbol.assetId && item.chainId === newInfo.tokenSymbol.chainId) {
-              this.changeType(item);
+              if (!this.transferForm.assetType) {
+                this.changeType(item);
+              }
               this.transferLoading = false;
               return
             }
           } else {
             if (item.contractAddress && item.contractAddress === newInfo.contractAddress) {
-              this.changeType(item);
+              //this.changeType(item);
               this.transferLoading = false;
               return;
             }
