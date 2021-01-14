@@ -484,6 +484,7 @@
         this.assetsListLoading = true;
         await this.$post('/', 'getAccountTokens', [pageSize, pageRows, address], 'Home')
           .then((response) => {
+            //console.log(response);
             if (response.hasOwnProperty("result")) {
               this.addressAssetsData = [];
               for (let itme of response.result.list) {
@@ -501,11 +502,11 @@
             }
             const newAssetsList = response.result.list.filter(obj => obj.status !== 3); //隐藏已经删除合约
             this.addressInfo.tokens = [];
-            //this.addressInfo.tokens = newAssetsList.filter(obj => obj.balance !== '0');
 
             let addressList = addressInfo(0);
             for (let item of addressList) {
               if (this.addressInfo.address === item.address) {
+                item.nrc20List = item.nrc20List ? item.nrc20List : [];
                 item.nrc20List = [...newAssetsList, ...item.nrc20List];
                 item.nrc20List = unique(item.nrc20List, 'contractAddress');
                 this.addressAssetsData = item.nrc20List;
@@ -634,7 +635,7 @@
       plusToken() {
         for (let item of this.addressInfo.nrc20List) {
           let newList = this.allNRC20List.findIndex(k => k.contractAddress === item.contractAddress);
-          if (newList) {
+          if (newList !== -1) {
             this.allNRC20List[newList].isShow = true;
             this.allNRC20List[newList].total = item.total
           }
