@@ -484,7 +484,6 @@
         this.assetsListLoading = true;
         await this.$post('/', 'getAccountTokens', [pageSize, pageRows, address], 'Home')
           .then((response) => {
-            //console.log(response);
             if (response.hasOwnProperty("result")) {
               this.addressAssetsData = [];
               for (let itme of response.result.list) {
@@ -502,41 +501,14 @@
             }
             const newAssetsList = response.result.list.filter(obj => obj.status !== 3); //隐藏已经删除合约
             this.addressInfo.tokens = [];
-            this.addressInfo.tokens = newAssetsList;
+            //this.addressInfo.tokens = newAssetsList.filter(obj => obj.balance !== '0');
 
-            let newList = [];
-            for (let item of this.addressInfo.tokens) {
-              //console.log(item);
-              newList.push({key: item.contractAddress, symbol: item.tokenSymbol, decimals: item.decimals})
-            }
-            sessionStorage.removeItem('assetsList');
-            sessionStorage.setItem('assetsList', JSON.stringify(newList));
-
-            //浏览器记录显示nrc20合约
-            let newShowData = newAssetsList.filter(obj => Number(obj.total) > 0);
-            //console.log(newShowData);
             let addressList = addressInfo(0);
             for (let item of addressList) {
-              //console.log(item.nrc20List);
-              //item.nrc20List = unique(item.nrc20List, 'contractAddress');
-              if (!item.nrc20List) {
-                item.nrc20List = []
-              }
-
-              if (item.nrc20List && item.nrc20List.length !== 0) {
-                for (let ks in item.nrc20List) {
-                  let newIndex = this.allNRC20List.findIndex(k => k.contractAddress === item.nrc20List[ks].contractAddress);
-                  if (newIndex === -1) {
-                    item.nrc20List.splice(ks, 1);
-                  }
-                }
-              }
-
-              if (item.address === this.addressInfo.address) {
-                item.nrc20List = [...newShowData, ...item.nrc20List];
+              if (this.addressInfo.address === item.address) {
+                item.nrc20List = [...newAssetsList, ...item.nrc20List];
                 item.nrc20List = unique(item.nrc20List, 'contractAddress');
-                //console.log( item.nrc20List);
-                this.addressAssetsData = unique(item.nrc20List, 'contractAddress');
+                this.addressAssetsData = item.nrc20List;
               }
             }
             localStorage.setItem(chainIdNumber(), JSON.stringify(addressList));
