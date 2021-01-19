@@ -159,8 +159,8 @@
         let aliasRes = {};
         if (value.length > 30) {
           this.aliasToAddress = '';
-          this.toAddressInfo = nuls.verifyAddress(value);
-          if (this.toAddressInfo.type === 1) { //主链地址
+          this.toAddressInfo = nuls.verifyAddress(value); //type 1:主网地址 2：合约地址 3:多签地址
+          if (this.toAddressInfo.type === 1 || this.toAddressInfo.type === 3) { //主链地址
             let verifyToAddress = await this.verifyToAddress();
             //console.log(verifyToAddress);
             if (!verifyToAddress) {
@@ -488,7 +488,7 @@
             this.aliasToAddress = resData.result.address;
             this.toAddressInfo = nuls.verifyAddress(this.aliasToAddress);
             //console.log(this.toAddressInfo);
-            if (this.toAddressInfo.type === 1) { //主链地址
+            if (this.toAddressInfo.type === 1 || this.toAddressInfo.type === 3) { //主链地址
               await this.verifyToAddress();
             }
             return {success: true}
@@ -553,7 +553,7 @@
               }
             }
           } else { //合约资产
-            if (this.toAddressInfo.type === 1) { //普通地址
+            if (this.toAddressInfo.type === 1 || this.toAddressInfo.type === 3) { //普通地址
               //console.log(this.transferForm);
               let fromAddressInfo = nuls.verifyAddress(this.transferForm.fromAddress);
               let toAddressInfo = nuls.verifyAddress(this.transferForm.toAddress);
@@ -765,6 +765,7 @@
           inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 2);
           //console.log(inOrOutputs);
           tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, htmlEncode(this.transferForm.remarks), 2);
+          //console.log(tAssemble);
         } else if (this.toAddressInfo.transferType === 2) { //2：token转账
           transferInfo.amount = Number(Plus(0, Number(Times(this.transferForm.gas, this.transferForm.price)))).toString();
           inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
