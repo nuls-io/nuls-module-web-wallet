@@ -456,12 +456,12 @@
         let news = 0.5;
         this.NULSUsdt = Number(Times(news, number)).toFixed(2);
         axios.defaults.baseURL = '';
-        let url = '';
+        let url = 'http://binanceapi.zhoulijun.top/api/v3/ticker/price?symbol=NULSUSDT';
         //console.log(process.env.NODE_ENV ==='development');
-        if (process.env.NODE_ENV === 'development') {
-          url = "http://binanceapi.zhoulijun.top/api/v3/ticker/price?symbol=NULSUSDT"
-        } else {
+        if (process.env.NODE_ENV !== 'development') {
           url = "/market-api/nuls-price"
+        } else {
+          url = "http://binanceapi.zhoulijun.top/api/v3/ticker/price?symbol=NULSUSDT";
         }
         axios.get(url)
           .then((response) => {
