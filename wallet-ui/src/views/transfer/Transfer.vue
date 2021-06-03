@@ -926,7 +926,7 @@
               this.gasInfo.number = response.result.gasLimit;
               this.gasInfo.oldNumber = response.result.gasLimit;
               this.transferForm.gas = response.result.gasLimit;
-              this.transferForm.fee = Number(Plus(Number(Division(Number(Times(this.transferForm.gas, this.transferForm.price)), 10000000)), 0.001));
+              this.transferForm.fee = Number(Plus(Number(Division(Number(Times(this.transferForm.gas, this.transferForm.price)), 100000000)), 0.001));
               this.contractFee = this.transferForm.fee;
               let contractConstructorArgsTypes = await this.getContractMethodArgsTypes(contractAddress, methodName);
               if (!contractConstructorArgsTypes.success) {
