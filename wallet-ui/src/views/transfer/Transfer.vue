@@ -160,12 +160,21 @@
         if (value.length > 30) {
           this.aliasToAddress = '';
           this.toAddressInfo = nuls.verifyAddress(value); //type 1:主网地址 2：合约地址 3:多签地址
+          // console.log(this.toAddressInfo, 969696)
           if (this.toAddressInfo.type === 1 || this.toAddressInfo.type === 3) { //主链地址
             let verifyToAddress = await this.verifyToAddress();
             //console.log(verifyToAddress);
             if (!verifyToAddress) {
               this.toAddressInfo.transferType = 0;
               callback(new Error(verifyToAddress.data))
+            }
+          }
+          if (this.toAddressInfo.type === 2 && this.toAddressInfo.right) { // 合约地址 判断是否能向其转NULS，其他平行链资产
+            const contractInfo = await this.contractInfoByContractAddress(value);
+            this.directPayable = contractInfo.directPayable;
+            this.directPayableByOtherAsset = contractInfo.directPayableByOtherAsset;
+            if (this.assetsInfo.chainId) {
+              this.$refs.transferForm.validateField('assetType');
             }
           }
         } else {
@@ -176,7 +185,7 @@
           this.toAddressInfo.transferType = 0;
           //console.log(this.toAddressInfo.transferType);
           callback(new Error(this.$t('transfer.transfer9')))
-        } else if (value.length < 20 && !aliasRes.success) {
+        } else if (value.length < 20 && !aliasRes.success || !this.toAddressInfo.right) {
           this.toAddressInfo.transferType = 0;
           callback(new Error(this.$t('transfer.transfer23')))
         } else {
@@ -184,6 +193,18 @@
             this.$refs.transferForm.validateField('amount');
           }
           callback()
+        }
+      };
+      const validateAssets = (rule, value, callback) => {
+        if (this.toAddressInfo.type === 2) {
+          const isMainAsset = value.chainId === MAIN_INFO.chainId && value.assetId === MAIN_INFO.assetId
+          if (isMainAsset && this.directPayable || !isMainAsset && this.directPayableByOtherAsset) {
+            callback();
+          } else {
+            callback(new Error(this.$t('transfer.transfer25')))
+          }
+        } else {
+          callback();
         }
       };
       let validateAmount = async (rule, value, callback) => {
@@ -270,6 +291,7 @@
         },
         transferRules: {
           toAddress: [{validator: validateToAddress, trigger: ['blur']}],
+          assetType: [{validator: validateAssets, trigger: ['blur']}],
           amount: [{validator: validateAmount, trigger: ['blur', 'change']}],
           gas: [{validator: validateGas, trigger: ['blur', 'change']}],
           price: [{validator: validatePrice, trigger: ['blur', 'change']}],
@@ -284,6 +306,8 @@
         bookData: [],//通讯录数据
         transferDiolog: false,//确认弹框
         transferLoading: false,//加载动画
+        directPayable: false, // 是否支持向某合约地址转NULS
+        directPayableByOtherAsset: false, // 是否支持向某合约地址转除nuls外的平行链资产
       };
     },
     created() {
@@ -544,9 +568,14 @@
         if (this.transferForm.toAddress && this.transferForm.amount) {
           if (this.assetsInfo.type === 1) { //主链资产
             if (this.toAddressInfo.type === 2) { //合约地址
-              if (this.assetsInfo.chainId === MAIN_INFO.chainId && this.assetsInfo.assetId === MAIN_INFO.assetId) {
+              const iaMainAsset = this.assetsInfo.chainId === MAIN_INFO.chainId && this.assetsInfo.assetId === MAIN_INFO.assetId
+              // console.log(iaMainAsset, this.directPayable, this.directPayableByOtherAsset, 1122)
+              if (iaMainAsset && this.directPayable) {
                 this.toAddressInfo.transferType = 3; //3：向合约地址转NULS
                 this.transferPayable();
+              } else if (!iaMainAsset && this.directPayableByOtherAsset) {
+                this.toAddressInfo.transferType = 7; //7：向合约地址转平行链资产
+                this.transferPayableMultyAsset()
               } else {
                 this.toAddressInfo.amount = '';
                 this.$message({message: this.$t('transfer.transfer25'), type: 'error', duration: 3000});
@@ -604,6 +633,29 @@
         let methodDesc = '';
         let args = [];
         this.validateContractCall(this.addressInfo.address, Number(Times(this.transferForm.amount, 100000000)), gasLimit, price, contractAddress, methodName, methodDesc, args);
+      },
+
+      /**
+       * @disc: 合约 _payableMultyAsset 往合约转平行链资产
+       * @params:
+       * @date: 2020-07-01 19:05
+       * @author: Wave
+       */
+      transferPayableMultyAsset() {
+        let gasLimit = sdk.CONTRACT_MAX_GASLIMIT;
+        let price = this.transferForm.price;
+        let contractAddress = this.aliasToAddress ? this.aliasToAddress : this.transferForm.toAddress;
+        let methodName = '_payableMultyAsset';
+        let methodDesc = '';
+        let args = [];
+        const multyAssets = [
+          {
+            value: timesDecimals0(this.transferForm.amount, this.assetsInfo.decimals),
+            assetChainId: this.assetsInfo.chainId,
+            assetId: this.assetsInfo.assetId
+          }
+        ];
+        this.validateContractCall(this.addressInfo.address, 0, gasLimit, price, contractAddress, methodName, methodDesc, args, multyAssets);
       },
 
       /**
@@ -774,7 +826,8 @@
         } else if (this.toAddressInfo.transferType === 3) { //3：向合约转NULS
           this.contractCallData.chainId = MAIN_INFO.chainId;
           transferInfo.value = Number(transferInfo.amount);
-          transferInfo.amount = Number(Plus(transferInfo.fee, Number(Times(this.transferForm.gas, this.transferForm.price)))).toString();
+          // transferInfo.amount = Number(Plus(transferInfo.fee, Number(Times(this.transferForm.gas, this.transferForm.price)))).toString();
+          transferInfo.amount = Times(this.transferForm.gas, this.transferForm.price).toString();
           transferInfo.amount = Number(Plus(transferInfo.amount, transferInfo.value)).toString();
           inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
           tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, htmlEncode(this.transferForm.remarks), 16, this.contractCallData);
@@ -808,7 +861,7 @@
             this.transferLoading = false;
           }
           return;
-        } else if (this.toAddressInfo.transferType === 6) { //5：NRC20跨链交易
+        } else if (this.toAddressInfo.transferType === 6) { //6：NRC20跨链交易
           //参数: to(跨链地址) value(token数量, 要乘以10的n次方，n是token的精度)
           transferInfo.amount = Number(Plus(20000000, Number(Times(this.transferForm.gas, this.transferForm.price)))).toString();
           transferInfo.value = 10000000;
@@ -816,6 +869,22 @@
           //console.log(transferInfo);
           inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
           //console.log(this.contractCallData);
+          tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, htmlEncode(this.transferForm.remarks), 16, this.contractCallData);
+        } else if (this.toAddressInfo.transferType === 7) { //7：向合约转平行链资产
+          const multyAssets = [
+            {
+              value: timesDecimals0(this.transferForm.amount, this.assetsInfo.decimals),
+              assetChainId: this.assetsInfo.chainId,
+              assetId: this.assetsInfo.assetId
+            }
+          ];
+          this.contractCallData.chainId = MAIN_INFO.chainId;
+          transferInfo.value = 0;
+          transferInfo.amount = Times(this.transferForm.gas, this.transferForm.price);
+          transferInfo.assetsChainId = MAIN_INFO.chainId;
+          transferInfo.assetsId = MAIN_INFO.assetId;
+          const balanceInfo = await this.getNulsBalance(MAIN_INFO.chainId, MAIN_INFO.assetId, this.transferForm.fromAddress);
+          inOrOutputs = await inputsOrOutputs(transferInfo, balanceInfo, 16, multyAssets);
           tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, htmlEncode(this.transferForm.remarks), 16, this.contractCallData);
         }
         //console.log(inOrOutputs);
@@ -888,14 +957,23 @@
        * @param methodDesc
        * @param args
        */
-      async validateContractCall(sender, value, gasLimit, price, contractAddress, methodName, methodDesc, args) {
+      async validateContractCall(sender, value, gasLimit, price, contractAddress, methodName, methodDesc, args, multyAssets) {
+        let multyAssetArray = [];
+        if (multyAssets) {
+          let length = multyAssets.length;
+          multyAssetArray = new Array(length);
+          for (let i = 0; i < length; i++) {
+            let multyAsset = multyAssets[i];
+            multyAssetArray[i] = [multyAsset.value, multyAsset.assetChainId, multyAsset.assetId];
+          }
+        }
         //console.log(sender, value, gasLimit, price, contractAddress, methodName, methodDesc, args);
-        return await this.$post('/', 'validateContractCall', [sender, value, gasLimit, price, contractAddress, methodName, methodDesc, args])
+        return await this.$post('/', 'validateContractCall', [sender, value, gasLimit, price, contractAddress, methodName, methodDesc, args, multyAssetArray])
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
               //return {success: true, data: response.result};
-              this.imputedContractCallGas(sender, value, contractAddress, methodName, methodDesc, args)
+              this.imputedContractCallGas(sender, value, contractAddress, methodName, methodDesc, args, multyAssetArray)
             } else {
               this.$message({
                 message: this.$t('call.call6') + JSON.stringify(response.error),
@@ -918,8 +996,8 @@
        * @param methodDesc
        * @param args
        */
-      async imputedContractCallGas(sender, value, contractAddress, methodName, methodDesc, args) {
-        return await this.$post('/', 'imputedContractCallGas', [sender, value, contractAddress, methodName, methodDesc, args])
+      async imputedContractCallGas(sender, value, contractAddress, methodName, methodDesc, args, multyAssets) {
+        return await this.$post('/', 'imputedContractCallGas', [sender, value, contractAddress, methodName, methodDesc, args, multyAssets])
           .then(async (response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {

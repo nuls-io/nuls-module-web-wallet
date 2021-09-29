@@ -67,7 +67,7 @@ export async function countCtxFee(tx, signatrueCount) {
  * @param type
  * @returns {*}
  **/
-export async function inputsOrOutputs(transferInfo, balanceInfo, type) {
+export async function inputsOrOutputs(transferInfo, balanceInfo, type, multyAssets) {
   let newAmount = Number(Plus(transferInfo.amount, transferInfo.fee));
   let newLocked = 0;
   let newNonce = balanceInfo.nonce;
@@ -141,6 +141,31 @@ export async function inputsOrOutputs(transferInfo, balanceInfo, type) {
           amount: transferInfo.value,
           lockTime: newLockTime
         }];
+      }
+    }
+    if (multyAssets && multyAssets.length) { // 向合约地址转平行链资产
+      let length = multyAssets.length;
+      for (let i = 0; i < length; i++) {
+        let multyAsset = multyAssets[i];
+        let _balanceInfo = await getNulsBalance(multyAsset.assetChainId, multyAsset.assetId, transferInfo.fromAddress);
+        if (_balanceInfo.data.balance < Number(multyAsset.value)) {
+          throw "Your balance of " + multyAsset.assetChainId + "-" + multyAsset.assetId + " is not enough.";
+        }
+        inputs.push({
+          address: transferInfo.fromAddress,
+          assetsChainId: multyAsset.assetChainId,
+          assetsId: multyAsset.assetId,
+          amount: multyAsset.value,
+          locked: newLocked,
+          nonce: _balanceInfo.data.nonce
+        });
+        outputs.push({
+          address: transferInfo.toAddress,
+          assetsChainId: multyAsset.assetChainId,
+          assetsId: multyAsset.assetId,
+          amount: multyAsset.value,
+          lockTime: newLockTime
+        });
       }
     }
     return {success: true, data: {inputs: inputs, outputs: outputs}};
