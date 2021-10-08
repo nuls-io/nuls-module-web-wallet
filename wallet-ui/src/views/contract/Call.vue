@@ -43,8 +43,8 @@
                 </el-option>
               </el-select>
             </el-form-item>
-            <el-form-item label="Value" prop="values">
-              <el-input v-model="callForm.values"></el-input>
+            <el-form-item label="Value" prop="otherValue">
+              <el-input v-model="callForm.otherValue"></el-input>
             </el-form-item>
           </div>
         </div>
@@ -108,6 +108,7 @@
           callback(new Error(this.$t('deploy.deploy22')));
         } else if (value < 0 || value === 0) {
           this.callForm.values = 0;
+          this.callForm.otherValue = 0;
           callback(new Error(this.$t('deploy.deploy22')));
         } else {
           callback();
@@ -127,7 +128,8 @@
           gas: 0,
           price: 25,
           values: 0,
-          assetInfo: ""
+          assetInfo: "",
+          otherValue: ""
         },
         callRules: {
           gas: [
@@ -137,6 +139,9 @@
             {validator: validatePrice, trigger: 'blur'}
           ],
           values: [
+            {validator: validateValues, trigger: 'blur'}
+          ],
+          otherValue: [
             {validator: validateValues, trigger: 'blur'}
           ]
         },
@@ -221,7 +226,7 @@
         this.assetInfo = null;
         this.callForm.assetInfo = "";
         let newData = this.callForm.modelData[val];
-        // console.log(newData);
+        console.log(newData);
         this.selectionData = newData;
         this.callForm.parameterList = [...newData.params];
         if (newData.payable || newData.payableMultyAsset) {
@@ -230,6 +235,7 @@
         if (!newData.view) { //上链方法
           this.callForm.gas = 1;
           this.callForm.values = 0;
+          this.callForm.otherValue = 0;
         }
         //清除已有的参数
         for (let itme of this.callForm.parameterList) {
@@ -288,19 +294,42 @@
                   this.imputedContractCallGas(this.addressInfo.address, Number(Times(this.callForm.values, 100000000)), this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs.args)
                 }
               } else {
-                if (this.selectionData.payable) {
+
+                if (this.selectionData.payableMultyAsset && !this.assetInfo) return false;
+                const nulsValue = Number(Times(this.callForm.values, 100000000))
+                let multyAssets = [], value;
+                if (this.assetInfo) {
+                  const { chainId: assetChainId, assetId, decimals } = this.assetInfo;
+                  value = timesDecimals0(this.callForm.otherValue, decimals);
+                  multyAssets = [
+                    { value, assetChainId, assetId }
+                  ]
+                }
+                this.imputedContractCallGas(this.addressInfo.address, nulsValue, this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs, multyAssets);
+                /*if (this.selectionData.payable && this.selectionData.payableMultyAsset) {
+                  // 同时转nuls和其他资产
+                  if (!this.assetInfo) return false
+                  // 往合约转其他资产
+                  const { chainId: assetChainId, assetId, decimals } = this.assetInfo;
+                  const value = timesDecimals0(this.callForm.otherValue, decimals);
+                  const nulsValue = Number(Times(this.callForm.values, 100000000))
+                  const multyAssets = [
+                    { value, assetChainId, assetId }
+                  ];
+                  this.imputedContractCallGas(this.addressInfo.address, nulsValue, this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs, multyAssets);
+                } else if (this.selectionData.payable) {
                   // 往合约转nuls
                   this.imputedContractCallGas(this.addressInfo.address, Number(Times(this.callForm.values, 100000000)), this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs);
                 } else {
                   if (!this.assetInfo) return false
                   // 往合约转其他资产
                   const { chainId: assetChainId, assetId, decimals } = this.assetInfo;
-                  const value = timesDecimals0(this.callForm.values, decimals);
+                  const value = timesDecimals0(this.callForm.otherValue, decimals);
                   const multyAssets = [
                     { value, assetChainId, assetId }
                   ];
                   this.imputedContractCallGas(this.addressInfo.address, 0, this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs, multyAssets);
-                }
+                }*/
               }
               this.getBalanceByAddress(chainID(), 1, this.addressInfo.address);
               if (this.addressInfo.aesPri === '') {
@@ -356,9 +385,25 @@
           transferInfo.value = Number(timesDecimals0(this.callForm.values));
           transferInfo.amount = Number(Plus(transferInfo.value, amount))
         }
+        let multyAssets = []
+        if (this.assetInfo) {
+          const { chainId: assetChainId, assetId, decimals } = this.assetInfo
+          multyAssets = [
+            {
+              value: timesDecimals0(this.callForm.otherValue, decimals),
+              assetChainId,
+              assetId
+            }
+          ];
+          transferInfo.value = Number(timesDecimals0(this.callForm.values));
+          transferInfo.amount = Number(Plus(transferInfo.value, amount))
+          transferInfo.assetsChainId = MAIN_INFO.chainId;
+          transferInfo.assetsId = MAIN_INFO.assetId;
+          transferInfo.toAddress = this.contractAddress;
+        }
         let remark = '';
         //console.log(transferInfo);
-        let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
+        let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16, multyAssets);
         if (!inOrOutputs.success) {
           this.$message({message: inOrOutputs.data, type: 'error', duration: 3000});
           return {success: false}
@@ -571,15 +616,16 @@
             const { chainId: assetChainId, assetId, decimals } = this.assetInfo
             multyAssets = [
               {
-                value: timesDecimals0(this.callForm.values, decimals),
+                value: timesDecimals0(this.callForm.otherValue, decimals),
                 assetChainId,
                 assetId
               }
             ];
-            transferInfo.value = 0;
-            transferInfo.amount = amount;
+            transferInfo.value = Number(timesDecimals0(this.callForm.values));
+            transferInfo.amount = Number(Plus(transferInfo.value, amount))
             transferInfo.assetsChainId = MAIN_INFO.chainId;
             transferInfo.assetsId = MAIN_INFO.assetId;
+            transferInfo.toAddress = this.contractAddress;
           }
           let remark = '';
           let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16, multyAssets);
@@ -626,7 +672,7 @@
         this.assetInfo = asset;
         this.callForm.assetInfo = asset.symbol;
         const { chainId: assetChainId, assetId, decimals } = this.assetInfo;
-        const value = timesDecimals0(this.callForm.values, decimals);
+        const value = timesDecimals0(this.callForm.otherValue, decimals);
         const multyAssets = [
           { value, assetChainId, assetId }
         ];
