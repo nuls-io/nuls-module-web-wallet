@@ -905,7 +905,7 @@ const en = {
     "call8": "Unchained method call failed",
     "call9": "Unchained method call exception",
     "call10": "Gas too small may cause contract transactions to fail",
-    "call": "",
+    "call11": "Please select an asset",
   },
 
   "deploy": {
