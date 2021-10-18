@@ -650,7 +650,7 @@
         let args = [];
         const multyAssets = [
           {
-            value: timesDecimals0(this.transferForm.amount, this.assetsInfo.decimals),
+            value: timesDecimalsBig(this.transferForm.amount, this.assetsInfo.decimals).toString(),
             assetChainId: this.assetsInfo.chainId,
             assetId: this.assetsInfo.assetId
           }
@@ -797,7 +797,7 @@
           fromAddress: this.transferForm.fromAddress,
           toAddress: this.aliasToAddress ? this.aliasToAddress : this.transferForm.toAddress,
           assetType: this.transferForm.assetType,
-          amount: Number(timesDecimals0(this.transferForm.amount, this.assetsInfo.decimals)),
+          amount: timesDecimalsBig(this.transferForm.amount, this.assetsInfo.decimals).toString(),
           gas: this.transferForm.gas,
           price: this.transferForm.price,
           remarks: this.transferForm.remarks,
@@ -825,10 +825,10 @@
           tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, htmlEncode(this.transferForm.remarks), 16, this.contractCallData);
         } else if (this.toAddressInfo.transferType === 3) { //3：向合约转NULS
           this.contractCallData.chainId = MAIN_INFO.chainId;
-          transferInfo.value = Number(transferInfo.amount);
+          transferInfo.value = transferInfo.amount;
           // transferInfo.amount = Number(Plus(transferInfo.fee, Number(Times(this.transferForm.gas, this.transferForm.price)))).toString();
           transferInfo.amount = Times(this.transferForm.gas, this.transferForm.price).toString();
-          transferInfo.amount = Number(Plus(transferInfo.amount, transferInfo.value)).toString();
+          transferInfo.amount = Plus(transferInfo.amount, transferInfo.value).toString();
           inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
           tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, htmlEncode(this.transferForm.remarks), 16, this.contractCallData);
         } else if (this.toAddressInfo.transferType === 4) { //4：向合约转token
@@ -836,7 +836,7 @@
           inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
           tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, htmlEncode(this.transferForm.remarks), 16, this.contractCallData);
         } else if (this.toAddressInfo.transferType === 5) { //5：跨链交易
-          transferInfo.amount = Number(transferInfo.amount).toString();
+          // transferInfo.amount = Number(transferInfo.amount).toString();
           transferInfo.fee = Number(transferInfo.fee);
           //console.log(transferInfo);
           let crossTxHex = await this.crossTxhexs(passwordInfo.pri, passwordInfo.pub, this.addressInfo.chainId, transferInfo);
@@ -873,7 +873,7 @@
         } else if (this.toAddressInfo.transferType === 7) { //7：向合约转平行链资产
           const multyAssets = [
             {
-              value: timesDecimals0(this.transferForm.amount, this.assetsInfo.decimals),
+              value: timesDecimalsBig(this.transferForm.amount, this.assetsInfo.decimals),
               assetChainId: this.assetsInfo.chainId,
               assetId: this.assetsInfo.assetId
             }

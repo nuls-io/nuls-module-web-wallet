@@ -76,7 +76,7 @@
     commitData
   } from '@/api/requestData'
   import Password from '@/components/PasswordBar'
-  import {getArgs, timesDecimals0, Times, Plus, addressInfo, chainID, getRamNumber} from '@/api/util'
+  import {getArgs, timesDecimals0, Times, Plus, addressInfo, chainID, getRamNumber, timesDecimalsBig} from '@/api/util'
   import { MAIN_INFO } from "@/config";
 
   export default {
@@ -300,7 +300,7 @@
                 let multyAssets = [], value;
                 if (this.assetInfo) {
                   const { chainId: assetChainId, assetId, decimals } = this.assetInfo;
-                  value = timesDecimals0(this.callForm.otherValue, decimals);
+                  value = timesDecimalsBig(this.callForm.otherValue, decimals);
                   multyAssets = [
                     { value, assetChainId, assetId }
                   ]
@@ -390,7 +390,7 @@
           const { chainId: assetChainId, assetId, decimals } = this.assetInfo
           multyAssets = [
             {
-              value: timesDecimals0(this.callForm.otherValue, decimals),
+              value: timesDecimalsBig(this.callForm.otherValue, decimals),
               assetChainId,
               assetId
             }
@@ -616,7 +616,7 @@
             const { chainId: assetChainId, assetId, decimals } = this.assetInfo
             multyAssets = [
               {
-                value: timesDecimals0(this.callForm.otherValue, decimals),
+                value: timesDecimalsBig(this.callForm.otherValue, decimals),
                 assetChainId,
                 assetId
               }
@@ -672,7 +672,7 @@
         this.assetInfo = asset;
         this.callForm.assetInfo = asset.symbol;
         const { chainId: assetChainId, assetId, decimals } = this.assetInfo;
-        const value = timesDecimals0(this.callForm.otherValue, decimals);
+        const value = timesDecimalsBig(this.callForm.otherValue, decimals);
         const multyAssets = [
           { value, assetChainId, assetId }
         ];
