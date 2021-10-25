@@ -1105,7 +1105,7 @@ const en = {
   },
 
   "application": {
-    "application0": "Team development",
+    "application0": "Application",
     "application1": "Community development",
     "application2": "Community Governance",
     "application3": "NULS Community Governance tool. 1NULS=1 vote",
@@ -1113,8 +1113,8 @@ const en = {
     "application5": "SCO platform, new project Token dug with NULS",
     "application6": "Explorer",
     "application7": "Everything you want to see on the NULS network can be found here",
-    "application8": "NULS Mobile Wallet (downloadable for Google Play users)",
-    "application9": "NULS Mobile Wallet (downloadable for all Android users)",
+    "application8": "A mobile app supporting NULS Network (downloadable for Google Play users)",
+    "application9": "A mobile app supporting NULS Network (downloadable for all Android users)",
     "application10": "NULS guess Numbers",
     "application11": "A guessing game based on NULS random Numbers",
     "application12": "NULS transactions can locked",
