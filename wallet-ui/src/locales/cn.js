@@ -909,7 +909,7 @@ const cn = {
     "call8": "不上链方法调用失败",
     "call9": "不上链方法调用异常",
     "call10": "gas 太小可能会使合约交易失败",
-    "call": "",
+    "call11": "请选择资产",
   },
 
   "deploy": {
@@ -1109,7 +1109,7 @@ const cn = {
   },
 
   "application": {
-    "application0": "团队开发",
+    "application0": "应用",
     "application1": "社区开发",
     "application2": "社区治理",
     "application3": "NULS社区治理工具，1NULS=1票",
@@ -1117,8 +1117,8 @@ const cn = {
     "application5": "SCO平台，用NULS挖新项目Token",
     "application6": "浏览器",
     "application7": "您想要看到NULS网络上的信息，在这里都能找到",
-    "application8": "NULS的移动端钱包（使用Google play的用户可下载）",
-    "application9": "NULS的移动端钱包（所有Android用户均可下载使用）",
+    "application8": "支持NULS网络的移动端钱包（使用Google play的用户可下载）",
+    "application9": "支持NULS网络的移动端钱包（所有Android用户均可下载使用）",
     "application10": "NULS猜数字",
     "application11": "基于NULS随机数开发的猜数游戏",
     "application12": "可锁定NULS交易",

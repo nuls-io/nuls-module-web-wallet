@@ -275,7 +275,6 @@
           this.allNRC20List = [];
           this.allList();
           setTimeout(() => {
-            this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
             this.getAccountCrossLedgerList(this.addressInfo.address);
             this.getAccountToken721List(this.addressInfo.address);
           }, 400);
@@ -457,12 +456,12 @@
         let news = 0.5;
         this.NULSUsdt = Number(Times(news, number)).toFixed(2);
         axios.defaults.baseURL = '';
-        let url = '';
+        let url = 'http://binanceapi.zhoulijun.top/api/v3/ticker/price?symbol=NULSUSDT';
         //console.log(process.env.NODE_ENV ==='development');
-        if (process.env.NODE_ENV === 'development') {
-          url = "http://binanceapi.zhoulijun.top/api/v3/ticker/price?symbol=NULSUSDT"
-        } else {
+        if (process.env.NODE_ENV !== 'development') {
           url = "/market-api/nuls-price"
+        } else {
+          url = "http://binanceapi.zhoulijun.top/api/v3/ticker/price?symbol=NULSUSDT";
         }
         axios.get(url)
           .then((response) => {
@@ -501,13 +500,21 @@
               }
             }
             const newAssetsList = response.result.list.filter(obj => obj.status !== 3); //隐藏已经删除合约
+            //console.log(newAssetsList);
             this.addressInfo.tokens = [];
 
             let addressList = addressInfo(0);
             for (let item of addressList) {
+              //console.log(item);
               if (this.addressInfo.address === item.address) {
+                let nrc20List = [];
                 item.nrc20List = item.nrc20List ? item.nrc20List : [];
-                item.nrc20List = [...newAssetsList, ...item.nrc20List];
+                for (let k of item.nrc20List) {
+                  let newNrc20List = this.allNRC20List.filter(obj => obj.contractAddress === k.contractAddress)[0];
+                  nrc20List.push(newNrc20List)
+                }
+
+                item.nrc20List = [...newAssetsList, ...nrc20List];
                 item.nrc20List = unique(item.nrc20List, 'contractAddress');
                 this.addressAssetsData = item.nrc20List;
               }
@@ -598,6 +605,8 @@
           this.allNRC20List = [...this.allNRC20List, ...newAssetsList];
           if (resDatas.data.totalCount > pageIndex * pageSize) {
             this.allList(pageIndex + 1, pageSize)
+          } else {
+            this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
           }
         }
       },
@@ -681,7 +690,6 @@
        */
       changeShow(info) {
         //console.log(info);
-
         if (info.isShow) {
           info.locking = 0;
           this.addressAssetsData.push(info);
@@ -694,7 +702,6 @@
         for (let item of addressList) {
           if (item.address === this.addressInfo.address) {
             item.nrc20List = this.addressAssetsData;
-            //this.addressAssetsData = unique(item.nrc20List, 'contractAddress');
           }
         }
         //console.log(addressList);
@@ -708,10 +715,11 @@
        * @author: Wave
        */
       tokenDioloClose() {
-        this.pageNumber = 1;
+        this.tokenSearch = '';
+        /*this.pageNumber = 1;
         this.pageSize = 100;
         this.pageCount = 0;
-        this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address)
+        this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address)*/
       },
 
       /**
