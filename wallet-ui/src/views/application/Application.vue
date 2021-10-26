@@ -23,18 +23,18 @@
         <p class="info">{{$t('application.application7')}}</p>
         <p class="go click" @click="toUrl('nuls',explorerUrl,1)">{{$t('application.application4')}}></p>
       </li>
-      <li>
+      <!--<li>
         <img src="./../../assets/img/goole.png"/>
         <p class="title">Google Play Nabox</p>
         <p class="info">{{$t('application.application8')}}</p>
         <p class="go click" @click="toUrl('nuls','https://play.google.com/store/apps/details?id=com.nuls.nabox',1)">
           {{$t('application.application4')}}></p>
-      </li>
+      </li>-->
       <li>
         <img src="./../../assets/img/nabox.png"/>
         <p class="title">Nabox</p>
         <p class="info">{{$t('application.application9')}}</p>
-        <p class="go click" @click="toUrl('nuls','http://nabox.io',1)">{{$t('application.application4')}}></p>
+        <p class="go click" @click="toUrl('nuls','https://nabox.io/',1)">{{$t('application.application4')}}></p>
       </li>
     </ul>
     <div class="cb" style="height: 50px"></div>
