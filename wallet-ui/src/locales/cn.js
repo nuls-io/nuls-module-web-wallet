@@ -1118,7 +1118,7 @@ const cn = {
     "application6": "浏览器",
     "application7": "您想要看到NULS网络上的信息，在这里都能找到",
     "application8": "支持NULS网络的移动端钱包（使用Google play的用户可下载）",
-    "application9": "支持NULS网络的移动端钱包（所有Android用户均可下载使用）",
+    "application9": "支持NULS网络的移动端钱包",
     "application10": "NULS猜数字",
     "application11": "基于NULS随机数开发的猜数游戏",
     "application12": "可锁定NULS交易",
