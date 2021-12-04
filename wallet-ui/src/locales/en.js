@@ -682,7 +682,7 @@ const en = {
     "transfer23": "Please provide the correct billing address or alias",
     "transfer24": "All",
     "transfer25": "The asset cannot be transferred to the contract address",
-    "transfer": "transfer",
+    "transfer26": "Cross-chain channels need to be upgraded and maintained",
   },
 
   "consensus": {
