@@ -683,7 +683,7 @@ const cn = {
     "transfer23": "请填写正确的收款地址或别名",
     "transfer24": "全部",
     "transfer25": "该资产不能转到合约地址",
-    "transfer": "",
+    "transfer26": "跨链通道需要升级维护",
   },
 
   "consensus": {
