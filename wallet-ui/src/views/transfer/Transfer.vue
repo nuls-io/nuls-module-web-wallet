@@ -168,9 +168,10 @@
               this.toAddressInfo.transferType = 0;
               callback(new Error(verifyToAddress.data))
             }
+            /*// 禁止nuls转到nerve
             if (verifyToAddress && verifyToAddress.isCross) {
               callback(new Error(this.$t("transfer.transfer26")))
-            }
+            }*/
           }
           if (this.toAddressInfo.type === 2 && this.toAddressInfo.right) { // 合约地址 判断是否能向其转NULS，其他平行链资产
             const contractInfo = await this.contractInfoByContractAddress(value);
