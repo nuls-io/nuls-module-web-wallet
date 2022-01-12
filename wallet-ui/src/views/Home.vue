@@ -9,7 +9,7 @@
 
     <div class="w1200 overview bg-white" v-loading="overviewLoading" element-loading-spinner="el-icon-loading">
       <div class="title">
-        <img src="./../assets/img/nuls-logo.svg"/>{{symbol.toLocaleUpperCase()}}
+        <img class="logo" src="./../assets/img/logo.svg"/>
         <span class="fr click" @click="toUrl('txList',addressNULSAssets)">{{$t('home.home2')}}</span>
       </div>
       <div class="total fl">
@@ -801,6 +801,10 @@
           width: 15px;
           margin: 6px 10px 5px 10px;
           float: left;
+        }
+        .logo {
+          width: 76px;
+          margin: 3px 0 0;
         }
         span {
           font-size: 14px;
