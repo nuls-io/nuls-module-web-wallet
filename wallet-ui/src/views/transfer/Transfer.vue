@@ -435,8 +435,11 @@
           });
         //console.log(crossAssets);
 
-        this.assetsList = [...basicAssets, ...newContractAssets, ...crossAssets];
-        //console.log(this.assetsList);
+        const assetsList = [...basicAssets, ...newContractAssets, ...crossAssets]
+        this.assetsList = assetsList.sort((a, b) => {
+          return a.symbol > b.symbol ? 1 : -1
+        });
+        // console.log(this.assetsList);
 
         let newInfo = {type: 1, tokenSymbol: MAIN_INFO};
         if (this.$route.query.contractAddress) {
