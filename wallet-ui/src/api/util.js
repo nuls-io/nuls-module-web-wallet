@@ -2,8 +2,7 @@ import nuls from 'nuls-sdk-js'
 import {BigNumber} from 'bignumber.js'
 import copy from 'copy-to-clipboard'
 import {explorerUrl, RUN_DEV} from '@/config.js'
-import openner from "./opener-web";
-//import openner from "./opener-desktop";
+import { openner } from "./opener";
 
 /**
  * 10的N 次方
