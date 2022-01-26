@@ -867,6 +867,8 @@ const cn = {
     "importAddress15": "keystore导入失败，请重启再试一次 ",
     "importAddress16": "请选择正确的keystore文件",
     "importAddress17": "请选择一个要导入keystore文件",
+    "importAddress18": "将文件拖到此处，或",
+    "importAddress19": "点击上传",
   },
 
   "setAlias": {
