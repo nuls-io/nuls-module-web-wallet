@@ -54,11 +54,9 @@
 </template>
 
 <script>
-  import axios from 'axios'
   import packages from './../../../package'
   import {RUN_PATTERN, RUN_DEV, FILE_URL} from '@/config.js'
-  import openner from "@/api/opener-web";
-  //import openner from "@/api/opener-desktop";
+  import { openner } from "@/api/opener";
 
   export default {
     data() {
@@ -77,7 +75,7 @@
       };
     },
     created() {
-      //this.seeLog();
+      this.seeLog();
     },
     mounted() {
 
@@ -134,14 +132,15 @@
           this.logUrl = str.slice(0, num) + '/wallet_web_log';
           updateUrl = this.FILE_URL + '/latest-mac.yml'
         }
-        axios.get(updateUrl, {})
+        console.log(updateUrl);
+        /*axios.get(updateUrl, {})
           .then((response) => {
             //console.log(response.data.substr(9,5));
             this.newVersion = response.data.substr(9, 5);
           })
           .catch((error) => {
             console.log(error);
-          });
+          });*/
       }
     }
   }
@@ -158,15 +157,15 @@
         li {
           line-height: 1.6rem;
           width: 40rem;
-          margin: 0 0 0 39%;
-          text-align: left;
+          margin: 0 auto;
+          text-align: center;
           font-size: 12px;
           span {
             width: 8rem;
-            display: block;
-            float: left;
+            //display: block;
+            //float: left;
             font-size: 14px;
-            text-align: right;
+            //text-align: right;
             padding-right: 0.5rem;
           }
         }

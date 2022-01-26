@@ -5,7 +5,8 @@
       <el-tabs v-model="activeName" @tab-click="handleClick" class="new_import w1200">
         <el-tab-pane :label="$t('importAddress.importAddress2')" name="keystoreImport" :disabled="resetAddress !=='0'">
           <div class="tc upload_keystore">
-            <el-upload drag class="upload" action="localhost" accept='.keystore' v-if="!isfileReader"
+            <Upload @upload="handleUpload"/>
+            <!-- <el-upload drag class="upload" accept='.keystore' v-if="!isfileReader"
                        :before-upload="handleUpload"
                        :multiple="false"
                        :limit="1">
@@ -13,7 +14,7 @@
               <div class="el-upload__text">{{$t('importAddress.importAddress4')}}<em>{{$t('importAddress.importAddress41')}}</em>
               </div>
             </el-upload>
-            <div v-else>{{$t('importAddress.importAddress42')}}</div>
+            <div v-else>{{$t('importAddress.importAddress42')}}</div> -->
           </div>
         </el-tab-pane>
         <el-tab-pane :label="$t('importAddress.importAddress3')" name="keyImport">
@@ -95,6 +96,7 @@
   } from '@/api/util'
   import {getPrefixByChainId} from '@/api/requestData'
   import Password from '@/components/PasswordBar'
+  import Upload from '@/components/Upload.vue'
 
   export default {
     data() {
@@ -206,7 +208,8 @@
       };
     },
     components: {
-      Password
+      Password,
+      Upload
     },
     created() {
       getPrefixByChainId(chainID()).then((response) => {

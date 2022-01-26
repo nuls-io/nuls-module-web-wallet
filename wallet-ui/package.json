@@ -1,6 +1,6 @@
 {
   "name": "NULS-Wallet",
-  "version": "2.4.5",
+  "version": "2.5.1",
   "private": true,
   "scripts": {
     "serve": "cross-env NULS_ENV=prod vue-cli-service serve src/main-web",
@@ -46,7 +46,8 @@
     "babel-eslint": "^10.0.1",
     "cross-env": "^6.0.0",
     "electron": "^4.0.0",
-    "electron-builder": "^20.18.0",
+    "electron-builder": "^22.13.1",
+    "electron-devtools-installer": "^3.2.0",
     "electron-updater": "^4.0.6",
     "eslint": "^5.8.0",
     "eslint-plugin-vue": "^5.0.0",

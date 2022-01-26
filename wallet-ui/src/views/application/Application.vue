@@ -44,7 +44,8 @@
 
 <script>
   import {addressInfo, connectToExplorer} from '@/api/util'
-  import {explorerUrl} from '@/config.js'
+  import { openner } from '@/api/opener';
+  import {explorerUrl, RUN_PATTERN, RUN_DEV} from '@/config.js'
 
   export default {
     data() {
@@ -78,12 +79,22 @@
             name: name
           })
         } else {
-          if (name === 'community' || name === 'pocm') {
-            name = 'nuls';
-            //parameter = walletUrl + parameter
-            parameter = '' + parameter
+          if (RUN_PATTERN) {
+            let url = parameter
+            if (name === 'community' || name === 'pocm') {
+              const pocmUrl = RUN_DEV ? 'https://pocm.nuls.io' : 'http://beta.pocm.nuls.io';
+              const govUrl = RUN_DEV ? 'https://gov.nuls.io' : 'http://beta.gov.nuls.io';
+              url = name === 'community' ? govUrl : pocmUrl;
+            }
+            openner(url)
+          } else {
+            if (name === 'community' || name === 'pocm') {
+              name = 'nuls';
+              //parameter = walletUrl + parameter
+              parameter = '' + parameter
+            }
+            connectToExplorer(name, parameter)
           }
-          connectToExplorer(name, parameter)
         }
 
       },

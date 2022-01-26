@@ -863,6 +863,8 @@ const en = {
     "importAddress15": "Keystore import failed, please restart and try again ",
     "importAddress16": "Please select the correct keystore file",
     "importAddress17": "Please select a keystore file to import",
+    "importAddress18": "Drag the file here, or ",
+    "importAddress19": "click upload",
   },
 
   "setAlias": {
