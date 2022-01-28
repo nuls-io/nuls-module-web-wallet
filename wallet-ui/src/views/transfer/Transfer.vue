@@ -213,17 +213,17 @@
       };
       let validateAmount = async (rule, value, callback) => {
         let patrn = new RegExp("^([1-9][\\d]{0,20}|0)(\\.[\\d]{1," + this.assetsInfo.decimals + "})?$");
-        this.available = Number(this.assetsInfo.balance);
-        if (this.assetsInfo.type === 1 && this.assetsInfo.symbol === 'NULS') {
-          this.available = Number(Minus(this.assetsInfo.balance, this.transferForm.fee))
+        this.available = this.assetsInfo.balance;
+        if (this.assetsInfo.type === 1 && this.assetsInfo.symbol === 'NULS' && this.assetsInfo.balance > 0) {
+          this.available = Minus(this.assetsInfo.balance, this.transferForm.fee).toFixed();
         }
         if (value === '') {
           callback(new Error(this.$t('transfer.transfer11')))
         } else if (!patrn.exec(value)) {
           callback(new Error(this.$t('transfer.transfer12') + ": " + this.assetsInfo.decimals))
-        } else if (value < 0.001 && this.assetsInfo.symbol === 'NULS') {
+        } else if (Minus(value, 0.001).toFixed() < 0 && this.assetsInfo.symbol === 'NULS') {
           callback(new Error(this.$t('transfer.transfer13')))
-        } else if (value > this.available) {
+        } else if (Minus(value, this.available).toFixed() > 0) {
           callback(new Error(this.$t('transfer.transfer131') + ": " + this.available))
         } else {
           //console.log(this.transferForm.toAddress);
@@ -457,7 +457,8 @@
           this.transferForm.assetType = newInfo.tokenSymbol.symbol;
 
           this.assetsInfo = newAssetsInfo;
-          //console.log(this.assetsInfo);
+          // this.assetsInfo.balance = '0.000000000321148484'
+          // console.log(this.assetsInfo);
         }
         if (this.$route.query.accountType === 'NULS') {
           newInfo = {type: 1, tokenSymbol: MAIN_INFO};
@@ -690,7 +691,7 @@
        */
       allAvailable() {
         this.$refs.transferForm.validateField('amount');
-        this.transferForm.amount = this.available.toString()
+        this.transferForm.amount = this.available;
       },
 
       /**
