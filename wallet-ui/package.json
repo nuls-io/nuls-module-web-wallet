@@ -29,7 +29,7 @@
     "less": "^3.9.0",
     "less-loader": "^4.1.0",
     "log4js": "^4.5.1",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "nuls-sdk-js": "^2.4.7",
     "qrcodejs2": "^0.0.2",
     "shelljs": "^0.8.3",
