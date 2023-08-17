@@ -9,7 +9,7 @@ const en = {
     "application": "Application",
     "set": "Set",
     "addressList": "Account Management",
-    "nodeList": "Nodes Service",
+    "nodeList": "Network",
     "help": "Help",
   },
 
@@ -648,6 +648,11 @@ const en = {
     "home12": "Name",
     "home13": "Holdings",
     "home14": "Contract address",
+    "home15": "NRC1155 Assets",
+    "home16": "Amount",
+    "home17": "Please enter the amount",
+    "home18": "The amount must be an integer",
+    "home19": "The maximum transfer amount is: ",
   },
 
   "frozenList": {
@@ -742,7 +747,7 @@ const en = {
 
   "nodeService": {
     "nodeService0": "Node switching...",
-    "nodeService1": "Node Service List",
+    "nodeService1": "Network List",
     "nodeService2": "Name",
     "nodeService3": "Service address",
     "nodeService4": "Delay",
@@ -767,6 +772,11 @@ const en = {
     "nodeService22": "Remove success",
     "official": "Official",
     "nodeService23": "Chain name",
+    "nodeService24": "Address prefix",
+    "nodeService25": "Explorer",
+    "nodeService26": "Address prefix cannot be empty",
+    "nodeService27": "Explorer cannot be empty",
+    "nodeService28": "Please enter the correct address",
   },
 
   "address": {
@@ -974,8 +984,8 @@ const en = {
   },
 
   "bottom": {
-    "serviceNode": "Service node",
-    "nodeHeight": "Mainnet/Service Node",
+    "serviceNode": "Current Node",
+    "nodeHeight": "Mainnet/Current Node",
     "agreement": "Service agreement",
     "policy": "Privacy policy",
     "updateWallet": "Update wallet",
@@ -1124,6 +1134,19 @@ const en = {
     "application14": "One to many transfer",
     "application15": "Can support import for one to many transfer transactions",
     "application": "application",
+  },
+  "ledger": {
+    ledger1: 'Connect Hardware Wallet',
+    ledger2: 'Select the hardware wallet you want to use with NULS Wallet',
+    ledger3: 'Insert Ledger Wallet',
+    ledger4: 'Connect your wallet directly to your computer. Unlock the Ledger and open the NULS app',
+    ledger5: 'Connecting...',
+    ledger6: 'Loading...',
+    ledger7: 'Select Account',
+    ledger8: 'Previous',
+    ledger9: 'Next',
+    ledger10: 'Signature',
+    ledger11: 'Please confirm the signature in the Ledger',
   },
   ...enLocale
 

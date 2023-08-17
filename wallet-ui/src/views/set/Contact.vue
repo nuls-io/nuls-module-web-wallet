@@ -27,7 +27,8 @@
 
     <el-dialog :title="$t('tab.tab15')" width="35rem" :visible.sync="contactDialog" class="contact-dialog"
                :close-on-click-modal="false"
-               :close-on-press-escape="false">
+               :close-on-press-escape="false"
+               @closed="resetForm('contacForm')">
       <el-form :model="contacForm" status-icon :rules="contacRules" ref="contacForm" class="contac-form bg-white">
         <el-form-item :label="$t('transfer.transfer4')" prop="name">
           <el-input v-model.trim="contacForm.name" maxlength="20" show-word-limit>
@@ -39,7 +40,7 @@
         </el-form-item>
         <div v-show="contacForm.alias">{{$t('address.address3')}}: {{contacForm.alias}}</div>
         <el-form-item class="btn-next">
-          <el-button @click="resetForm('contacForm')">{{$t('address.address10')}}</el-button>
+          <el-button @click="contactDialog=false">{{$t('address.address10')}}</el-button>
           <el-button type="success" @click="submitForm('contacForm')">{{$t('address.address11')}}</el-button>
         </el-form-item>
       </el-form>
@@ -50,7 +51,7 @@
 
 <script>
   import nuls from 'nuls-sdk-js'
-  import {chainIdNumber, addressInfo} from '@/api/util'
+  import storage from '@/api/storage'
 
   export default {
     data() {
@@ -96,6 +97,11 @@
 
       };
     },
+    computed: {
+      currentChain() {
+        return this.$store.state.currentChain
+      }
+    },
     created() {
       this.getContactList();
     },
@@ -121,8 +127,8 @@
        * 获取联系人列表
        */
       getContactList() {
-        let defaultAddressInfo = addressInfo(1);
-        this.contactList = defaultAddressInfo.hasOwnProperty('contactList') ? defaultAddressInfo.contactList : [];
+        const contactInfo = storage.get('contactList') || {}
+        this.contactList = contactInfo[this.currentChain.chainId] || []
       },
 
       /**
@@ -131,8 +137,14 @@
        **/
       deleteContact(rowInfo) {
         this.contactList.splice(this.contactList.findIndex(v => v.address === rowInfo.address), 1);
+        this.syncContactStorage(this.contactList)
         this.isAdd = 2;
-        this.addOrEditMethod();
+      },
+
+      syncContactStorage(contacts) {
+        const contactInfo = storage.get('contactList') || {}
+        contactInfo[this.currentChain.chainId] = contacts
+        storage.set('contactList', contactInfo)
       },
 
       /**
@@ -142,7 +154,7 @@
       addOrEditContact(rowInfo) {
         this.contactDialog = true;
         if (rowInfo) {
-          this.contacForm = rowInfo;
+          this.contacForm = {...rowInfo};
           this.isAdd = 1;
         } else {
           this.isAdd = 0;
@@ -156,6 +168,9 @@
         await this.$post('/', 'getAccount', [address], 'BottomBar')
           .then((response) => {
             //console.log(response);
+            if (!this.contactDialog) {
+              return;
+            }
             if (response.hasOwnProperty("result")) {
               this.contacForm.alias = response.result.alias
             } else {
@@ -175,16 +190,13 @@
         this.$refs[formName].validate((valid) => {
           if (valid) {
             that.addOrEditMethod();
-            setTimeout(() => {
-              this.contacForm.alias = '';
-              this.resetForm(formName);
-            }, 200)
           } else {
             return false;
           }
         });
       },
       resetForm(formName) {
+        this.contacForm.alias = '';
         this.$refs[formName].resetFields();
       },
 
@@ -192,28 +204,21 @@
        * 添加或编辑方法
        **/
       addOrEditMethod() {
-        let newArr = [];
-        newArr.push(this.contacForm);
-        let newContacList = [];
+        const contact = {...this.contacForm};
+        console.log(contact, this.isAdd, 123, this.contactList)
         if (this.isAdd === 0) {
-          newContacList = [...this.contactList, ...newArr]
+          this.contactList.push({ ...contact, id: new Date().getTime() })
         } else {
-          newContacList = [...this.contactList];
+          this.contactList.map(v => {
+            if (v.id === contact.id) {
+              v.name = contact.name
+              v.address = contact.address
+              v.alias = contact.alias
+            }
+          })
         }
-        //console.log(newContacList);
-        let defaultAddressInfo = addressInfo(1);
-        let defaultAddressList = addressInfo(0);
-        for (let item of defaultAddressList) {
-          if (item.address === defaultAddressInfo.address) {
-            item.contactList = [];
-            item.contactList = [...newContacList];
-          }
-        }
-        localStorage.setItem(chainIdNumber(), JSON.stringify(defaultAddressList));
-        setTimeout(() => {
-          this.contactDialog = false;
-          this.getContactList();
-        }, 500);
+        this.syncContactStorage(this.contactList)
+        this.contactDialog = false
       },
 
       /**

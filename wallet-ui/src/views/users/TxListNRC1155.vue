@@ -11,12 +11,12 @@
     <div class="w1200">
       <div v-loading="txListDataLoading" class="mb_100">
         <el-table :data="txListData" stripe border>
-          <el-table-column :label="$t('public.height')" align="center" width="100">
+          <el-table-column :label="$t('public.height')" align="center" width="80">
             <template slot-scope="scope">
               <span class="click td" @click="openUrl('height',scope.row.height,1)">{{scope.row.height}}</span>
             </template>
           </el-table-column>
-          <el-table-column label="TxID" align="center" min-width="220">
+          <el-table-column label="TxID" align="center" min-width="200">
             <template slot-scope="scope">
               <router-link class="click" tag="a" :to="{name:'transferInfo',query:{hash:scope.row.txHash}}">
                 {{ scope.row.txid }}
@@ -24,17 +24,17 @@
               <!--<span class="click " @click="toUrl('transferInfo',scope.row.txHash)">{{scope.row.txid}}</span>-->
             </template>
           </el-table-column>
-          <el-table-column :label="$t('public.fromAddresss')" align="center" width="210">
+          <el-table-column :label="$t('public.fromAddresss')" align="center" width="160">
             <template slot-scope="scope">
               <span class="click td" @click="openUrl('address',scope.row.fromAddress,1)">{{scope.row.fromAddresss}}</span>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('public.toAddresss')" align="center" width="210">
+          <el-table-column :label="$t('public.toAddresss')" align="center" width="160">
             <template slot-scope="scope">
               <span class="click td" @click="openUrl('address',scope.row.toAddress,1)">{{scope.row.toAddresss}}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="createTime" :label="$t('tab.tab5')" align="center" width="180">
+          <el-table-column prop="createTime" :label="$t('tab.tab5')" align="center" width="160">
           </el-table-column>
           <el-table-column :label="'Token'+$t('nodeService.nodeService2')" align="center" width="130">
             <template slot-scope="scope">
@@ -50,6 +50,7 @@
               </span>
             </template>
           </el-table-column>
+          <el-table-column prop="value" :label="$t('public.amount')" align="center" width="130" ></el-table-column>
         </el-table>
         <div class="pages">
           <div class="page-total">
@@ -136,15 +137,15 @@
        * @param address 地址
        **/
       getTxList() {
-        this.$post('/', 'getToken721Transfers', [this.pageIndex, this.pageSize, this.addressInfo.address, null])
+        this.$post('/', 'getToken1155Transfers', [this.pageIndex, this.pageSize, this.addressInfo.address, '', ''])
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
               for (let item of response.result.list) {
                 item.createTime = moment(getLocalTime(item.time * 1000)).format('YYYY-MM-DD HH:mm:ss');
                 item.txid = superLong(item.txHash, 8);
-                item.fromAddresss = superLong(item.fromAddress, 8);
-                item.toAddresss = superLong(item.toAddress, 8);
+                item.fromAddresss = superLong(item.fromAddress, 6);
+                item.toAddresss = superLong(item.toAddress, 6);
               }
               this.txListData = response.result.list;
               this.pageTotal = response.result.totalCount;

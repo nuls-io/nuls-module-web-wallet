@@ -4,9 +4,19 @@ import {createProtocol, installVueDevtools} from 'vue-cli-plugin-electron-builde
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
 import {autoUpdater} from 'electron-updater'
 
+import TransportNodeHid from '@ledgerhq/hw-transport-node-hid'
+import Nuls from './api/ledger/Nuls';
+import Serializers from "nuls-sdk-js/lib/api/serializers";
+
+// const TransportNodeHid = require("@ledgerhq/hw-transport-node-hid").default;
+
 const isDevelopment = process.env.NODE_ENV !== 'production';
 let win;
-protocol.registerStandardSchemes(['app'], {secure: true});
+// protocol.registerStandardSchemes(['app'], {secure: true});
+
+protocol.registerSchemesAsPrivileged([{
+  scheme: 'app', privileges: {standard: true, secure: true, supportFetchAPI: true},
+}])
 
 function createWindow() {
 
@@ -40,7 +50,10 @@ function createWindow() {
     height: 900,
     minWidth: 1300,
     minHeight: 800,
-    webPreferences: {webSecurity: false}
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    }
   });
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
@@ -57,6 +70,81 @@ function createWindow() {
     win.show()
   })
 }
+
+async function getProvider() {
+  const transport = await TransportNodeHid.open()
+  console.log('transport: ', transport)
+  const provider = new Nuls(transport)
+  return provider
+}
+
+const getPath = (index) => {
+  console.log(`44'/60'/${index || 0}'/0/0`, "==path==");
+  return `44'/60'/${index || 0}'/0/0`;
+};
+
+ipcMain.on("WEB_TO_ELECTRON", async (event, args) => {
+  console.log('event: ', event)
+  console.log('args: ', args)
+  const { method, data } = args
+  try {
+    if (method === 'requestAccount') {
+      const provider = await getProvider()
+      const { pageIndex, pageSize } = data
+      const from = (pageIndex - 1) * pageSize;
+      const to = pageIndex * pageSize;
+      const accounts = [];
+      for (let i = from; i < to; i++) {
+        const path = getPath(i);
+        const account = await provider.getPublicKey(path);
+        accounts.push(account);
+      }
+
+      console.log(accounts, '==--==')
+      win.webContents.send("ELECTRON_TO_WEB", {
+        method: method,
+        result: accounts
+      });
+    } else if (method === 'signTransaction') {
+      const { hex, index } = data
+      const provider = await getProvider()
+      // console.log(first)
+      let txHex = hex.substring(0, hex.length - 2);
+
+      // const tAssemble = JSON.parse(data.tAssemble)
+
+      // let txHex = tAssemble.txSerialize().toString('hex');
+      // tAssemble.calcHash();
+      // txHex = txHex.substring(0, txHex.length - 2);
+
+      const { signature } = await provider.signTransaction(getPath(index), txHex);
+      let bw = new Serializers();
+      bw.writeBytesWithLength(Buffer.from(signature, "hex"));
+      txHex += bw
+        .getBufWriter()
+        .toBuffer()
+        .toString("hex");
+      win.webContents.send("ELECTRON_TO_WEB", {
+        method: method,
+        result: txHex
+      });
+    }
+  } catch (e) {
+    win.webContents.send("ELECTRON_TO_WEB", {
+      method: method,
+      error: e
+    });
+    console.log('erroe: ', e)
+  }
+  
+});
+// ipcMain.on("requestConnectLedger", () => {
+//   console.log(1234)
+//   TransportNodeHid.open().then(transport => {
+//     console.log(transport, '333111')
+//     // win.webContents.send("transportInfo", transport);
+//   });
+// });
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

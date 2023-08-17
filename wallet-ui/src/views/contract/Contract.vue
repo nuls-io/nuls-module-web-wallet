@@ -104,14 +104,13 @@
 
 <script>
   import moment from 'moment'
-  import {getLocalTime, chainIdNumber, addressInfo, connectToExplorer} from '@/api/util'
+  import {getLocalTime, connectToExplorer} from '@/api/util'
   import Deploy from './Deploy'
   import Call from './Call'
 
   export default {
     data() {
       return {
-        addressInfo: {},//地址信息
         contractActive: 'contractFirst',
         //我的合约
         myContractData: [],
@@ -127,12 +126,13 @@
         myContractDataLoading: true,//我的合约加载动画
       };
     },
-    created() {
-      this.addressInfo = addressInfo(1);
-      setInterval(() => {
-        this.addressInfo = addressInfo(1);
-      }, 500);
-
+    computed: {
+      addressInfo() {
+        return this.$store.getters.currentAccount
+      },
+      accountList() {
+        return this.$store.state.accountList
+      }
     },
     mounted() {
       setTimeout(() => {
@@ -175,23 +175,17 @@
       async getMyContractByAddress(address) {
         await this.$post('/', 'getAccountContractList', [this.pageIndex, this.pageSize, address, -1, false])
           .then((response) => {
-            //console.log(response);
-            if (!this.addressInfo.contractList) {
-              this.addressInfo.contractList = [];
-            }
+            const contractList = this.addressInfo.contractList || []
             if (response.hasOwnProperty("result")) {
               if (response.result.list.length !== 0) {
                 let myContractList = [];
                 for (let item of response.result.list) {
                   myContractList.push(item.contractAddress)
                 }
-                if (!this.addressInfo.contractList) {
-                  this.addressInfo.contractList = [];
-                }
-                let newContractList = [...myContractList, ...this.addressInfo.contractList];
-                this.getContractListById(this.pageIndex, this.pageSize, this.addressInfo.contractList.length + response.result.totalCount, newContractList);
+                let newContractList = [...myContractList, ...contractList];
+                this.getContractListById(this.pageIndex, this.pageSize, contractList.length + response.result.totalCount, newContractList);
               } else {
-                this.getContractListById(this.pageIndex, this.pageSize, this.addressInfo.contractList.length, this.addressInfo.contractList);
+                this.getContractListById(this.pageIndex, this.pageSize, contractList.length, contractList);
               }
               this.myContractDataLoading = false;
             } else {
@@ -254,7 +248,7 @@
                 this.contractInfo = response.result;
                 this.modelData = response.result.methods;
                 this.decimals = response.result.decimals;
-                let contractList = this.addressInfo.contractList;
+                const contractList = this.addressInfo.contractList || [];
                 if (contractList.length !== 0 && contractList.includes(this.contractInfo.contractAddress)) {
                   this.isCollection = true;
                 } else {
@@ -282,7 +276,7 @@
        **/
       collection(contractAddress) {
         this.isCollection = !this.isCollection;
-        let contractList = this.addressInfo.contractList ? this.addressInfo.contractList : [];
+        const contractList = this.addressInfo.contractList || [];
         if (contractList.length !== 0) {
           if (contractList.includes(contractAddress)) {
             for (let [index, elem] of contractList.entries()) {
@@ -297,19 +291,16 @@
           contractList.push(contractAddress);
         }
 
-        let addressList = addressInfo(0);
-        for (let item of addressList) {
+        const accountList = [...this.accountList]
+        for (let item of accountList) {
           if (item.address === this.addressInfo.address) {
             if (!item.contractList) {
               item.contractList = [];
             }
-            item.contractList.length = 0;
-            let newArr = [...contractList, ...item.contractList];
-            let oldArr = Array.from(new Set(newArr));
-            item.contractList = [...oldArr]
+            item.contractList = [...contractList, ...item.contractList]
           }
         }
-        localStorage.setItem(chainIdNumber(), JSON.stringify(addressList));
+        this.$store.commit('changeAccouuntList', accountList);
       },
 
       /**
@@ -317,7 +308,7 @@
        * @param contractAddress
        **/
       cancelCollection(contractAddress) {
-        let contractList = this.addressInfo.contractList;
+        let contractList = this.addressInfo.contractList || [];
         if (contractList.includes(contractAddress)) {
           for (let [index, elem] of contractList.entries()) {
             if (elem === contractAddress) {
@@ -325,14 +316,14 @@
             }
           }
         }
-        let addressList = addressInfo(0);
-        for (let item of addressList) {
+        const accountList = [...this.accountList]
+        for (let item of accountList) {
           if (item.address === this.addressInfo.address) {
             item.contractList.length = 0;
             item.contractList = [...contractList]
           }
         }
-        localStorage.setItem(chainIdNumber(), JSON.stringify(addressList));
+        this.$store.commit('changeAccouuntList', accountList);
         this.getMyContractByAddress(this.addressInfo.address);
       },
 

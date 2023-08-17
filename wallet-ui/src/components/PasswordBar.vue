@@ -46,12 +46,14 @@
 <script>
   import QRCode from 'qrcodejs2'
   import nuls from 'nuls-sdk-js'
-  import {connectToExplorer, passwordVerification, addressInfo} from '@/api/util.js'
-  import {validateAndBroadcast, getScanAutograph, getPrefixByChainId} from '@/api/requestData'
-  import {MAIN_INFO} from '@/config'
+  import {connectToExplorer, passwordVerification} from '@/api/util.js'
+  import {validateAndBroadcast, getScanAutograph} from '@/api/requestData'
+  import storage from '@/api/storage'
 
   export default {
-    props: {},
+    props: {
+      addressInfo: Object
+    },
     data() {
       let validatePass = (rule, value, callback) => {
         if (value === '') {
@@ -74,13 +76,12 @@
           ]
         },
         isKeep: false,//记住密码
-        addressInfo: {},//账户信息
-        prefix: {},//地址前缀
       }
     },
-    created() {
-    },
-    mounted() {
+    computed: {
+      account() {
+        return this.addressInfo ? this.addressInfo : this.$store.getters.currentAccount
+      }
     },
     watch: {
       passwordVisible(val) {
@@ -190,16 +191,8 @@
        * @author: Wave
        */
       showPassword(boolean) {
-        this.addressInfo = addressInfo(1);
-        getPrefixByChainId(MAIN_INFO.chainId).then((response) => {
-          this.prefix = response
-        }).catch((err) => {
-          console.log(err);
-          this.prefix = '';
-        });
-
-        let keepList = sessionStorage.hasOwnProperty('keepData') ? JSON.parse(sessionStorage.getItem('keepData')) : [];
-        let keepInfo = keepList.filter(obj => obj.address === this.addressInfo.address);
+        const keepList = storage.get('keepData', 'session') || []
+        const keepInfo = keepList.filter(obj => obj.address === this.account.address);
         if (keepInfo.length !== 0) {
           this.passwordForm.password = keepInfo[0].password;
           this.isKeep = true;
@@ -217,23 +210,21 @@
         this.$refs[formName].validate(async (valid) => {
           if (valid) {
             this.$emit('passwordSubmit', this.passwordForm.password);
-            let keepList = sessionStorage.hasOwnProperty('keepData') ? JSON.parse(sessionStorage.getItem('keepData')) : [];
-            let resData = await passwordVerification(this.addressInfo, this.passwordForm.password, this.prefix);
-            let oldKeepInfo = keepList.filter(obj => obj.address === resData.address);
-            //console.log(resData);
-            if (this.isKeep) {
-              if (resData.success) {
-                if (oldKeepInfo.length === 0) {
-                  keepList.push({address: resData.address, password: this.passwordForm.password})
+            const keepList = storage.get('keepData', 'session') || []
+            const verifiedInfo = await passwordVerification(this.account, this.passwordForm.password, this.$store.state.prefix);
+            if (verifiedInfo.success) {
+              const existIndex = keepList.findIndex(v => v.address === this.account.address)
+              if (this.isKeep) {
+                if (existIndex === -1) {
+                  keepList.push({ address: this.account.address, password: this.passwordForm.password })
+                }
+              } else {
+                if (existIndex !== -1) {
+                  keepList.splice(existIndex, 1)
                 }
               }
-            } else {
-              if (oldKeepInfo.length === 1) {
-                keepList.splice(keepList.findIndex(item => item.address === resData.address), 1);
-              }
             }
-            //console.log(keepList);
-            sessionStorage.setItem('keepData', JSON.stringify(keepList));
+            storage.set('keepData', keepList, 'session');
             this.$refs[formName].resetFields();
             this.isKeep = false;
             this.passwordVisible = false;

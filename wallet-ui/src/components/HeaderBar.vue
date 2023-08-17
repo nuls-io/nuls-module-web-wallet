@@ -14,7 +14,7 @@
           <el-menu-item index="contract" :disabled="addressList.length === 0 || !nodeServiceInfo.isRunSmartContract">
             {{$t('nav.contracts')}}
           </el-menu-item>
-          <el-menu-item index="application">{{$t('nav.application')}}</el-menu-item>
+          <!-- <el-menu-item index="application">{{$t('nav.application')}}</el-menu-item> -->
         </el-menu>
       </div>
       <div class="tool">
@@ -26,7 +26,7 @@
                  <i class="iconfont iconwo ico" :class="item.selection ? 'fCN' : 'transparent' "></i>
                 <font v-if="item.alias" class="w100"> {{item.alias}}</font>
                 <font v-else-if="item.remark" class="w100"> {{item.remark}}</font>
-                <font v-else class="w100">{{item.addresss}}</font> |
+                <font v-else class="w100">{{superLong(item.address)}}</font> |
                 <span>{{item.balance}}</span>
               </span>
             </el-menu-item>
@@ -48,7 +48,7 @@
              <el-menu-item index="cn">中文</el-menu-item>
              <el-menu-item index="en">English</el-menu-item>
            </el-submenu>-->
-          <el-submenu index="more" v-show="symbol ==='NULS'">
+          <el-submenu index="more">
             <template slot="title"><i class="el-icon-more"></i></template>
             <el-menu-item index="official">{{$t('tab.tab21')}}</el-menu-item>
             <el-menu-item index="explorer">{{$t('tab.tab22')}}</el-menu-item>
@@ -66,21 +66,24 @@
 <script>
   import logo from '@/assets/img/logo.svg'
   // import logoSvg from '@/assets/img/logo-beta.svg'
-  import {superLong, chainIdNumber, addressInfo, connectToExplorer} from '@/api/util'
-  import {RUN_DEV} from '@/config.js'
+  import {superLong, connectToExplorer} from '@/api/util'
+  import storage from '@/api/storage'
 
   export default {
     data() {
       return {
         logoSvg: logo, //logo
         navActive: '/',//菜单选中
-        addressList: [], //地址列表
         lang: 'cn', //语言选择
-        nodeServiceInfo: {},
-        symbol: 'NULS', //symbol
+        nodeServiceInfo: {}
       };
     },
     components: {},
+    computed: {
+      addressList() {
+        return this.$store.state.accountList
+      }
+    },
     created() {
       let type = navigator.appName;
       let langs = '';
@@ -96,16 +99,12 @@
         this.lang = 'en';
       }
       this.$i18n.locale = this.lang;
-
-      this.getAddressList();
     },
     mounted() {
       setInterval(() => {
-        this.symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
-        document.title = this.symbol + " Wallet";
-        this.getAddressList();
-        if (sessionStorage.hasOwnProperty('info')) {
-          this.nodeServiceInfo = JSON.parse(sessionStorage.getItem('info'));
+        const info = storage.get('info', 'session')
+        if (info) {
+          this.nodeServiceInfo = info;
         } else {
           this.nodeServiceInfo.isRunCrossChain = false;
           this.nodeServiceInfo.isRunSmartContract = false;
@@ -113,6 +112,9 @@
       }, 500)
     },
     methods: {
+      superLong(str, len=8) {
+        return superLong(str, len)
+      },
 
       /**
        * 菜单导航
@@ -122,7 +124,8 @@
       handleSelect(key, keyPath) {
         if (keyPath.length > 1) {
           if (keyPath[0] === "address") {
-            for (let item  of this.addressList) {
+            const addressList = [...this.addressList]
+            for (let item  of addressList) {
               //清除选中
               if (item.selection) {
                 item.selection = false;
@@ -132,7 +135,7 @@
                 item.selection = true;
               }
             }
-            localStorage.setItem(chainIdNumber(), JSON.stringify(this.addressList));
+            this.$store.commit('changeAccouuntList', addressList)
           } else if (keyPath[0] === "set") {
             this.$router.push({
               name: keyPath[1]
@@ -142,7 +145,11 @@
             if (keyPath[1] === 'official') {
               newUrl = 'https://nuls.io/'
             } else if (keyPath[1] === 'explorer') {
-              newUrl = RUN_DEV ? 'https://nulscan.io/' : 'http://beta.nulscan.io/'
+              const currentChain = this.$store.state.currentChain
+              newUrl = 'https://nulscan.io/'
+              if (currentChain.chainId === 1 || currentChain.chainId === 2) {
+                newUrl = currentChain.explorerUrl
+              }
             } else if (keyPath[1] === 'docs') {
               newUrl = 'https://docs.nuls.io/'
             }
@@ -170,18 +177,6 @@
           return 'contract'
         } else {
           return 'home'
-        }
-      },
-
-      /**
-       * 获取账户列表
-       */
-      getAddressList() {
-        this.addressList = addressInfo(0);
-        if (this.addressList) {
-          for (let item  of this.addressList) {
-            item.addresss = superLong(item.address, 8);
-          }
         }
       },
 

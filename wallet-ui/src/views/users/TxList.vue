@@ -10,11 +10,6 @@
     <div class="w1200">
       <div v-loading="txListDataLoading" class="mb_100">
         <div class="filter">
-          <el-select v-model="assetsValue" @change="channgeAsesets" v-show="false">
-            <el-option v-for="item in assetsOptions" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-          </el-select>
-
           <el-select :value="$t('type.'+typeValue)" @change="channgeType">
             <el-option v-for="item in typeOptions" :key="item.value" :label="$t('type.'+item.value)"
                        :value="item.value">
@@ -86,12 +81,6 @@
   export default {
     data() {
       return {
-        assetsOptions: [
-          {value: '0', label: '0'},
-          {value: '1', label: '1'},
-          {value: '2', label: '2'}
-        ], //资产类型
-        assetsValue: "0",
         typeOptions: [
           {value: '0', label: '0'},
           {value: '2', label: '2'},
@@ -132,25 +121,23 @@
         pageIndex: 1, //页码
         pageSize: 10, //每页条数
         pageTotal: 0,//总页数
-        addressInfo: [], //账户信息
         types: 0,//类型
         isHide: true,//隐藏共识奖励
         txListSetInterval: null,//定时器
       };
     },
-    created() {
-      this.addressInfo = addressInfo(1);
-      setInterval(() => {
-        this.addressInfo = addressInfo(1);
-      }, 500);
+    computed: {
+      addressInfo() {
+        return this.$store.getters.currentAccount
+      }
     },
     mounted() {
       setTimeout(() => {
-        this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.types, -1, -1, this.$route.query.chainId, this.$route.query.assetId);
+        this.getTxlistByAddress();
       }, 600);
       //10秒循环一次数据
       this.txListSetInterval = setInterval(() => {
-        this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.types, -1, -1, this.$route.query.chainId, this.$route.query.assetId);
+        this.getTxlistByAddress();
       }, 10000);
     },
     beforeRouteLeave(to, from, next) {
@@ -167,7 +154,12 @@
     watch: {
       addressInfo(val, old) {
         if (val.address !== old.address && old.address) {
-          this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.types);
+          clearInterval(this.txListSetInterval)
+          this.resetList()
+          this.getTxlistByAddress();
+          this.txListSetInterval = setInterval(() => {
+            this.getTxlistByAddress();
+          }, 10000);
         }
       }
     },
@@ -175,6 +167,11 @@
       BackBar
     },
     methods: {
+      resetList() {
+        this.pageIndex = 1
+        this.pageTotal = 0
+        this.txListData = []
+      },
 
       /**
        * 根据地址获取交易列表
@@ -187,9 +184,12 @@
        * @param chainId 链ID default：0
        * @param assetId 资产ID default：0
        **/
-      getTxlistByAddress(pageSize, pageRows, address, type, startHigh = -1, endHigh = -1, chainId = 0, assetId = 0) {
+      getTxlistByAddress(startHigh = -1, endHigh = -1) {
         //console.log(pageSize, pageRows, address, type, startHigh, endHigh, chainId, assetId);
-        this.$post('/', 'getAccountTxs', [pageSize, pageRows, address, type, startHigh, endHigh, Number(chainId), Number(assetId)])
+        const chainId = this.$route.query.chainId || 0
+        const assetId = this.$route.query.assetId || 0
+        const params = [this.pageIndex, this.pageSize, this.addressInfo.address, this.types, startHigh, endHigh, Number(chainId), Number(assetId)]
+        this.$post('/', 'getAccountTxs', params)
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
@@ -210,17 +210,9 @@
             }
           })
           .catch((error) => {
-            this.getTxlistByAddress(pageSize, pageRows, address, type, startHigh, endHigh, chainId, assetId);
+            this.getTxlistByAddress();
             console.log("getAccountTxs:" + error);
           })
-      },
-
-      /**
-       * 资产下拉框选择
-       * * @param e
-       **/
-      channgeAsesets(e) {
-        console.log(e)
       },
 
       /**
@@ -230,7 +222,7 @@
       channgeType(e) {
         this.types = Number(e);
         this.typeValue = Number(e);
-        this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.types, -1, -1, this.$route.query.chainId, this.$route.query.assetId);
+        this.getTxlistByAddress();
       },
 
       /**
@@ -248,7 +240,7 @@
       changeHide(e) {
         this.isHide = e;
         this.pageIndex = 1;
-        this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.types, -1, -1, this.$route.query.chainId, this.$route.query.assetId);
+        this.getTxlistByAddress();
       },
 
       /**
@@ -258,7 +250,7 @@
       txListPages(val) {
         this.pageIndex = val;
         this.txListDataLoading = true;
-        this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.types, -1, -1, this.$route.query.chainId, this.$route.query.assetId);
+        this.getTxlistByAddress();
       },
 
       /**

@@ -1,13 +1,14 @@
 import {post} from './https'
-import {Plus, chainID} from './util'
-import {MAIN_INFO} from '@/config.js'
+import {Plus, chainID, getCurrentChain} from './util'
+import storage from './storage';
 
 /**
  * 判断是否为主网
  * @param chainId
  **/
 export function isMainNet(chainId) {
-  return chainId === MAIN_INFO.chainId;
+  const currentChain = getCurrentChain()
+  return chainId === currentChain.chainId;
 }
 
 /**
@@ -114,7 +115,7 @@ export async function inputsOrOutputs(transferInfo, balanceInfo, type, multyAsse
     console.log(nulsbalance);
     if (nulsbalance.data.balance < 100000) {
       console.log("余额小于手续费");
-      return
+      throw 'Insufficient fee'
     }
     inputs.push({
       address: transferInfo.fromAddress,
@@ -322,35 +323,26 @@ export async function getAllAddressPrefix() {
     {chainId: 1, addressPrefix: 'NULS'},
     {chainId: 2, addressPrefix: 'tNULS'},
   ];
-  await post('/', 'getAllAddressPrefix', [])
+  return await post('/', 'getAllAddressPrefix', [])
     .then((response) => {
-      //console.log(response);
-      if (response.hasOwnProperty("result")) {
-        if (sessionStorage.hasOwnProperty('prefixData')) {
-          sessionStorage.removeItem('prefixData')
-        }
-        sessionStorage.setItem('prefixData', JSON.stringify(response.result));
-      } else {
-        sessionStorage.setItem('prefixData', JSON.stringify(newData));
-      }
+      return response.result || newData
     })
     .catch((error) => {
       console.log(error);
-      sessionStorage.setItem('prefixData', JSON.stringify(newData));
+      return newData
     });
 }
 
 //根据链ID获取前缀
 export async function getPrefixByChainId(chainId) {
-  await getAllAddressPrefix();
-  let prefixData = JSON.parse(sessionStorage.getItem('prefixData'));
-  if (prefixData) {
-    let newInfo = prefixData.find((v) => {
-      return v.chainId === chainId;
-    });
-    return newInfo.addressPrefix;
+  const prefixData = storage.get('prefixData') || []
+  const record = prefixData.find(v => v.chainId === chainId)
+  if (record) {
+    return record.addressPrefix
   } else {
-    return '';
+    const prefixData = await getAllAddressPrefix()
+    const record = prefixData.find(v => v.chainId === chainId)
+    return record ? record.addressPrefix : 'NULS'
   }
 }
 

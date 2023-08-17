@@ -8,16 +8,11 @@
         <i class="el-icon-plus click" @click="addNodeService"></i>
       </div>
       <el-table :data="nodeServiceData" stripe border>
-        <el-table-column prop="chainName" :label="$t('nodeService.nodeService23')" align="center">
-        </el-table-column>
-        <el-table-column :label="$t('nodeService.nodeService2')" align="center">
-          <template slot-scope="scope">
-            <span v-if="scope.row.name === 'Official'">{{ $t('nodeService.official') }}</span>
-            <span v-else>{{ scope.row.name }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="urls" :label="$t('nodeService.nodeService3')" align="center" min-width="180">
-        </el-table-column>
+        <!-- <el-table-column prop="chainName" :label="$t('nodeService.nodeService23')" align="center">
+        </el-table-column> -->
+        <el-table-column :label="$t('nodeService.nodeService2')" align="center" prop="name"></el-table-column>
+        <el-table-column prop="apiUrl" :label="$t('nodeService.nodeService3')" align="center" min-width="160"></el-table-column>
+        <el-table-column prop="explorerUrl" :label="$t('nodeService.nodeService25')" align="center" min-width="160"></el-table-column>
         <el-table-column :label="$t('nodeService.nodeService4')" align="center">
           <template slot-scope="scope">
             <span v-if="scope.row.delay === 100000">{{ $t('nodeService.nodeService17') }}</span>
@@ -28,9 +23,9 @@
         </el-table-column>
         <el-table-column prop="state" :label="$t('nodeService.nodeService5')" align="center">
           <template slot-scope="scope">
-            <span @click="editState(scope.$index)">
+            <span @click="editState(scope.row)">
               <i class="iconfont clicks"
-                 :class="scope.row.selection ? 'iconziyuan fCN' : 'iconduankailianjie flan'"></i>
+                 :class="scope.row.apiUrl === currentChain.apiUrl ? 'iconziyuan fCN' : 'iconduankailianjie flan'"></i>
             </span>
           </template>
         </el-table-column>
@@ -58,12 +53,18 @@
       <div class="bg-white">
         <el-form :model="nodeServiceForm" status-icon :rules="nodeServiceRules" ref="nodeServiceForm">
           <el-form-item :label="$t('nodeService.nodeService2')" prop="name">
-            <el-input v-model.number="nodeServiceForm.name" maxlength="20">
+            <el-input v-model="nodeServiceForm.name">
             </el-input>
           </el-form-item>
-          <el-form-item :label="$t('nodeService.nodeService3')" prop="urls">
+          <el-form-item :label="$t('nodeService.nodeService25')" prop="explorerUrl">
             <el-input type="text" autocomplete="off" maxlength="50"
-                      v-model="nodeServiceForm.urls"
+                      v-model="nodeServiceForm.explorerUrl"
+                      placeholder="http://192.168.1.108:18003">
+            </el-input>
+          </el-form-item>
+          <el-form-item :label="$t('nodeService.nodeService3')" prop="apiUrl">
+            <el-input type="text" autocomplete="off" maxlength="50"
+                      v-model="nodeServiceForm.apiUrl"
                       placeholder="http://192.168.1.108:18003"
                       @change="changeUrls">
             </el-input>
@@ -95,19 +96,28 @@
 
 <script>
   import axios from 'axios'
-  import {RUN_DEV} from '@/config'
 
   export default {
     data() {
-      let checkName = (rule, value, callback) => {
+      const checkName = (rule, value, callback) => {
         if (!value) {
           return callback(new Error(this.$t('nodeService.nodeService13')));
         } else {
           callback();
         }
       };
-      let validateUrls = (rule, value, callback) => {
-        let patrn = /(http|https):\/\/([\w.]+\/?)\S*/;
+      const validateExplorer = (rule, value, callback) => {
+        const patrn = /(http|https):\/\/([\w.]+\/?)\S*/;
+        if (value === '') {
+          callback(new Error(this.$t('nodeService.nodeService27')));
+        } else if (!patrn.exec(value)) {
+          callback(new Error(this.$t('nodeService.nodeService28')));
+        } else {
+          callback();
+        }
+      };
+      const validateUrls = (rule, value, callback) => {
+        const patrn = /(http|https):\/\/([\w.]+\/?)\S*/;
         if (value === '') {
           callback(new Error(this.$t('nodeService.nodeService14')));
         } else if (!patrn.exec(value)) {
@@ -117,26 +127,23 @@
         }
       };
       return {
-        loading: false,//切换时加载动画
-        urlName: RUN_DEV ? 'mainUrlData' : 'TestUrlData',//服务节点名称
-        nodeServiceData: [],//节点列表
+        loading: true,//切换时加载动画
+        nodeServiceData: this.$store.state.chainList,//节点列表
         nodeServiceLoading: false,//节点列表加载动画
         nodeServiceDialog: false,//服务地址弹框
         nodeServiceDialogLoading: false,//服务地址弹框加载动画
         //添加、编辑表单
         nodeServiceForm: {
           name: '',
-          urls: '',
+          apiUrl: '',
+          explorerUrl: '',
           resource: false
         },
         //表单验证
         nodeServiceRules: {
-          name: [
-            {validator: checkName, trigger: 'blur'}
-          ],
-          urls: [
-            {validator: validateUrls, trigger: 'blur'}
-          ]
+          name: [{validator: checkName, trigger: 'blur'}],
+          explorerUrl: [{validator: validateExplorer, trigger: 'blur'}],
+          apiUrl: [{validator: validateUrls, trigger: 'blur'}]
         },
         testInfo: {
           state: 0,
@@ -145,33 +152,15 @@
         editIndex: 10000, //编辑ID
       };
     },
-
-    created() {
-      this.loading = true;
-      setTimeout(() => {
-        this.nodeServiceData = this.$store.getters.getUrlData;
-        let newInfo = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')) : '';
-        if (newInfo) {
-          let newUrlsList = ['https://wallet.nuls.io/public', 'https://public1.nuls.io', 'https://public1.nuls.io', 'https://beta.wallet.nuls.io/api', 'http://beta.public1.nuls.io/', 'http://beta.public2.nuls.io/']
-          let newUrlData = this.$store.getters.getUrlData;
-          if (newInfo.defaultAsset.symbol !== 'NULS') {
-            for (let item of newUrlsList) {
-              if (newUrlData.findIndex(o => o.urls === item) !== -1) {
-                newUrlData.splice(newUrlData.findIndex(o => o.urls === item), 1);
-              }
-            }
-            this.nodeServiceData = newUrlData;
-          }
-        } else {
-          this.nodeServiceData = this.$store.getters.getUrlData;
-        }
-      }, 500);
+    computed: {
+      currentChain() {
+        return this.$store.state.currentChain
+      }
     },
+
     mounted() {
       setTimeout(() => {
         this.getDelay();
-        /*this.symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
-        document.title = this.symbol + " wallet";*/
       }, 500);
     },
     methods: {
@@ -182,17 +171,14 @@
        * @date: 2019-09-05 18:07
        * @author: Wave
        */
-      editState(index) {
-        if (this.nodeServiceData[index].delay === 200000 || this.nodeServiceData[index].delay === 300000) {
+      editState(item) {
+        const isSelected = item.apiUrl === this.currentChain.apiUrl
+        if (item.delay === 200000 || item.delay === 300000) {
           this.$message({message: this.$t('nodeService.nodeService16'), type: 'error', duration: 1000});
         } else {
-          if (!this.nodeServiceData[index].selection) {
+          if (!isSelected) {
             this.loading = true;
-            for (let item of this.nodeServiceData) {
-              item.selection = false;
-            }
-            this.nodeServiceData[index].selection = true;
-            this.$store.commit('setUrlData', this.nodeServiceData);
+            this.$store.dispatch('changeCurrentChain', item)
             setTimeout(() => {
               this.loading = false;
             }, 2000);
@@ -211,7 +197,8 @@
         }
         this.nodeServiceData = newData;
         this.nodeServiceLoading = false;
-        this.$store.commit('setUrlData', this.nodeServiceData);
+        console.log(this.nodeServiceData, '345116')
+        this.$store.commit('changeChainList', this.nodeServiceData);
         this.getDelays();
       },
 
@@ -221,24 +208,18 @@
           let startTime = (new Date()).valueOf();
           let endTime = 0;
           const params = {jsonrpc: "2.0", method: "getChainInfo", "params": [], "id": Math.floor(Math.random() * 1000)};
-          await axios.post(item.urls, params)
+          await axios.post(item.apiUrl, params)
             .then(function (response) {
               //console.log(response);
               if (response.data.hasOwnProperty("result")) {
                 endTime = (new Date()).valueOf();
                 item.delay = endTime - startTime;
-                item.chainId = response.data.result.chainId;
-                item.chainName = response.data.result.chainName;
               } else {
                 item.delay = 100000;
-                item.selection = false;
-                item.state = 0;
               }
             })
             .catch(function (error) {
               item.delay = 200000;
-              item.selection = false;
-              item.state = 0;
               console.log(error);
             });
           newData.push(item);
@@ -246,22 +227,7 @@
         this.nodeServiceData = newData;
         this.nodeServiceLoading = false;
         this.loading = false;
-        //没有选中的连接默认选中一个
-        let selectionUrl = newData.filter(item => item.selection);
-        if (selectionUrl.length === 0) {
-          let minNumber = Math.min.apply(Math, newData.map((o) => o.delay));
-          if (minNumber !== 200000) {
-            let minIndex = newData.map((o) => o.delay).findIndex((n) => n === minNumber);
-            for (let item in newData) {
-              if (Number(item) === minIndex) {
-                newData[minIndex].selection = true;
-              }
-            }
-          } else {
-            this.$message({message: this.$t('public.checkNetwork'), type: 'error', duration: 3000});
-          }
-        }
-        this.$store.commit('setUrlData', this.nodeServiceData);
+        this.$store.commit('changeChainList', this.nodeServiceData);
       },
 
       /**
@@ -294,18 +260,19 @@
               "params": [],
               "id": Math.floor(Math.random() * 1000)
             };
-            axios.post(this.nodeServiceForm.urls, params)
+            axios.post(this.nodeServiceForm.apiUrl, params)
               .then(function (response) {
                 //console.log(response.data);
-                if (response.data.hasOwnProperty("result")) {
+                const result = response.data.result
+                // 暂时只允许添加nuls 正式网/测试网api
+                if (result && result.chainId === 2 || result.chainId === 1) {
                   that.testInfo.state = 1;
-                  that.testInfo.result = response.data.result;
-                  that.nodeServiceDialogLoading = false;
+                  that.testInfo.result = result;
                 } else {
                   that.testInfo.state = 200000;
                   that.testInfo.result = response.data;
-                  that.nodeServiceDialogLoading = false;
                 }
+                that.nodeServiceDialogLoading = false;
               })
               .catch(function (error) {
                 console.log(that.testInfo.success);
@@ -327,7 +294,8 @@
       addNodeService() {
         this.nodeServiceDialog = true;
         this.nodeServiceForm.name = '';
-        this.nodeServiceForm.urls = '';
+        this.nodeServiceForm.apiUrl = '';
+        this.nodeServiceForm.explorerUrl = '';
       },
 
       /**
@@ -339,30 +307,25 @@
           if (valid) {
             let newNodeInfo = {
               name: this.nodeServiceForm.name,
-              urls: this.nodeServiceForm.urls,
-              delay: '',
-              selection: false,
-              isDelete: true,
               chainId: this.testInfo.result.chainId,
               assetId: this.testInfo.result.assetId,
+              decimals: this.testInfo.result.defaultAsset.decimals,
               chainName: this.testInfo.result.chainName,
-              decimals: this.testInfo.result.defaultAsset.decimals
+              apiUrl: this.nodeServiceForm.apiUrl,
+              explorerUrl: this.nodeServiceForm.explorerUrl,
+              delay: '',
+              isDelete: true
             };
             //立即使用
             if (this.nodeServiceForm.resource) {
-              for (let itme in this.nodeServiceData) {
-                if (this.nodeServiceData[itme].selection) {
-                  this.nodeServiceData[itme].selection = false
-                }
-              }
-              newNodeInfo.selection = true;
+              this.$store.dispatch('changeCurrentChain', newNodeInfo)
             }
             if (this.editIndex !== 10000) {
               this.nodeServiceData[this.editIndex] = newNodeInfo;
-              this.$store.commit('setUrlData', this.nodeServiceData);
+              this.$store.commit('changeChainList', this.nodeServiceData);
             } else {
               this.nodeServiceData.push(newNodeInfo);
-              this.$store.commit('setUrlData', this.nodeServiceData);
+              this.$store.commit('changeChainList', this.nodeServiceData);
             }
             this.getDelay();
             this.nodeServiceDialog = false;
@@ -408,7 +371,7 @@
        * @param index
        **/
       removeUrl(index) {
-        this.$confirm(this.$t('nodeService.nodeService19') + this.nodeServiceData[index].urls + this.$t('nodeService.nodeService20'), this.$t('nodeService.nodeService21'), {
+        this.$confirm(this.$t('nodeService.nodeService19') + this.nodeServiceData[index].apiUrl + this.$t('nodeService.nodeService20'), this.$t('nodeService.nodeService21'), {
           confirmButtonText: this.$t('password.password3'),
           cancelButtonText: this.$t('password.password2'),
           type: 'warning'
@@ -416,7 +379,7 @@
           this.$message({type: 'success', message: this.$t('nodeService.nodeService22')});
           this.nodeServiceData.splice(index, 1);
           this.getDelays();
-          this.$store.commit('setUrlData', this.nodeServiceData);
+          this.$store.commit('changeChainList', this.nodeServiceData);
         }).catch(() => {
         });
       },

@@ -1,7 +1,6 @@
 import sdk from 'nuls-sdk-js/lib/api/sdk'
 import utils from 'nuls-sdk-js/lib/utils/utils'
-import {MAIN_INFO} from '@/config.js'
-import {Times} from '@/api/util'
+import {Times, getCurrentChain} from '@/api/util'
 import {post} from './https'
 
 /**
@@ -90,8 +89,9 @@ async function imputedContractCallGas(sender, value, contractAddress, methodName
           return {success: false, data: contractConstructorArgsTypes.data};
         }
         let newArgs = utils.twoDimensionalArray(args, contractConstructorArgsTypes.data);
+        const currentChain = getCurrentChain()
         let contractCallData = {
-          chainId: MAIN_INFO.chainId,
+          chainId: currentChain.chainId,
           sender: sender,
           contractAddress: contractAddress,
           value: value,

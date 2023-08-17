@@ -114,7 +114,7 @@
 
 <script>
   import SelectBar from '@/components/SelectBar';
-  import {timesDecimals, copys, addressInfo, chainIdNumber} from '@/api/util'
+  import {timesDecimals, copys} from '@/api/util'
 
   export default {
     name: 'consensus',
@@ -146,7 +146,6 @@
         searchValue: '',//搜索框
         allNodeData: [],//所有节点信息
         allNodeLoading: true,//所有节点信息加载动画
-        addressInfo: [], //账户信息
         agentAsset: JSON.parse(sessionStorage.getItem('info')),//pocm合约单位等信息
         isRed: false,//地址是否有红牌
         isNew: false,//账户是否已经创建了节点
@@ -160,20 +159,14 @@
     components: {
       SelectBar
     },
-    created() {
-      this.addressInfo = addressInfo(1);
-      setInterval(() => {
-        this.addressInfo = addressInfo(1);
-      }, 500);
-    },
     mounted() {
       setTimeout(() => {
         this.getConsensusNodeCount();
         this.getCoinInfo();
         this.getConsensusNodes(this.pageIndex, this.pageSize, this.nodeTypeRegion);
-        //this.getConsensusInfoByAddress(this.pageIndex, this.pageSize, this.addressInfo.address);
-        this.getAddressInfoByNode(this.addressInfo);
-        this.getPunishByAddress(this.addressInfo.address);
+        //this.getConsensusInfoByAddress(this.pageIndex, this.pageSize);
+        this.getAddressInfoByNode();
+        this.getPunishByAddress();
       }, 600);
     },
     destroyed() {
@@ -193,16 +186,19 @@
         }
         return this.allNodeData;
       },
+      addressInfo() {
+        return this.$store.getters.currentAccount
+      }
     },
     watch: {
       addressInfo(val, old) {
         if (val.address !== old.address && old.address) {
           this.isNew = false;
-          this.getPunishByAddress(this.addressInfo.address);
+          this.getPunishByAddress();
           this.getConsensusNodeCount();
           this.getCoinInfo();
           this.getConsensusNodes(this.pageIndex, this.pageSize, this.nodeTypeRegion);
-          this.getConsensusInfoByAddress(this.pageIndex, this.pageSize, this.addressInfo.address);
+          this.getConsensusInfoByAddress(this.pageIndex, this.pageSize);
         }
       }
     },
@@ -212,7 +208,8 @@
        * 查询创建地址是否有红牌
        * @param address
        **/
-      getPunishByAddress(address) {
+      getPunishByAddress() {
+        const address = this.addressInfo.address
         this.$post('/', 'getPunishList', [1, 1, 2, address])
           .then((response) => {
             //console.log(response);
@@ -228,32 +225,30 @@
 
       /**
        * 获取地址网络信息
-       * @param addressInfos
        **/
-      async getAddressInfoByNode(addressInfos) {
-        await this.$post('/', 'getAccount', [addressInfos.address])
+      async getAddressInfoByNode() {
+        const address = this.addressInfo.address
+        await this.$post('/', 'getAccount', [address])
           .then((response) => {
-            //console.log(response);
             if (response.hasOwnProperty("result")) {
-              let newAddressInfo = addressInfo(0);
-              for (let item of newAddressInfo) {
-                if (item.address === addressInfos.address) {
-                  newAddressInfo.alias = response.result.alias;
-                  newAddressInfo.symbol = response.result.symbol;
-                  newAddressInfo.balance = timesDecimals(response.result.balance);
-                  newAddressInfo.consensusLock = timesDecimals(response.result.consensusLock);
-                  newAddressInfo.totalReward = timesDecimals(response.result.totalReward);
+              const accountList = [...this.$store.state.accountList]
+              for (let item of accountList) {
+                if (item.address === address) {
+                  item.alias = response.result.alias;
+                  item.symbol = response.result.symbol;
+                  item.balance = timesDecimals(response.result.balance);
+                  item.consensusLock = timesDecimals(response.result.consensusLock);
+                  item.totalReward = timesDecimals(response.result.totalReward);
                   if (response.result.lastReward) {
-                    newAddressInfo.lastReward = timesDecimals(response.result.lastReward);
+                    item.lastReward = timesDecimals(response.result.lastReward);
                   } else {
-                    newAddressInfo.lastReward = 0;
+                    item.lastReward = 0;
                   }
-                  newAddressInfo.totalIn = timesDecimals(response.result.totalIn);
-                  newAddressInfo.totalOut = timesDecimals(response.result.totalOut);
+                  // item.totalIn = timesDecimals(response.result.totalIn);
+                  // item.totalOut = timesDecimals(response.result.totalOut);
                 }
               }
-              //newAddressInfo =
-              localStorage.setItem(chainIdNumber(), JSON.stringify(newAddressInfo));
+              this.$store.commit('changeAccouuntList', accountList);
             }
           })
           .catch((error) => {
@@ -319,11 +314,9 @@
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
-              if (!this.addressInfo.collectList) {
-                this.addressInfo.collectList = [];
-              }
+              const collectList = this.addressInfo.collectList || []
               for (let itme of response.result.list) {
-                if (this.addressInfo.collectList.includes(itme.agentId)) {
+                if (collectList.includes(itme.agentId)) {
                   itme.isCollect = true;
                 } else {
                   itme.isCollect = false;
@@ -354,20 +347,22 @@
        **/
       collect(nodeInfo) {
         //console.log(nodeInfo);
-        if (!this.addressInfo.hasOwnProperty('collectList')) {
-          this.addressInfo.collectList = []
+        const copyAddressInfo = {...this.addressInfo}
+
+        if (!copyAddressInfo.collectList) {
+          copyAddressInfo.collectList = []
         }
-        if (this.addressInfo.collectList.includes(nodeInfo.agentId)) {
+        if (copyAddressInfo.collectList.includes(nodeInfo.agentId)) {
           //移除已收藏
-          this.addressInfo.collectList.splice(this.addressInfo.collectList.findIndex(v => v === nodeInfo.agentId), 1);
+          copyAddressInfo.collectList.splice(copyAddressInfo.collectList.findIndex(v => v === nodeInfo.agentId), 1);
         } else {
-          this.addressInfo.collectList.push(nodeInfo.agentId);
+          copyAddressInfo.collectList.push(nodeInfo.agentId);
         }
 
         if (this.consensusActive === 'consensusFirst') {
           //循环是否收藏
           for (let item of this.allNodeData) {
-            if (this.addressInfo.collectList.includes(item.agentId)) {
+            if (copyAddressInfo.collectList.includes(item.agentId)) {
               item.isCollect = true;
             } else {
               item.isCollect = false;
@@ -375,20 +370,20 @@
           }
         } else { //循环是否收藏
           for (let item of this.myNodeData) {
-            if (this.addressInfo.collectList.includes(item.agentId)) {
+            if (copyAddressInfo.collectList.includes(item.agentId)) {
               item.isCollect = true;
             } else {
               item.isCollect = false;
             }
           }
         }
-        let newAddressList = addressInfo(0);
-        for (let item of newAddressList) {
-          if (item.address === this.addressInfo.address) {
-            item.collectList = this.addressInfo.collectList
+        const accountList = this.$store.state.accountList;
+        for (let item of accountList) {
+          if (item.address === copyAddressInfo.address) {
+            item.collectList = copyAddressInfo.collectList
           }
         }
-        localStorage.setItem(chainIdNumber(), JSON.stringify(newAddressList));
+        this.$store.commit('changeAccouuntList', accountList);
       },
 
       /**
@@ -397,18 +392,17 @@
        * @param pageSize
        * @param address
        **/
-      getConsensusInfoByAddress(pageIndex, pageSize, address) {
+      getConsensusInfoByAddress(pageIndex, pageSize) {
+        const address = this.addressInfo.address
         this.$post('/', 'getAccountConsensus', [pageIndex, pageSize, address])
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
               //循环获取节点列表判断是否有地址创建列表
               let newAgentIdList = [];
+              const collectList = this.addressInfo.collectList || [];
               for (let item of response.result.list) {
-                if (!this.addressInfo.collectList) {
-                  this.addressInfo.collectList = [];
-                }
-                if (this.addressInfo.collectList.includes(item.agentId)) {
+                if (collectList.collectList.includes(item.agentId)) {
                   item.isCollect = true;
                 } else {
                   item.isCollect = false;
@@ -426,7 +420,7 @@
                 }
               }
               let setnNewAgentIdList = new Set(newAgentIdList);
-              let setCollectList = new Set(this.addressInfo.collectList);
+              let setCollectList = new Set(collectList);
               // 差集
               let difference = new Set([...setCollectList].filter(x => !setnNewAgentIdList.has(x)));
               let newCollectList = [];
@@ -536,7 +530,7 @@
         if (tab.name === 'consensusFirst') {
           this.getConsensusNodes(this.pageIndex, this.pageSize, this.nodeTypeRegion);
         } else {
-          this.getConsensusInfoByAddress(this.pageIndex, this.pageSize, this.addressInfo.address);
+          this.getConsensusInfoByAddress(this.pageIndex, this.pageSize);
         }
       }
     }

@@ -9,7 +9,7 @@ const cn = {
     "application": "应用",
     "set": "设置",
     "addressList": "账户管理",
-    "nodeList": "服务节点",
+    "nodeList": "网络管理",
     "help": "帮助",
   },
 
@@ -649,6 +649,11 @@ const cn = {
     "home12": "名称",
     "home13": "持有量",
     "home14": "合约地址",
+    "home15": "NRC1155资产",
+    "home16": "数量",
+    "home17": "请输入转账数量",
+    "home18": "转账数量必须为整数",
+    "home19": "最大转账数量为: ",
   },
 
   "frozenList": {
@@ -746,7 +751,7 @@ const cn = {
 
   "nodeService": {
     "nodeService0": "节点切换中...",
-    "nodeService1": "节点服务列表",
+    "nodeService1": "网络列表",
     "nodeService2": "名称",
     "nodeService3": "服务地址",
     "nodeService4": "延迟",
@@ -771,6 +776,11 @@ const cn = {
     "nodeService22": "移除成功",
     "official": "官方",
     "nodeService23": "链名",
+    "nodeService24": "地址前缀",
+    "nodeService25": "浏览器地址",
+    "nodeService26": "地址前缀不能为空",
+    "nodeService27": "浏览器地址不能为空",
+    "nodeService28": "请输入正确的浏览器地址",
   },
 
   "address": {
@@ -978,8 +988,8 @@ const cn = {
   },
 
   "bottom": {
-    "serviceNode": "服务节点",
-    "nodeHeight": "主网/服务节点",
+    "serviceNode": "当前网络",
+    "nodeHeight": "主网/当前网络",
     "agreement": "服务协议",
     "policy": "隐私政策",
     "updateWallet": "更新钱包",
@@ -1128,6 +1138,19 @@ const cn = {
     "application14": "一对多转账交易",
     "application15": "可以一对多转账交易支持导入",
     "application": "application",
+  },
+  "ledger": {
+    ledger1: '连接硬件钱包',
+    ledger2: '选择希望用于NULS Wallet的硬件钱包',
+    ledger3: '插入硬件钱包',
+    ledger4: '将您的钱包直接连接到电脑。解锁Ledger并打开NULS应用程序',
+    ledger5: '连接中...',
+    ledger6: '正在加载...',
+    ledger7: '选择账户',
+    ledger8: '上一页',
+    ledger9: '下一页',
+    ledger10: '签名',
+    ledger11: '请在Ledger设备中确认签名',
   },
   ...zhLocale
 };

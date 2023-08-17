@@ -50,7 +50,7 @@
 
 <script>
   import moment from 'moment'
-  import {timesDecimals, getLocalTime, superLong, addressInfo} from '@/api/util'
+  import {timesDecimals, getLocalTime, superLong} from '@/api/util'
   import BackBar from '@/components/BackBar'
 
   export default {
@@ -60,19 +60,28 @@
         pageIndex: 1, //页码
         pageSize: 10, //每页条数
         pageTotal: 0,//总页数
-        addressInfo: [], //账户信息
 
       };
     },
-    created() {
-      this.addressInfo = addressInfo(1);
-      setInterval(() => {
-        this.addressInfo = addressInfo(1);
-      }, 500);
+    computed: {
+      addressInfo() {
+        return this.$store.getters.currentAccount
+      },
+      currentChain() {
+        return this.$store.state.currentChain
+      },
     },
-    mounted() {
-      if (this.$route.query.accountInfo) {
-        this.getTxListByAddress(this.$route.query.accountInfo.chainId, this.$route.query.accountInfo.assetId, this.addressInfo.address, this.pageIndex, this.pageSize);
+    watch: {
+      'addressInfo.address': {
+        handler(val) {
+          if (val) {
+            this.pageTotal = 0
+            this.pageIndex =  1
+            this.txListData = []
+            this.getTxListByAddress()
+          }
+        },
+        immediate: true
       }
     },
     components: {
@@ -88,8 +97,10 @@
        * @param pageIndex
        * @param pageSize
        **/
-      getTxListByAddress(chainId, assetId, address, pageIndex, pageSize) {
-        this.$post('/', 'getAccountFreezes', [chainId, assetId,address, pageIndex, pageSize])
+      getTxListByAddress() {
+        console.log(this.$route.query)
+        const {chainId, assetId} = this.$route.query
+        this.$post('/', 'getAccountFreezes', [chainId, assetId, this.addressInfo.address, this.pageIndex, this.pageSize])
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
@@ -125,7 +136,7 @@
        */
       frozenListPages(val) {
         this.pageIndex = val;
-        this.getTxListByAddress(this.$route.query.accountInfo.chainId, this.$route.query.accountInfo.assetId, this.addressInfo.address, this.pageIndex, this.pageSize);
+        this.getTxListByAddress();
       },
 
       /**

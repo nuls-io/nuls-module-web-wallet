@@ -35,8 +35,7 @@
 <script>
   import nuls from 'nuls-sdk-js'
   import BackBar from '@/components/BackBar'
-  import {addressInfo, chainIdNumber,chainID} from '@/api/util'
-  import {getPrefixByChainId} from '@/api/requestData'
+  import {chainID} from '@/api/util'
 
   export default {
     data() {
@@ -96,22 +95,15 @@
           ]
         },
         editAddressInfo: '',//新建的地址信息
-        prefix: '',//地址前缀
       };
-    },
-    created() {
-      getPrefixByChainId(chainID()).then((response) => {
-        //console.log(response);
-        this.prefix = response
-      }).catch((err) => {
-        console.log(err);
-        this.prefix = '';
-      });
-    },
-    mounted() {
     },
     components: {
       BackBar
+    },
+    computed: {
+      accountList() {
+        return this.$store.state.accountList
+      }
     },
     methods: {
 
@@ -120,28 +112,21 @@
        * @param formName
        */
       submitPasswordForm(formName) {
-        let address = this.$route.query.address;
-        let oldAddressInfo = {};
-        for (let item of addressInfo(0)) {
-          if (item.address === address) {
-            oldAddressInfo = item
-          }
-        }
+        const address = this.$route.query.address;
+        const addressInfo = this.accountList.find(v => v.address === address)
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            const pri = nuls.decrypteOfAES(oldAddressInfo.aesPri, this.passwordForm.oldPass);
-            const newAddressInfo = nuls.importByKey(chainID(), pri, this.passwordForm.oldPass,this.prefix);
+            const pri = nuls.decrypteOfAES(addressInfo.aesPri, this.passwordForm.oldPass);
+            const newAddressInfo = nuls.importByKey(chainID(), pri, this.passwordForm.oldPass, this.$store.state.prefix);
             if (newAddressInfo.address === address) {
-              const importAddressInfo = nuls.importByKey(chainID(), pri, this.passwordForm.newPass,this.prefix);
-              oldAddressInfo.aesPri = importAddressInfo.aesPri;
-              oldAddressInfo.pub = importAddressInfo.pub;
-              let addressList = addressInfo(0);
+              const importAddressInfo = nuls.importByKey(chainID(), pri, this.passwordForm.newPass, this.$store.state.prefix);
+              const addressList = [...this.accountList];
               for (let item of addressList) {
-                if (item.address === oldAddressInfo.address) {
-                  item.aesPri = oldAddressInfo.aesPri
+                if (item.address === address) {
+                  item.aesPri = importAddressInfo.aesPri
                 }
               }
-              localStorage.setItem(chainIdNumber(), JSON.stringify(addressList));
+              this.$store.commit('changeAccouuntList', addressList)
               this.$message({message: this.$t('editPassword.editPassword12'), type: 'success', duration: 1000});
               this.toUrl("address");
             } else {

@@ -1,4 +1,4 @@
-import { RUN_PATTERN } from '@/config'
+import { RUN_PATTERN } from '@/config/index'
 export function openner(url) {
   if (RUN_PATTERN) {
     const {shell} = require('electron');

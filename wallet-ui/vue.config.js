@@ -1,7 +1,11 @@
+const webpack = require('webpack');
 const CompressionWebpackPlugin = require('compression-webpack-plugin');
 const productionGzipExtensions = ['js', 'css'];
 const shell = require("shelljs");
-shell.cp(process.cwd() + "/config/" + process.env.NULS_ENV + ".js", process.cwd() + "/src/config.js");
+const NULS_ENV = process.env.NULS_ENV
+if (NULS_ENV) {
+  shell.cp(process.cwd() + "/config/" + NULS_ENV + ".js", process.cwd() + "/src/config.js");
+}
 const isProduction = process.env.NODE_ENV === 'production';
 
 module.exports = {
@@ -14,6 +18,13 @@ module.exports = {
       fallbackLocale: 'en',
       localeDir: 'locales',
       enableInSFC: false
+    },
+    electronBuilder: {
+      externals: [
+        '@ledgerhq/hw-transport-node-hid',
+        // '@ledgerhq/devices/hid-framing'
+      ],
+      nodeIntegration: true
     }
   },
 
@@ -27,6 +38,10 @@ module.exports = {
       }));
 
     }
+    // config.plugins.push(new webpack.NormalModuleReplacementPlugin(
+    //   /@ledgerhq\/devices\/hid-framing/,
+    //   '@ledgerhq/devices/lib/hid-framing' 
+    // ))
     config.externals = {
       'vue': 'Vue',
       'vue-router': 'VueRouter',
@@ -35,6 +50,10 @@ module.exports = {
       'element-ui': 'ELEMENT',
     }
   },
+  // chainWebpack: config => {
+  //   config.resolve.alias
+  //   .set('@ledgerhq/devices', '@ledgerhq/devices/lib-es')
+  // },
 
   devServer: {
     port: 8085,

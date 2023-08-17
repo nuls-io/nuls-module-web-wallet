@@ -10,9 +10,9 @@
     <div class="w1200">
       <div v-loading="txListDataLoading">
         <div class="filter">
-          <el-select :value="tokenValue==='0' ? $t('public.allToke') : tokenValue" @change="channgeType">
-            <el-option v-for="item in tokenOptions" :key="item.key" :label="item.tokenSymbol"
-                       :value="item">
+          <el-select :value="!contractAddress ? $t('public.allToke') : contractAddress" @change="channgeType">
+            <el-option v-for="item in tokenOptions" :key="item.contractAddress" :label="item.tokenSymbol"
+                       :value="item.contractAddress">
             </el-option>
           </el-select>
         </div>
@@ -77,40 +77,53 @@
 
 <script>
   import moment from 'moment'
-  import {timesDecimals, getLocalTime, superLong, addressInfo,connectToExplorer} from '@/api/util'
+  import {timesDecimals, getLocalTime, superLong,connectToExplorer} from '@/api/util'
   import BackBar from '@/components/BackBar'
 
   export default {
     data() {
       return {
         tokenOptions: [],//token类型
-        tokenValue: '0',
-        contractAddress: '',//合约地址
+        contractAddress: this.$route.query.contractAddress,//合约地址
         txListDataLoading: true,//资产加载动画
         txListData: [],//交易数据
         pageIndex: 1, //页码
         pageSize: 10, //每页条数
         pageTotal: 0,//总页数
-        addressInfo: [], //账户信息
         txListSetInterval: null,//定时器
       };
     },
-    created() {
-      this.contractAddress = this.$route.query.contractAddress;
-      this.addressInfo = addressInfo(1);
-      setInterval(() => {
-        this.addressInfo = addressInfo(1);
-      }, 500);
+    computed: {
+      addressInfo() {
+        return this.$store.getters.currentAccount
+      }
+    },
+    watch: {
+      'addressInfo.address': {
+        handler(val, old) {
+          if (val) {
+            if (val !== old && old) {
+              this.contractAddress = ''
+            }
+            if (this.txListSetInterval) {
+              clearInterval(this.txListSetInterval);
+            }
+            this.getTokenListByAddress()
+            this.resetList()
+            this.getTxlistByAddress()
+            this.txListSetInterval = setInterval(() => {
+              this.getTxlistByAddress();
+            }, 10000);
+          }
+        },
+        immediate: true
+      }
     },
     mounted() {
-      setTimeout(() => {
-        this.getTokenListByAddress(1, 100, this.addressInfo.address);
-        this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.contractAddress);
-      }, 600);
-      //10秒循环一次数据
-      this.txListSetInterval = setInterval(() => {
-        this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.contractAddress);
-      }, 10000);
+      // setTimeout(() => {
+      //   this.getTokenListByAddress(1, 100, this.addressInfo.address);
+      //   this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.contractAddress);
+      // }, 600);
     },
     beforeRouteLeave(to, from, next) {
       if (to.name === 'transferInfo') {
@@ -126,13 +139,6 @@
     components: {
       BackBar
     },
-    watch: {
-      addressInfo(val, old) {
-        if (val.address !== old.address && old.address) {
-          this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.contractAddress);
-        }
-      }
-    },
     methods: {
 
       /**
@@ -141,8 +147,8 @@
        * @param pageRows
        * @param address
        **/
-      getTokenListByAddress(pageSize, pageRows, address) {
-        this.$post('/', 'getAccountTokens', [pageSize, pageRows, address], 'TokenTxList')
+      getTokenListByAddress() {
+        this.$post('/', 'getAccountTokens', [1, 100, this.addressInfo.address], 'TokenTxList')
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
@@ -164,8 +170,8 @@
        * @param address
        * @param contractAddress
        **/
-      getTxlistByAddress(pageSize, pageRows, address, contractAddress) {
-        this.$post('/', 'getTokenTransfers', [pageSize, pageRows, address, contractAddress])
+      getTxlistByAddress() {
+        this.$post('/', 'getTokenTransfers', [this.pageIndex, this.pageSize, this.addressInfo.address, this.contractAddress])
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
@@ -191,11 +197,16 @@
        * token类型下拉框选择
        * * @param e
        **/
-      channgeType(e) {
-        //console.log(e);
-        this.tokenValue = e.tokenSymbol;
-        this.contractAddress = e.contractAddress;
-        this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.contractAddress);
+      channgeType(contractAddress) {
+        // console.log(contractAddress, 33);
+        if (contractAddress !== this.contractAddress) {
+          // const tokenInfo = this.tokenOptions.find(v => v.contractAddress === contractAddress)
+          this.tokenValue = contractAddress;
+          this.contractAddress = contractAddress;
+          this.resetList()
+          this.getTxlistByAddress();
+        }
+        
       },
 
       /**
@@ -204,7 +215,12 @@
        **/
       txListPages(val) {
         this.pageIndex = val;
-        this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address, this.contractAddress);
+        this.getTxlistByAddress();
+      },
+      resetList() {
+        this.pageIndex = 1
+        this.pageTotal = 0
+        this.txListData = []
       },
 
       /**
@@ -230,6 +246,7 @@
 
 <style lang="less">
   .txlist {
+    padding-bottom: 60px;
     .title {
       height: 50px;
       line-height: 20px;

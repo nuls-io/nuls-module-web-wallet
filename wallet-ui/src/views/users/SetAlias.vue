@@ -30,18 +30,19 @@
         </el-form>
       </div>
     </div>
-    <Password ref="password" @passwordSubmit="passSubmit">
-    </Password>
+    <Password ref="password" @passwordSubmit="passSubmit" />
+    <LedgerConfirm :visible="ledgerVisible" @closed="ledgerVisible=false" />
   </div>
 </template>
 
 <script>
   import nuls from 'nuls-sdk-js'
-  import {inputsOrOutputs, validateAndBroadcast, getPrefixByChainId, commitData} from '@/api/requestData'
+  import {inputsOrOutputs, validateAndBroadcast} from '@/api/requestData'
   import Password from '@/components/PasswordBar'
   import BackBar from '@/components/BackBar'
-  import * as config from '@/config.js'
-  import {addressInfo, chainID, getRamNumber} from '@/api/util'
+  import ledgerMixin from '@/mixins/ledgerMixin'
+  import LedgerConfirm from '@/components/LedgerConfirm'
+  import { black_address } from '@/config/index'
 
   export default {
     data() {
@@ -64,46 +65,38 @@
             {validator: validateAlias, trigger: 'blur'}
           ]
         },
-        addressInfo: '', //默认账户信息
+        addressInfo: {},
         balanceInfo: '',//账户余额信息
-        prefix: '',//地址前缀
         symbol: sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS', //symbol
         getSetAliasRandomString: '',
         sendSetAliasRandomString: '',
       };
     },
-    created() {
-      getPrefixByChainId(chainID()).then((response) => {
-        //console.log(response);
-        this.prefix = response
-      }).catch((err) => {
-        console.log(err);
-        this.prefix = '';
-      });
-
-      for (let item of addressInfo(0)) {
-        if (item.address === this.$route.query.address) {
-          this.addressInfo = item;
-          //console.log(this.addressInfo)
-        }
-      }
-
-    },
+    mixins: [ledgerMixin],
     mounted() {
-      setTimeout(() => {
-        this.getNulsBalance(chainID(), 1, this.$route.query.address);
-      }, 600);
+      if (!this.accountList.length) {
+        return;
+      }
+      const address = this.$route.query.address
+      this.addressInfo = this.accountList.find(v => v.address === address)
+      this.getNulsBalance(this.currentChain.chainId, 1, address);
     },
-    watch: {
-      addressInfo(val, old) {
-        if (val.address !== old.address && old.address) {
-          this.transferForm.fromAddress = this.addressInfo.address
-        }
+    computed: {
+      accountList() {
+        return this.$store.state.accountList
+      },
+      currentChain() {
+        return this.$store.state.currentChain
+      },
+      blackAddress() {
+        const currentChain = this.currentChain
+        return black_address[currentChain.chainId]
       }
     },
     components: {
       Password,
       BackBar,
+      LedgerConfirm
     },
     methods: {
 
@@ -115,32 +108,10 @@
         this.$refs[formName].validate(async (valid) => {
           if (valid) {
             if (this.balanceInfo.balance > 100100000) {
-              let address = this.$route.query.address;
-              let addressList = addressInfo(0);
-              for (let item of addressList) {
-                if (item.address === address) {
-                  if (item.aesPri === '') {
-                    this.getSetAliasRandomString = await getRamNumber(16);
-                    this.sendSetAliasRandomString = await getRamNumber(16);
-                    let setAliasHex = await this.setAliasAssemble();
-                    if (!setAliasHex.success) {
-                      this.$message({message: this.$t('tips.tips3'), type: 'error', duration: 3000});
-                      return;
-                    }
-                    let commitDatas = await commitData(this.getSetAliasRandomString, this.sendSetAliasRandomString, item.address, setAliasHex.data);
-                    if (!commitDatas.success) {
-                      this.$message({
-                        message: this.$t('tips.tips4') + JSON.stringify(commitDatas.data),
-                        type: 'error',
-                        duration: 3000
-                      });
-                      return;
-                    }
-                    this.$refs.password.showScan(commitDatas.data.txInfo, commitDatas.data.assembleHex);
-                  } else {
-                    this.$refs.password.showPassword(true);
-                  }
-                }
+              if (this.addressInfo.isNULSLedger) {
+                this.handleSign()
+              } else {
+                this.$refs.password.showPassword(true);
               }
             } else {
               this.$message({message: this.$t('newConsensus.newConsensus7'), type: 'error', duration: 1000});
@@ -149,6 +120,50 @@
             return false;
           }
         });
+      },
+
+      async handleSign() {
+        try {
+          const tAssemble = await this.getAssemble()
+          const unSignedHex = tAssemble.txSerialize().toString('hex')
+          this.signByLedger(unSignedHex, this.addressInfo.pathIndex, this.handleMessage)
+        } catch (e) {
+          this.$message({message: e.message || e, type: 'error', duration: 1000});
+        }
+      },
+
+      async getAssemble() {
+        const transferInfo = {
+          fromAddress: this.addressInfo.address,
+          toAddress: this.blackAddress,
+          assetsChainId: this.currentChain.chainId,
+          assetsId: 1,
+          amount: 100000000,
+          fee: 100000
+        };
+        const inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 3);
+        const aliasInfo = {
+          fromAddress: this.addressInfo.address,
+          alias: this.aliasForm.alias
+        };
+        const tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, '', 3, aliasInfo);
+        return tAssemble
+      },
+
+      handleMessage(data) {
+        if (data.success) {
+          this.broadcastTx(data.result)
+        }
+      },
+
+      async broadcastTx(txHex) {
+        //验证并广播交易
+        const response = await validateAndBroadcast(txHex)
+        if (response.success) {
+          this.toUrl("address");
+        } else {
+          this.$message({message: this.$t('error.' + response.data.code), type: 'error', duration: 3000});
+        }
       },
 
       /**
@@ -179,63 +194,14 @@
        **/
       async passSubmit(password) {
         const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password);
-        const newAddressInfo = nuls.importByKey(chainID(), pri, password, this.prefix);
+        const newAddressInfo = nuls.importByKey(this.currentChain.chainId, pri, password, this.$store.state.prefix);
         if (newAddressInfo.address === this.addressInfo.address) {
-          //根据公钥获取地址
-          let transferInfo = {
-            fromAddress: this.addressInfo.address,
-            toAddress: config.black_address,
-            assetsChainId: chainID(),
-            assetsId: 1,
-            amount: 100000000,
-            fee: 100000
-          };
-          let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 3);
-          //console.log(inOrOutputs);
-          let aliasInfo = {
-            fromAddress: this.addressInfo.address,
-            alias: this.aliasForm.alias
-          };
-          let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, '', 3, aliasInfo);
-          let txhex = await nuls.transactionSerialize(nuls.decrypteOfAES(this.addressInfo.aesPri, password), this.addressInfo.pub, tAssemble);
-          //console.log(txhex);
-          //验证并广播交易
-          await validateAndBroadcast(txhex).then((response) => {
-            //console.log(response);
-            if (response.success) {
-              this.toUrl("txList");
-            } else {
-              this.$message({message: this.$t('error.' + response.data.code), type: 'error', duration: 3000});
-            }
-          }).catch((err) => {
-            this.$message({message: this.$t('public.err0') + err, type: 'error', duration: 1000});
-          });
+          const tAssemble = await this.getAssemble()
+          const txHex = await nuls.transactionSerialize(pri, this.addressInfo.pub, tAssemble);
+          this.broadcastTx(txHex)
         } else {
           this.$message({message: this.$t('address.address13'), type: 'error', duration: 1000});
         }
-      },
-
-      /**
-       * @disc: 设置别名交易组装
-       * @params:
-       * @date: 2019-12-03 14:52
-       * @author: Wave
-       */
-      async setAliasAssemble() {
-        let transferInfo = {
-          fromAddress: this.addressInfo.address,
-          toAddress: config.black_address,
-          assetsChainId: chainID(),
-          assetsId: 1,
-          amount: 100000000,
-          fee: 100000
-        };
-        let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 3);
-        let aliasInfo = {
-          fromAddress: this.addressInfo.address,
-          alias: this.aliasForm.alias
-        };
-        return await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, '', 3, aliasInfo);
       },
 
       /**

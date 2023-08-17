@@ -58,8 +58,8 @@
     <div class="w630 bg-gray result" v-if="callResult">
       {{callResult}}
     </div>
-    <Password ref="password" @passwordSubmit="passSubmit">
-    </Password>
+    <Password ref="password" @passwordSubmit="passSubmit" />
+    <LedgerConfirm :visible="ledgerVisible" @closed="ledgerVisible=false" />
   </div>
 </template>
 
@@ -71,13 +71,12 @@
     getNulsBalance,
     countFee,
     inputsOrOutputs,
-    validateAndBroadcast,
-    getPrefixByChainId,
-    commitData
+    validateAndBroadcast
   } from '@/api/requestData'
   import Password from '@/components/PasswordBar'
-  import {getArgs, timesDecimals0, Times, Plus, addressInfo, chainID, getRamNumber, timesDecimalsBig} from '@/api/util'
-  import { MAIN_INFO } from "@/config";
+  import LedgerConfirm from '@/components/LedgerConfirm'
+  import ledgerMixin from '@/mixins/ledgerMixin'
+  import {getArgs, timesDecimals0, Times, Plus, chainID, timesDecimalsBig} from '@/api/util'
 
   export default {
     data() {
@@ -116,7 +115,6 @@
       };
 
       return {
-        addressInfo: {},//地址信息
         balanceInfo: {},//账户余额信息
         assetInfo: null, // 往合约转的其他资产资产信息
         //调用接口form
@@ -156,7 +154,6 @@
         },
         contractCallData: {},//调用合约data
         callResult: '',//调用合约结果
-        prefix: '',//地址前缀
         newArgs: [],//合约参数
         txHexRandom: '',
         signDataKeyRandom: '',
@@ -168,23 +165,26 @@
       contractAddress: String,
       decimals: Number,
     },
+    mixins: [ledgerMixin],
     components: {
       Password,
+      LedgerConfirm
+    },
+    computed: {
+      MAIN_INFO() {
+        const currentChain = this.$store.state.currentChain
+        return {
+          chainId: currentChain.chainId,
+          assetId: currentChain.assetId
+        }
+      },
+      addressInfo() {
+        return this.$store.getters.currentAccount
+      }
     },
     created() {
-      getPrefixByChainId(chainID()).then((response) => {
-        //console.log(response);
-        this.prefix = response
-      }).catch((err) => {
-        console.log(err);
-        this.prefix = '';
-      });
       let newData = this.modelList.filter(obj => !obj.event);
       this.callForm.modelData = newData.filter(obj => obj.name !== '<init>');
-      this.addressInfo = addressInfo(1);
-      setInterval(() => {
-        this.addressInfo = addressInfo(1);
-      }, 500);
     },
     mounted() {
       setTimeout(() => {
@@ -332,24 +332,8 @@
                 }*/
               }
               this.getBalanceByAddress(chainID(), 1, this.addressInfo.address);
-              if (this.addressInfo.aesPri === '') {
-                this.txHexRandom = await getRamNumber(16);
-                this.signDataKeyRandom = await getRamNumber(16);
-                let assembleHex = await this.getAssemble();
-                if (!assembleHex.success) {
-                  this.$message({message: this.$t('tips.tips3'), type: 'error', duration: 3000});
-                  return;
-                }
-                let commitDatas = await commitData(this.txHexRandom, this.signDataKeyRandom, this.addressInfo.address, assembleHex.data);
-                if (!commitDatas.success) {
-                  this.$message({
-                    message: this.$t('tips.tips4') + JSON.stringify(commitDatas.data),
-                    type: 'error',
-                    duration: 3000
-                  });
-                  return;
-                }
-                this.$refs.password.showScan(commitDatas.data.txInfo, commitDatas.data.assembleHex);
+              if (this.addressInfo.isNULSLedger) {
+                this.handleSign()
               } else {
                 this.$refs.password.showPassword(true);
               }
@@ -369,10 +353,18 @@
           }
         });
       },
-
+      async handleSign() {
+        try {
+          const tAssemble = await this.getAssemble()
+          const unSignedHex = tAssemble.txSerialize().toString('hex')
+          this.signByLedger(unSignedHex, this.addressInfo.pathIndex, this.handleMessage)
+        } catch (e) {
+          this.$message({message: e.message || e, type: 'error', duration: 1000});
+        }
+      },
       async getAssemble() {
         let amount = Number(Times(this.callForm.gas, this.callForm.price));
-        let transferInfo = {
+        const transferInfo = {
           fromAddress: this.addressInfo.address,
           assetsChainId: chainID(),
           assetsId: 1,
@@ -397,33 +389,27 @@
           ];
           transferInfo.value = Number(timesDecimals0(this.callForm.values));
           transferInfo.amount = Number(Plus(transferInfo.value, amount))
-          transferInfo.assetsChainId = MAIN_INFO.chainId;
-          transferInfo.assetsId = MAIN_INFO.assetId;
+          transferInfo.assetsChainId = this.MAIN_INFO.chainId;
+          transferInfo.assetsId = this.MAIN_INFO.assetId;
           transferInfo.toAddress = this.contractAddress;
         }
         let remark = '';
-        //console.log(transferInfo);
         let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16, multyAssets);
-        if (!inOrOutputs.success) {
-          this.$message({message: inOrOutputs.data, type: 'error', duration: 3000});
-          return {success: false}
-        }
-        //console.log(inOrOutputs);
         let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 16, this.contractCallData);
         //获取手续费
         let newFee = countFee(tAssemble, 1);
-        //console.log(this.balanceInfo);
         //手续费大于0.001的时候重新组装交易及签名
         if (transferInfo.fee !== newFee) {
           transferInfo.fee = newFee;
           inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
-          if (!inOrOutputs.success) {
-            this.$message({message: inOrOutputs.data, type: 'error', duration: 3000});
-            return {success: false}
-          }
           tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 16, this.contractCallData);
         }
-        return {success: true, data: tAssemble}
+        return tAssemble
+      },
+      handleMessage(data) {
+        if (data.success) {
+          this.broadcastTx(data.result)
+        }
       },
 
       /**
@@ -593,73 +579,26 @@
        **/
       async passSubmit(password) {
         const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password);
-        const newAddressInfo = nuls.importByKey(chainID(), pri, password, this.prefix);
+        const newAddressInfo = nuls.importByKey(chainID(), pri, password, this.$store.state.prefix);
         if (newAddressInfo.address === this.addressInfo.address) {
-          //console.log(this.selectionData);
-          let pub = this.addressInfo.pub;
-          let amount = Number(Times(this.callForm.gas, this.callForm.price));
-          let transferInfo = {
-            fromAddress: this.addressInfo.address,
-            assetsChainId: chainID(),
-            assetsId: 1,
-            amount: amount,
-            fee: 100000
-          };
-          amount = Number(Plus(transferInfo.fee, amount));
-          if (this.callForm.values > 0) {
-            transferInfo.toAddress = this.contractAddress;
-            transferInfo.value = Number(timesDecimals0(this.callForm.values));
-            transferInfo.amount = Number(Plus(transferInfo.value, amount))
-          }
-          let multyAssets = []
-          if (this.assetInfo) {
-            const { chainId: assetChainId, assetId, decimals } = this.assetInfo
-            multyAssets = [
-              {
-                value: timesDecimalsBig(this.callForm.otherValue, decimals),
-                assetChainId,
-                assetId
-              }
-            ];
-            transferInfo.value = Number(timesDecimals0(this.callForm.values));
-            transferInfo.amount = Number(Plus(transferInfo.value, amount))
-            transferInfo.assetsChainId = MAIN_INFO.chainId;
-            transferInfo.assetsId = MAIN_INFO.assetId;
-            transferInfo.toAddress = this.contractAddress;
-          }
-          let remark = '';
-          let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16, multyAssets);
-          let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 16, this.contractCallData);
-          let txhex = '';
-          //获取手续费
-          let newFee = countFee(tAssemble, 1);
-          //手续费大于0.001的时候重新组装交易及签名
-          if (transferInfo.fee !== newFee) {
-            transferInfo.fee = newFee;
-            inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
-            tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 16, this.contractCallData);
-            txhex = await nuls.transactionSerialize(pri, pub, tAssemble);
-          } else {
-            txhex = await nuls.transactionSerialize(pri, pub, tAssemble);
-          }
-          //console.log(txhex);
-          //验证并广播交易
-          await validateAndBroadcast(txhex).then((response) => {
-            //console.log(response);
-            if (response.success) {
-              this.callResult = response
-            } else {
-              if (response.data.code === 'err_0014') {
-                this.$message({message: response.data.message, type: 'error', duration: 3000});
-              } else {
-                this.$message({message: this.$t('error.' + response.data.code), type: 'error', duration: 3000});
-              }
-            }
-          }).catch((err) => {
-            this.$message({message: this.$t('public.err1') + err, type: 'error', duration: 3000});
-          });
+          const tAssemble = await this.getAssemble()
+          const txHex = await nuls.transactionSerialize(pri, this.addressInfo.pub, tAssemble);
+          this.broadcastTx(txHex)
         } else {
           this.$message({message: this.$t('address.address13'), type: 'error', duration: 3000});
+        }
+      },
+
+      async broadcastTx(txHex) {
+        const response = await validateAndBroadcast(txHex)
+        if (response.success) {
+          this.callResult = response
+        } else {
+          if (response.data.code === 'err_0014') {
+            this.$message({message: response.data.message, type: 'error', duration: 3000});
+          } else {
+            this.$message({message: this.$t('error.' + response.data.code), type: 'error', duration: 3000});
+          }
         }
       },
       async getAccountCrossLedgerList(address) {

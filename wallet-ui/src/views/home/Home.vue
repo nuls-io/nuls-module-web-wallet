@@ -9,7 +9,7 @@
 
     <div class="w1200 overview bg-white" v-loading="overviewLoading" element-loading-spinner="el-icon-loading">
       <div class="title">
-        <img class="logo" src="./../assets/img/logo.svg"/>
+        <img class="logo" src="../../assets/img/logo.svg"/>
         <span class="fr click" @click="toUrl('txList',addressNULSAssets)">{{$t('home.home2')}}</span>
       </div>
       <div class="total fl">
@@ -39,7 +39,7 @@
     <div class="cb"></div>
     <div class="w1200 overview bg-white" style="margin: 35px auto 0; height: auto">
       <div class="title">
-        <img src="./../assets/img/across-logo.svg" style="width: 20px; margin-top:11px; "/>
+        <img src="../../assets/img/across-logo.svg" style="width: 20px; margin-top:11px; "/>
         {{$t('home.home3')}}
       </div>
       <div class="home_tabs" style="padding: 0">
@@ -48,9 +48,9 @@
           <el-table-column :label="$t('tab.tab0')" align="center" width="200">
             <template slot-scope="scope">
               <div style="margin: 0 0 0 30%">
-                <img src="./../assets/img/nvt-logo.svg" class="fl" style="width: 25px;margin: 3px 2px 0 0"
+                <img src="../../assets/img/nvt-logo.svg" class="fl" style="width: 25px;margin: 3px 2px 0 0"
                      v-show="scope.row.symbol ==='NVT'"/>
-                <img src="./../assets/img/eth-logo.png" class="fl" style="width: 25px;margin: 3px 2px 0 0"
+                <img src="../../assets/img/eth-logo.png" class="fl" style="width: 25px;margin: 3px 2px 0 0"
                      v-show="scope.row.symbol ==='ETH'"/>
                 <span class="fl">{{scope.row.symbol}}</span>
               </div>
@@ -132,6 +132,17 @@
           </el-tabs>
           <div class="tc font12" style="line-height: 60px; color: #909399;" v-else>暂无数据</div>
         </el-tab-pane>
+        <el-tab-pane :label="$t('home.home15')" name="nrc1155" class="tab_nrc721">
+          <el-tabs tab-position="left" v-model="active1155" v-if="nrc1155List.length !==0">
+            <el-tab-pane v-for="item in nrc1155List" :key="item.tokenId" :name="item.tokenId">
+              <div slot="label">
+                <el-link :underline="false">{{item.tokenSymbol +' (ID: '+item.tokenId + ')'}}</el-link>
+              </div>
+              <NRC1155Transfer :NFTInfo="item" v-if="reFresh" />
+            </el-tab-pane>
+          </el-tabs>
+          <div class="tc font12" style="line-height: 60px; color: #909399;" v-else>暂无数据</div>
+        </el-tab-pane>
       </el-tabs>
     </div>
 
@@ -176,7 +187,6 @@
       <el-input :placeholder="$t('home.home10')" class="token-search" suffix-icon="el-icon-search" v-model="tokenSearch"
                 @input="changeToken">
       </el-input>
-      <!--<el-checkbox v-model="isShowZero" @change="changeShowZero">{{$t('home.home11')}}</el-checkbox>-->
       <ul class="token-list scroll">
         <li v-for="item in showList" :key="item.contractAddress" class="cb">
           <div class="fl">
@@ -201,11 +211,10 @@
 <script>
   import axios from 'axios'
   import QRCode from 'qrcodejs2'
-  import NFTTransfer from '@/components/NFTTransfer'
+  
   import {
     timesDecimals,
     copys,
-    addressInfo,
     Times,
     superLong,
     connectToExplorer,
@@ -213,8 +222,9 @@
     Minus,
     divisionDecimals,
     unique,
-    chainIdNumber
   } from '@/api/util'
+  import NFTTransfer from './NFTTransfer'
+  import NRC1155Transfer from './NRC1155Transfer'
 
   export default {
     name: 'home',
@@ -222,10 +232,9 @@
       return {
         symbol: 'NULS', //symbol
         homeActive: 'homeFirst',  //tab默认选中
-        addressInfo: {},//默认账户信息
         addressNULSAssets: {},//账户NULS资产信息
         overviewLoading: true,//nuls资产加载动画
-        addressAssetsData: [],//账户资产列表
+        addressAssetsData: [],//nrc20资产列表
         NULSUsdt: 0,//nuls美元值
         assetsListLoading: true,//账户资产列表加载动画
         assetsOptions: [
@@ -238,7 +247,6 @@
         txListData: [], //交易数据
         pageNumber: 1, //页码
         pageSize: 100,//条数
-        pageCount: 0, //总条数
         crossLinkData: [],//跨链资产
         crossLinkDataLoading: true, //资产加载动画
         qrcodeDialog: false,//二维码弹框
@@ -249,9 +257,10 @@
           decimals: 8
         },
         activeContract: 'nrc20',
-        token721List: [],//724数据
+        token721List: [],//721数据
+        nrc1155List: [],
         active721: '',
-        homeSetIntervalOne: null,//定时器
+        active1155: '',
         homeSetInterval: null,//定时器
         reFresh: true,
         allNRC20List: [],//所有nrc20资产
@@ -261,52 +270,42 @@
 
       };
     },
-    components: {NFTTransfer},
+    components: {NFTTransfer, NRC1155Transfer},
+    computed: {
+      accountList() {
+        return this.$store.state.accountList
+      },
+      addressInfo() {
+        return this.$store.getters.currentAccount
+      }
+    },
     created() {
-      this.addressInfo = addressInfo(1);
-      this.homeSetIntervalOne = setInterval(() => {
-        this.addressInfo = addressInfo(1);
-      }, 500);
-
-      //判断是否有账户
-      if (this.addressInfo) {
-        setTimeout(() => {
-          this.getAddressInfoByNode(this.addressInfo.address);
-          this.allNRC20List = [];
-          this.allList();
-          setTimeout(() => {
-            this.getAccountCrossLedgerList(this.addressInfo.address);
-            this.getAccountToken721List(this.addressInfo.address);
-          }, 400);
-        }, 600);
+      const address = this.addressInfo.address
+      if (address) {
+        this.allNRC20List = [];
+        this.allList();
+        this.getList()
+        this.startInterval()
       } else {
         this.$router.push({
           name: "newAddress"
         })
       }
     },
-    mounted() {
-      this.symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
-
-      this.homeSetInterval = setInterval(() => {
-        this.getAccountToken721List(this.addressInfo.address);
-      }, 10000);
-    },
     destroyed() {
-      clearInterval(this.homeSetIntervalOne);
-      clearInterval(this.homeSetInterval);
+      this.clearInterval()
     },
     watch: {
       addressInfo(val, old) {
         if (val) {
           if (val.address !== old.address && old.address) {
+            clearInterval(this.homeSetInterval);
             this.token721List = [];
+            this.nrc1155List = []
             this.active721 = '';
-            this.getAddressInfoByNode(this.addressInfo.address);
+            this.active1155 = ''
             this.reFresh = false;
-            this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
-            this.getAccountCrossLedgerList(this.addressInfo.address);
-            this.getAccountToken721List(this.addressInfo.address);
+            this.getList()
             this.$nextTick(() => {
               this.reFresh = true
             })
@@ -315,6 +314,21 @@
       }
     },
     methods: {
+      getList() {
+        this.getAddressInfoByNode();
+        this.getAccountCrossLedgerList();
+        this.getTokenListByAddress();
+        this.getAccountToken721List();
+        this.getNRC1155TokenList()
+      },
+      startInterval() {
+        this.homeSetInterval = setInterval(() => {
+          this.getList()
+        }, 10000);
+      },
+      clearInterval() {
+        clearInterval(this.homeSetInterval);
+      },
 
       /**
        * @disc: 显示二维码
@@ -365,7 +379,6 @@
           "amount": this.payeeForm.amount,
           "payer": ""
         };
-        //console.log(qrcodeInfo);
         qrcode.makeCode(JSON.stringify(qrcodeInfo))
       },
 
@@ -374,75 +387,35 @@
        * @param tab
        **/
       handleClick(tab) {
-        if (tab.name === 'homeSecond') {
-          this.pageNumber = 1;
-          this.pageSize = 10;
-          this.pageCount = 0;
-          this.addressAssetsData = [];
-          this.getAccountCrossLedgerList(this.addressInfo.address)
-        } else {
-          this.pageNumber = 1;
-          this.pageSize = 100;
-          this.pageCount = 0;
-          this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address)
-        }
-      },
-
-      /**
-       * 资产下拉框选择
-       * * @param e
-       **/
-      channgeAsesets(e) {
-        this.assetsListLoading = true;
-        if (e.toString() === "1") {
-          this.getAddressInfoByNode(this.addressInfo.address);
-        } else if (e.toString() === "2") {
-          this.addressAssetsData = [];
-          setTimeout(() => {
-            this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address)
-          }, 200);
-        } else {
-          this.getAddressInfoByNode(this.addressInfo.address);
-          setTimeout(() => {
-            this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address)
-          }, 200);
-        }
+        //
       },
 
       /**
        * 获取地址NULS资产信息
        * @param address
        **/
-      async getAddressInfoByNode(address) {
-        this.overviewLoading = true;
-        await this.$post('/', 'getAccountLedgerList', [address], 'Home')
+      async getAddressInfoByNode() {
+        await this.$post('/', 'getAccountLedgerList', [this.addressInfo.address], 'Home')
           .then((response) => {
-            //console.log(response);
-            this.addressAssetsData = [];
-            let newAssetsList = {};
-            if (response.hasOwnProperty("result")) {
-              newAssetsList.account = response.result[0].symbol;
-              newAssetsList.chainId = response.result[0].chainId;
-              newAssetsList.assetId = response.result[0].assetId;
-              newAssetsList.type = 1;
-              newAssetsList.balance = Number(timesDecimals(response.result[0].balance)).toFixed(3);
-              newAssetsList.locking = Number(timesDecimals(Plus(response.result[0].consensusLock, response.result[0].timeLock))).toFixed(3);
-              newAssetsList.total = Number(timesDecimals(response.result[0].totalBalance)).toFixed(3);
-            } else {
-              newAssetsList.account = response.result.symbol;
-              newAssetsList.chainId = response.result.chainId;
-              newAssetsList.assetId = response.result.assetId;
-              newAssetsList.type = 1;
-              newAssetsList.total = 0;
-              newAssetsList.locking = 0;
-              newAssetsList.balance = 0;
+            const assetInfo = {
+              type: 1,
+              total: 0,
+              locking: 0,
+              balance: 0,
             }
-            this.addressInfo.balance = newAssetsList.balance;
-            this.addressNULSAssets = newAssetsList;
-            //console.log(this.addressNULSAssets);
-            this.getNULSUSDT(Number(newAssetsList.total));
+            if (response.result && response.result[0]) {
+              const info = response.result[0]
+              assetInfo.account = info.symbol
+              assetInfo.chainId = info.chainId
+              assetInfo.assetId = info.assetId
+              assetInfo.balance = Number(timesDecimals(info.balance)).toFixed(3);
+              assetInfo.locking = Number(timesDecimals(Plus(info.consensusLock, info.timeLock))).toFixed(3);
+              assetInfo.total = Number(timesDecimals(info.totalBalance)).toFixed(3);
+            }
+            // this.addressInfo.balance = newAssetsList.balance;
+            this.addressNULSAssets = assetInfo;
+            this.getNULSUSDT(Number(assetInfo.total));
             this.overviewLoading = false;
-            //this.addressAssetsData.push(newAssetsList);
             this.assetsListLoading = false;
           })
       },
@@ -457,7 +430,6 @@
         this.NULSUsdt = Number(Times(news, number)).toFixed(2);
         axios.defaults.baseURL = '';
         let url = 'http://binanceapi.zhoulijun.top/api/v3/ticker/price?symbol=NULSUSDT';
-        //console.log(process.env.NODE_ENV ==='development');
         if (process.env.NODE_ENV !== 'development') {
           url = "/market-api/nuls-price"
         } else {
@@ -465,7 +437,6 @@
         }
         axios.get(url)
           .then((response) => {
-            //console.log(response.data);
             this.NULSUsdt = Number(Times(Number(response.data.price), number)).toFixed(3)
           })
           .catch((error) => {
@@ -474,18 +445,12 @@
       },
 
       /**
-       * 获取地址代币资产信息
-       * @param pageSize
-       * @param pageRows
-       * @param address
+       * 获取nrc20资产列表
        **/
-      async getTokenListByAddress(pageSize, pageRows, address) {
-        this.assetsListLoading = true;
-        await this.$post('/', 'getAccountTokens', [pageSize, pageRows, address], 'Home')
+      async getTokenListByAddress() {
+        await this.$post('/', 'getAccountTokens', [this.pageNumber, this.pageSize, this.addressInfo.address], 'Home')
           .then((response) => {
-            //console.log(response);
             if (response.hasOwnProperty("result")) {
-              this.addressAssetsData = [];
               for (let itme of response.result.list) {
                 itme.key = itme.contractAddress;
                 itme.account = itme.tokenSymbol;
@@ -500,18 +465,18 @@
               }
             }
             const newAssetsList = response.result.list.filter(obj => obj.status !== 3); //隐藏已经删除合约
-            //console.log(newAssetsList);
             this.addressInfo.tokens = [];
 
-            let addressList = addressInfo(0);
-            for (let item of addressList) {
-              //console.log(item);
+            const accountList = [...this.accountList];
+            for (let item of accountList) {
               if (this.addressInfo.address === item.address) {
                 let nrc20List = [];
                 item.nrc20List = item.nrc20List ? item.nrc20List : [];
                 for (let k of item.nrc20List) {
                   let newNrc20List = this.allNRC20List.filter(obj => obj.contractAddress === k.contractAddress)[0];
-                  nrc20List.push(newNrc20List)
+                  if (newNrc20List) {
+                    nrc20List.push(newNrc20List)
+                  } 
                 }
 
                 item.nrc20List = [...newAssetsList, ...nrc20List];
@@ -519,7 +484,7 @@
                 this.addressAssetsData = item.nrc20List;
               }
             }
-            localStorage.setItem(chainIdNumber(), JSON.stringify(addressList));
+            this.$store.commit('changeAccouuntList', accountList)
             this.assetsListLoading = false;
           }).catch((error) => {
             console.log(error);
@@ -530,11 +495,9 @@
        * 获取地址跨链资产信息
        * @param address
        **/
-      async getAccountCrossLedgerList(address) {
-        this.txListDataLoading = true;
-        await this.$post('/', 'getAccountCrossLedgerList', [address], 'Home')
+      async getAccountCrossLedgerList() {
+        await this.$post('/', 'getAccountCrossLedgerList', [this.addressInfo.address], 'Home')
           .then((response) => {
-            //console.log(response);
             this.crossLinkDataLoading = false;
             if (response.hasOwnProperty("result")) {
               for (let item of response.result) {
@@ -548,7 +511,6 @@
               this.txListDataLoading = false;
             }
           }).catch((err) => {
-            //this.getAccountCrossLedgerList(address);
             console.log(err);
           })
       },
@@ -557,23 +519,37 @@
        * 获取地址721资产信息
        * @param address
        **/
-      async getAccountToken721List(address) {
-        await this.$post('/', 'getAccountToken721s', [1, 100, address], 'Home')
+      async getAccountToken721List() {
+        await this.$post('/', 'getAccountToken721s', [this.pageNumber, this.pageSize, this.addressInfo.address], 'Home')
           .then((response) => {
-            //console.log(response);
             if (response.hasOwnProperty("result")) {
               this.token721List = response.result.list.filter(obj => obj.tokenSet.length !== 0); //隐藏数量为零的资产
-              //console.log(this.token721List);
               if (this.token721List.length !== 0) {
                 this.active721 = this.active721 !== '' ? this.active721 : this.token721List[0].contractAddress;
               } else {
                 this.active721 = '';
               }
-              //console.log(this.active721);
             }
           }).catch((err) => {
             console.log(err);
           })
+      },
+
+      async getNRC1155TokenList() {
+        this.$post('/', 'getAccountToken1155s', [this.pageNumber, this.pageSize, this.addressInfo.address])
+          .then((response) => {
+            console.log(response);
+            if (response.hasOwnProperty("result")) {
+              this.nrc1155List = response.result.list;
+              if (this.nrc1155List.length !== 0) {
+                this.active1155 = this.active1155 !== '' ? this.active1155 : this.nrc1155List[0].tokenId;
+              } else {
+                this.active1155 = '';
+              }
+            }
+          }).catch((error) => {
+          console.log(error)
+        })
       },
 
       /**
@@ -599,14 +575,13 @@
        */
       async allList(pageIndex = 1, pageSize = 100) {
         let resDatas = await this.getAllNRC20(pageIndex, pageSize);
-        //console.log(resDatas);
         if (resDatas.success) {
           let newAssetsList = resDatas.data.list.filter(obj => obj.status !== 3); //隐藏已经删除合约
           this.allNRC20List = [...this.allNRC20List, ...newAssetsList];
           if (resDatas.data.totalCount > pageIndex * pageSize) {
             this.allList(pageIndex + 1, pageSize)
           } else {
-            this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address);
+            this.getTokenListByAddress();
           }
         }
       },
@@ -617,7 +592,6 @@
       async getAllNRC20(pageIndex = 1, pageSize = 100) {
         return await this.$post('/', 'getContractList', [pageIndex, pageSize, 1, false])
           .then((response) => {
-            //console.log(response);
             if (response.hasOwnProperty("result")) {
               //this.contractInfo = response.result;
               for (let item of response.result.list) {
@@ -666,30 +640,12 @@
       },
 
       /**
-       * @disc: 隐藏为零的 token
-       * @params:
-       * @date: 2020-12-28 17:38
-       * @author: Wave
-       */
-      changeShowZero() {
-        let newList = [];
-        if (this.isShowZero) {
-          this.tokenSearch = '';
-          newList = this.allNRC20List.filter(item => Number(item.total) > 0);
-        } else {
-          newList = this.allNRC20List
-        }
-        this.showList = newList;
-      },
-
-      /**
        * @disc: token选中或者隐藏
        * @params:
        * @date: 2020-12-28 17:50
        * @author: Wave
        */
       changeShow(info) {
-        //console.log(info);
         if (info.isShow) {
           info.locking = 0;
           this.addressAssetsData.push(info);
@@ -698,14 +654,13 @@
           this.addressAssetsData.splice(newIndex, 1);
         }
 
-        let addressList = addressInfo(0);
-        for (let item of addressList) {
+        const accountList = [...this.accountList];
+        for (let item of accountList) {
           if (item.address === this.addressInfo.address) {
             item.nrc20List = this.addressAssetsData;
           }
         }
-        //console.log(addressList);
-        localStorage.setItem(chainIdNumber(), JSON.stringify(addressList));
+        this.$store.commit('changeAccouuntList', accountList)
       },
 
       /**
@@ -716,10 +671,6 @@
        */
       tokenDioloClose() {
         this.tokenSearch = '';
-        /*this.pageNumber = 1;
-        this.pageSize = 100;
-        this.pageCount = 0;
-        this.getTokenListByAddress(this.pageNumber, this.pageSize, this.addressInfo.address)*/
       },
 
       /**
@@ -729,7 +680,6 @@
        * @param type 0:本网站跳转，1：跳转浏览器
        */
       toUrl(name, parms, type = 0) {
-        //console.log(name, parms, type);
         if (type === 1) {
           connectToExplorer(name, parms)
         } else {
@@ -741,14 +691,15 @@
               query: newQuery
             })
           } else if (name === 'frozenList') {
-            newParms = {accountInfo: parms};
             this.$router.push({
               name: name,
-              query: newParms
+              query: {
+                chainId: parms.chainId,
+                assetId: parms.assetId
+              }
             })
           } else {
             if (parms.type === 2) {
-              //console.log(parms);
               this.$router.push({
                 name: 'tokenTxList',
                 query: {contractAddress: parms.contractAddress}
@@ -776,7 +727,7 @@
 </script>
 
 <style lang="less">
-  @import "./../assets/css/style";
+  @import "../../assets/css/style";
 
   .home {
     background-color: @Bcolour1;

@@ -11,7 +11,7 @@
         </el-table-column>
         <el-table-column :label="$t('tab.tab2')" align="center" width="150">
           <template slot-scope="scope">
-            <span>{{scope.row.total }}</span>
+            <span>{{scope.row.totalBalance }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="balance" :label="$t('consensus.consensus2')" align="center" width="150">
@@ -52,15 +52,6 @@
       </el-table>
       <div class="pages">
         <div class="page-total">{{$t('public.total')}} {{addressList.length}}</div>
-        <!--<div class="page-total">显示1-20 共 1000</div>-->
-        <!-- <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" class="fr"
-                        :current-page="currentPage4"
-                        :page-sizes="[100, 200, 300, 400]"
-                        background
-                        :page-size="100"
-                        layout=" prev, pager, next, jumper"
-                        :total="400">
-         </el-pagination>-->
       </div>
     </div>
 
@@ -87,57 +78,38 @@
 <script>
   import nuls from 'nuls-sdk-js'
   import Password from '@/components/PasswordBar'
-  import {timesDecimals, chainIdNumber, addressInfo, chainID, Plus} from '@/api/util'
-  import {getPrefixByChainId} from '@/api/requestData'
+  import {timesDecimals} from '@/api/util'
 
   export default {
     data() {
       return {
-        addressList: [],//地址列表
         selectAddressInfo: '', //操作的地址信息
         remarkDialog: false,//备注弹框
         remarkInfo: '',//备注信息
-        prefix: '',//地址前缀
       };
     },
     components: {
       Password,
     },
-    created() {
-      getPrefixByChainId(chainID()).then((response) => {
-        this.prefix = response
-      }).catch((err) => {
-        console.log(err);
-        this.prefix = '';
-      });
+    computed: {
+      addressList() {
+        return this.$store.state.accountList
+      },
+      addressInfo() {
+        return this.$store.getters.currentAccount
+      }
     },
     mounted() {
-      setTimeout(() => {
-        this.getAddressList();
-        this.getAddressLists(this.addressList);
-      }, 600);
+      if (!this.addressInfo.address) {
+        this.$router.push({
+          name: "newAddress",
+          query: {'address': ''}
+        })
+      } else {
+        this.getAddressLists()
+      }
     },
     methods: {
-
-      /**
-       * 获取账户列表
-       */
-      getAddressList() {
-        this.addressList = addressInfo(0);
-        for (let item in this.addressList) {
-          this.addressList[item].total = Number(Plus(Number(this.addressList[item].balance), Number(this.addressList[item].consensusLock)));
-          if (this.addressList[item].total.toString() === 'NaN') {
-            this.addressList[item].total = 0
-          }
-        }
-        //如果没有账户跳转到创建地址界面
-        if (this.addressList.length === 0) {
-          this.$router.push({
-            name: "newAddress",
-            query: {'address': ''}
-          })
-        }
-      },
 
       /**
        * 获取地址网络信息
@@ -148,18 +120,19 @@
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
-              for (let item of this.addressList) {
+              const addressList = [...this.addressList]
+              for (let item of addressList) {
                 if (item.address === addressInfo.address) {
-                  addressInfo.alias = response.result.alias;
-                  addressInfo.balance = timesDecimals(response.result.balance);
-                  addressInfo.consensusLock = timesDecimals(response.result.consensusLock);
-                  addressInfo.totalReward = timesDecimals(response.result.totalReward);
-                  addressInfo.nrc20List = item.nrc20List;
-                  addressInfo.tokens = [];
-                  addressInfo.chainId = nuls.verifyAddress(item.address).chainId;
+                  item.alias = response.result.alias;
+                  item.totalBalance = timesDecimals(response.result.totalBalance);
+                  item.balance = timesDecimals(response.result.balance);
+                  item.consensusLock = timesDecimals(response.result.consensusLock);
+                  item.totalReward = timesDecimals(response.result.totalReward);
+                  item.tokens = [];
+                  item.chainId = nuls.verifyAddress(item.address).chainId;
                 }
               }
-              localStorage.setItem(chainIdNumber(), JSON.stringify(this.addressList))
+              this.$store.commit('changeAccouuntList', addressList)
             }
           })
           .catch((error) => {
@@ -169,10 +142,9 @@
 
       /**
        * 循环获取账户余额及别名
-       * @param addressList
        **/
-      getAddressLists(addressList) {
-        for (let item of addressList) {
+      getAddressLists() {
+        for (let item of this.addressList) {
           setTimeout(() => {
             this.getAddressInfoByNode(item);
           }, 500);
@@ -207,7 +179,7 @@
         this.selectAddressInfo = rowInfo;
         this.$router.push({
           name: "backupsAddress",
-          query: {'backAddressInfo': rowInfo}
+          query: {'address': rowInfo.address}
         })
       },
 
@@ -217,13 +189,12 @@
        **/
       deleteAddress(rowInfo) {
         if (!rowInfo.aesPri) {
-          let newAddressInfo = addressInfo(0);
-          newAddressInfo.splice(newAddressInfo.findIndex(item => item.address === rowInfo.address), 1);
-          if (this.selectAddressInfo.selection && newAddressInfo.length !== 0) {
-            newAddressInfo[0].selection = true;
+          const addressList = [...this.addressList]
+          addressList.splice(addressList.findIndex(item => item.address === rowInfo.address), 1);
+          if (this.selectAddressInfo.selection && addressList.length !== 0) {
+            addressList[0].selection = true;
           }
-          localStorage.setItem(chainIdNumber(), JSON.stringify(newAddressInfo));
-          this.getAddressList();
+          this.$store.commit('changeAccouuntList', addressList)
           return;
         }
         this.$confirm(this.$t('tab.tab29'), this.$t('tab.tab32'), {
@@ -249,7 +220,8 @@
        **/
       selectionAddress(rowInfo) {
         //console.log(rowInfo);
-        for (let item  of this.addressList) {
+        const addressList = [...this.addressList]
+        for (let item  of addressList) {
           //清除选中
           if (item.selection) {
             item.selection = false;
@@ -259,7 +231,7 @@
             item.selection = true;
           }
         }
-        localStorage.setItem(chainIdNumber(), JSON.stringify(this.addressList));
+        this.$store.commit('changeAccouuntList', addressList)
         this.$router.push({
           name: 'home',
         })
@@ -270,16 +242,15 @@
        * @param password
        **/
       passSubmit(password) {
-        let newAddressInfo = addressInfo(0);
+        const addressList = [...this.addressList]
         const pri = nuls.decrypteOfAES(this.selectAddressInfo.aesPri, password);
-        const deleteAddressInfo = nuls.importByKey(this.selectAddressInfo.chainId, pri, password, this.prefix);
+        const deleteAddressInfo = nuls.importByKey(this.selectAddressInfo.chainId, pri, password, this.$store.state.prefix);
         if (this.selectAddressInfo.address === deleteAddressInfo.address) {
-          newAddressInfo.splice(newAddressInfo.findIndex(item => item.address === this.selectAddressInfo.address), 1);
-          if (this.selectAddressInfo.selection && newAddressInfo.length !== 0) {
-            newAddressInfo[0].selection = true;
+          addressList.splice(addressList.findIndex(item => item.address === this.selectAddressInfo.address), 1);
+          if (this.selectAddressInfo.selection && addressList.length !== 0) {
+            addressList[0].selection = true;
           }
-          localStorage.setItem(chainIdNumber(), JSON.stringify(newAddressInfo));
-          this.getAddressList();
+          this.$store.commit('changeAccouuntList', addressList)
         } else {
           this.$message({message: this.$t('address.address13'), type: 'error', duration: 1000});
         }
@@ -299,14 +270,14 @@
        * 账户备注提交
        */
       addRemark() {
-        let newAddressInfo = addressInfo(0);
-        for (let item of newAddressInfo) {
+        const addressList = [...this.addressList]
+        for (let item of addressList) {
           if (item.address === this.selectAddressInfo.address) {
             this.selectAddressInfo.remark = this.remarkInfo;
             item.remark = this.remarkInfo;
           }
         }
-        localStorage.setItem(chainIdNumber(), JSON.stringify(newAddressInfo));
+        this.$store.commit('changeAccouuntList', addressList)
         this.remarkDialog = false;
         this.selectAddressInfo = '';
       },

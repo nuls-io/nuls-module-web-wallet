@@ -5,7 +5,7 @@
         <div class="left fl">
           <p class="fl">
             {{$t('bottom.serviceNode')}}:
-            <u class="click" @click="toUrl('nodeService')">{{serviceUrls.urls}}</u>
+            <u class="click" @click="toUrl('nodeService')">{{currentChain.apiUrl}}</u>
           </p>
         </div>
         <div class="right fr">
@@ -23,7 +23,8 @@
 <script>
   import nuls from 'nuls-sdk-js'
   import axios from 'axios'
-  import {chainID, chainIdNumber, addressInfo, timesDecimals} from '@/api/util'
+  import {addressInfo, timesDecimals} from '@/api/util'
+  import storage from '@/api/storage'
 
   export default {
     name: "bottom-bar",
@@ -32,27 +33,34 @@
         serviceUrls: {},//服务节点信息
         heightInfo: [],//高度信息
         failedNu: 0,//失败请次数
+        timer: null
       }
     },
-    created() {
-      this.serviceUrls = {};
-      let newUrlData = this.$store.getters.getUrlData;
-      this.serviceUrls = newUrlData.filter(item => item.selection)[0];
-      localStorage.setItem('url', JSON.stringify(this.serviceUrls));
-      this.getHeaderInfo();
-      setInterval(() => {
-        let newUrlData = this.$store.getters.getUrlData;
-        this.serviceUrls = newUrlData.filter(item => item.selection)[0];
-        localStorage.setItem('url', JSON.stringify(this.serviceUrls));
-      }, 500);
-    },
     mounted() {
-      setInterval(() => {
-        this.getHeaderInfo();
-        this.getAddressInfo();
+      this.getInfo();
+      this.timer = setInterval(() => {
+        this.getInfo()
       }, 10000);
     },
+    computed: {
+      currentChain() {
+        return this.$store.state.currentChain
+      }
+    },
     watch: {
+      'currentChain.apiUrl': {
+        handler() {
+          clearInterval(this.timer)
+          this.getInfo()
+          this.timer = setInterval(() => {
+            this.getInfo()
+          }, 10000)
+        }
+      },
+      // currentChain(val) {
+      //   console.log(val, 333)
+        
+      // },
       heightInfo(val) {
         if (this.$route.path !== '/nodeService' && this.failedNu !== 5) {
           if (val.localHeight === 0 && val.networkHeight === 0) {
@@ -79,30 +87,31 @@
     },
     methods: {
 
+      getInfo() {
+        this.getHeaderInfo();
+        this.getAddressInfo();
+      },
       /**
        * 获取主网最新高度和本地高度
        */
       getHeaderInfo() {
-        const url = localStorage.hasOwnProperty("url") && localStorage.getItem('url') !== 'undefined' ? JSON.parse(localStorage.getItem('url')).urls : 'http://192.168.1.40:18003/';
+        const { apiUrl, chainId } = this.currentChain
         const params = {
-          "jsonrpc": "2.0", "method": "getInfo", "params": [chainID()], "id": Math.floor(Math.random() * 1000)
+          "jsonrpc": "2.0", "method": "getInfo", "params": [chainId], "id": Math.floor(Math.random() * 1000)
         };
-        //console.log(url);
-        //console.log(params);
-        axios.post(url, params)
+        axios.post(apiUrl, params)
           .then((response) => {
             //console.log(response.data);
             if (response.data.hasOwnProperty("result")) {
               this.heightInfo = response.data.result;
-              sessionStorage.setItem("info", JSON.stringify(response.data.result));
-              this.$store.commit('setHeight', this.heightInfo.networkHeight);
+              storage.set("info", response.data.result, 'session');
             } else {
               this.heightInfo = {localHeight: 0, networkHeight: 0};
-              sessionStorage.removeItem("info")
+              storage.remove("info", 'session')
             }
           })
           .catch((error) => {
-            sessionStorage.removeItem("info");
+            storage.remove("info", 'session');
             this.heightInfo = {localHeight: 0, networkHeight: 0};
             console.log("getInfo:" + error)
           })
@@ -112,17 +121,20 @@
        * 获取地址网络信息
        **/
       async getAddressInfo() {
-        let addressInfos = addressInfo(1);
-        let addressList = addressInfo(0);
-        if (addressInfos) {
-          await this.$post('/', 'getAccount', [addressInfos.address], 'BottomBar')
+        const accountList = this.$store.state.accountList
+        const currentAccount = this.$store.getters.currentAccount
+        const address = currentAccount.address
+        if (address) {
+          await this.$post('/', 'getAccount', [address], 'BottomBar')
             .then((response) => {
               //console.log(response);
               if (response.hasOwnProperty("result")) {
-                let newAssetsList = addressList.filter(obj => obj.address === addressInfos.address); //隐藏已经删除合约
-                for (let item of addressList) {
-                  if (item.address === addressInfos.address) {
+                let newAssetsList = accountList.filter(obj => obj.address === address); //隐藏已经删除合约
+                for (let item of accountList) {
+                  if (item.address === address) {
                     item.alias = response.result.alias;
+                    item.symbol = response.result.symbol;
+                    item.totalBalance = timesDecimals(response.result.totalBalance);
                     item.balance = timesDecimals(response.result.balance);
                     item.consensusLock = timesDecimals(response.result.consensusLock);
                     item.totalReward = timesDecimals(response.result.totalReward);
@@ -136,9 +148,7 @@
                     item.nrc20List = newAssetsList[0].nrc20List;
                   }
                 }
-                //console.log(addressList);
-                localStorage.setItem(chainIdNumber(), JSON.stringify(addressList));
-                //this.$store.commit('setAddressInfo', addressList);
+                this.$store.commit('changeAccouuntList', accountList);
               }
             })
         }

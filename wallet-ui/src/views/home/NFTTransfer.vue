@@ -31,20 +31,21 @@
       </el-form-item>
     </el-form>
 
-    <Password ref="password" @passwordSubmit="passSubmit">
-    </Password>
+    <Password ref="password" @passwordSubmit="passSubmit" />  
+    <LedgerConfirm :visible="ledgerVisible" @closed="ledgerVisible=false" />
   </div>
 </template>
 
 <script>
   import nuls from 'nuls-sdk-js'
   import Password from '@/components/PasswordBar'
-  import {MAIN_INFO} from '@/config.js'
-  import {addressInfo, getArgs, Times, Plus, passwordVerification, connectToExplorer} from '@/api/util'
+  import {getArgs, Times, Plus, passwordVerification, connectToExplorer} from '@/api/util'
   import {
     countFee, inputsOrOutputs, validateAndBroadcast, getNulsBalance, //validateTx
   } from '@/api/requestData'
   import {chainMethodCall} from '@/api/contractCall'
+  import ledgerMixin from '@/mixins/ledgerMixin'
+  import LedgerConfirm from '@/components/LedgerConfirm'
 
   export default {
     data() {
@@ -61,14 +62,13 @@
           return callback(new Error(this.$t('tips.tips25')));
         } else if (!toAddressInfo.right) {
           return callback(new Error(this.$t('tips.tips25')));
-        } else if (toAddressInfo.chainId !== MAIN_INFO.chainId) {
+        } else if (toAddressInfo.chainId !== this.currentChain.chainId) {
           return callback(new Error(this.$t('tips.tips25')));
         } else {
           callback();
         }
       };
       return {
-        addressInfo: {},
         sendList: [],//下拉框数据
         nftForm: {
           id: '',
@@ -88,6 +88,7 @@
         contractInfo: {},//合约信息
       };
     },
+    mixins: [ledgerMixin],
     props: {
       //默认选中内容
       NFTInfo: {
@@ -96,15 +97,20 @@
         }
       },
     },
-    watch: {},
-    created() {
-      this.addressInfo = addressInfo(1);
+    computed: {
+      currentChain() {
+        return this.$store.state.currentChain
+      },
+      addressInfo() {
+        return this.$store.getters.currentAccount
+      }
     },
     mounted() {
       this.init();
     },
     components: {
       Password,
+      LedgerConfirm
     },
     destroyed() {
       this.sendList = [];
@@ -204,15 +210,67 @@
               return;
             }
             this.contractCallData = resData.data;
-            this.$refs.password.showPassword(true);
+            if (this.addressInfo.isNULSLedger) {
+              this.handleSign()
+            } else {
+              this.$refs.password.showPassword(true);
+            }
           } else {
             return false;
           }
         });
       },
+      async handleSign() {
+        try {
+          const tAssemble = await this.getAssemble()
+          const unSignedHex = tAssemble.txSerialize().toString('hex')
+          this.signByLedger(unSignedHex, this.addressInfo.pathIndex, this.handleMessage)
+        } catch (e) {
+          this.$message({message: e.message || e, type: 'error', duration: 1000});
+        }
+      },
+      handleMessage(data) {
+        if (data.success) {
+          this.broadcastTx(data.result)
+        }
+      },
 
       resetForm(formName) {
         this.$refs[formName].resetFields();
+      },
+
+      async getAssemble() {
+        let amount = Number(Times(this.contractCallData.gasLimit, this.contractCallData.price));
+        let transferInfo = {
+          fromAddress: this.addressInfo.address,
+          assetsChainId: this.currentChain.chainId,
+          assetsId: 1,
+          amount: amount,
+          fee: 100000
+        };
+        //console.log(transferInfo);
+        amount = Number(Plus(transferInfo.fee, amount));
+        let remark = '';
+        //console.log(this.balanceInfo);
+        let resData = await getNulsBalance(this.currentChain.chainId, 1, this.addressInfo.address);
+        //console.log(resData);
+        if (!resData.success) {
+          console.log('获取账户nonce错误:' + resData.data);
+          return
+        }
+        let inOrOutputs = await inputsOrOutputs(transferInfo, resData.data, 16);
+        //console.log(inOrOutputs);
+        let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 16, this.contractCallData);
+        //获取手续费
+        let newFee = countFee(tAssemble, 1);
+        //手续费大于0.001的时候重新组装交易及签名
+        if (transferInfo.fee !== newFee) {
+          transferInfo.fee = newFee;
+          inOrOutputs = await inputsOrOutputs(transferInfo, resData.data, 16);
+          tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 16, this.contractCallData);
+        }
+
+        return tAssemble
       },
 
       /**
@@ -225,68 +283,29 @@
           this.$message({message: this.$t('address.address13'), type: 'error', duration: 3000});
           return;
         }
+        const tAssemble = await this.getAssemble()
+        const txHex = await nuls.transactionSerialize(passwordInfo.pri, passwordInfo.pub, tAssemble);
+        this.broadcastTx(txHex)
+      },
 
-        //console.log(this.contractCallData);
-        let amount = Number(Times(this.contractCallData.gasLimit, this.contractCallData.price));
-        let transferInfo = {
-          fromAddress: this.addressInfo.address,
-          assetsChainId: MAIN_INFO.chainId,
-          assetsId: 1,
-          amount: amount,
-          fee: 100000
-        };
-        //console.log(transferInfo);
-        amount = Number(Plus(transferInfo.fee, amount));
-        let remark = '';
-        //console.log(this.balanceInfo);
-        let resData = await getNulsBalance(MAIN_INFO.chainId, 1, this.addressInfo.address);
-        //console.log(resData);
-        if (!resData.success) {
-          console.log('获取账户nonce错误:' + resData.data);
-          return
-        }
-        let inOrOutputs = await inputsOrOutputs(transferInfo, resData.data, 16);
-        //console.log(inOrOutputs);
-        let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 16, this.contractCallData);
-        let txhex = '';
-        //获取手续费
-        let newFee = countFee(tAssemble, 1);
-        //手续费大于0.001的时候重新组装交易及签名
-        if (transferInfo.fee !== newFee) {
-          transferInfo.fee = newFee;
-          inOrOutputs = await inputsOrOutputs(transferInfo, resData.data, 16);
-          tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 16, this.contractCallData);
-          txhex = await nuls.transactionSerialize(passwordInfo.pri, passwordInfo.pub, tAssemble);
-        } else {
-          txhex = await nuls.transactionSerialize(passwordInfo.pri, passwordInfo.pub, tAssemble);
-        }
-        //console.log(txhex);
-
-        //验证交易
-        /*let validateTxRes = await validateTx(txhex);
-        console.log(validateTxRes);*/
-
+      async broadcastTx(txHex) {
         //验证并广播交易
-        await validateAndBroadcast(txhex).then((response) => {
-          //console.log(response);
-          if (response.success) {
-            this.$message({message: this.$t('tips.tips0'), type: 'success', duration: 1000});
-            this.sendList.splice(this.sendList.findIndex(item => item.value === this.nftForm.id), 1);
-            this.nftForm.id = this.sendList.length !== 0 ? this.sendList[0].value : ''
+        const response = await validateAndBroadcast(txHex)
+        if (response.success) {
+          this.$message({message: this.$t('tips.tips0'), type: 'success', duration: 1000});
+          this.sendList.splice(this.sendList.findIndex(item => item.value === this.nftForm.id), 1);
+          this.nftForm.id = this.sendList.length !== 0 ? this.sendList[0].value : ''
+        } else {
+          if (response.data.code === 'err_0014') {
+            this.$message({message: response.data.message, type: 'error', duration: 2000});
           } else {
-            if (response.data.code === 'err_0014') {
-              this.$message({message: response.data.message, type: 'error', duration: 3000});
-            } else {
-              this.$message({
-                message: this.$t('tips.err') + JSON.stringify(response.data),
-                type: 'error',
-                duration: 3000
-              });
-            }
+            this.$message({
+              message: this.$t('tips.tips00') + JSON.stringify(response.data),
+              type: 'error',
+              duration: 2000
+            });
           }
-        }).catch((err) => {
-          this.$message({message: this.$t('public.err0') + err, type: 'error', duration: 3000});
-        });
+        }
       },
 
       /**

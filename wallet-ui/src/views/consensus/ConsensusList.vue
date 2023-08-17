@@ -45,14 +45,13 @@
 
 <script>
   import moment from 'moment'
-  import {timesDecimals, getLocalTime, addressInfo} from '@/api/util'
+  import {timesDecimals, getLocalTime} from '@/api/util'
   import BackBar from '@/components/BackBar'
 
   export default {
     data() {
       return {
         consensusData: [],//委托列表
-        addressInfo: {},//账户信息
         agentAsset: JSON.parse(sessionStorage.getItem('info')),//pocm合约单位等信息
         consensusDataLoading: true,//委托类别加载动画
         pageIndex: 1, //页码
@@ -60,11 +59,12 @@
         pageTotal: 0,//总页数
       };
     },
+    computed: {
+      addressInfo() {
+        return this.$store.getters.currentAccount
+      }
+    },
     created() {
-      this.addressInfo = addressInfo(1);
-      setInterval(() => {
-        this.addressInfo = addressInfo(1);
-      }, 500);
       setTimeout(() => {
         this.getNodeDepositByHash(this.pageIndex, this.pageSize, this.addressInfo.address)
       },600);

@@ -67,8 +67,9 @@
         <el-button @click="submitForm('deployForm')">{{$t('deploy.deploy6')}}</el-button>
       </el-form-item>
     </el-form>
-    <Password ref="password" @passwordSubmit="passSubmit">
-    </Password>
+    <Password ref="password" @passwordSubmit="passSubmit" />
+    <LedgerConfirm :visible="ledgerVisible" @closed="ledgerVisible=false" />
+    
   </div>
 </template>
 
@@ -81,13 +82,11 @@
     countFee,
     inputsOrOutputs,
     getContractConstructor,
-    validateTx,
-    broadcastTx,
-    getPrefixByChainId,
-    commitData
+    validateAndBroadcast
   } from '@/api/requestData'
   import Password from '@/components/PasswordBar'
-  import {getArgs, chainID, getRamNumber} from '@/api/util'
+  import LedgerConfirm from '@/components/LedgerConfirm'
+  import {getArgs, chainID} from '@/api/util'
 
   export default {
     name: "deploy",
@@ -135,7 +134,6 @@
         isTestSubmit: false,//测试合约
         fileName: '',//jar文件名
         deployLoading: false,//获取参数加载动画
-        prefix: '',//地址前缀
         txHexRandom: '',
         signDataKeyRandom: ''
       };
@@ -145,15 +143,9 @@
     },
     components: {
       Password,
+      LedgerConfirm
     },
     created() {
-      getPrefixByChainId(chainID()).then((response) => {
-        //console.log(response);
-        this.prefix = response
-      }).catch((err) => {
-        console.log(err);
-        this.prefix = '';
-      });
       this.createAddress = this.addressInfo.address;
     },
     mounted() {
@@ -390,24 +382,8 @@
         this.$refs[formName].validate(async (valid) => {
           if (valid) {
             this.isTestSubmit = false;
-            if (this.addressInfo.aesPri === '') {
-              this.txHexRandom = await getRamNumber(16);
-              this.signDataKeyRandom = await getRamNumber(16);
-              let assembleHex = await this.getAssemble();
-              if (!assembleHex.success) {
-                this.$message({message: this.$t('tips.tips3'), type: 'error', duration: 3000});
-                return;
-              }
-              let commitDatas = await commitData(this.txHexRandom, this.signDataKeyRandom, this.addressInfo.address, assembleHex.data);
-              if (!commitDatas.success) {
-                this.$message({
-                  message: this.$t('tips.tips4') + JSON.stringify(commitDatas.data),
-                  type: 'error',
-                  duration: 3000
-                });
-                return;
-              }
-              this.$refs.password.showScan(commitDatas.data.txInfo, commitDatas.data.assembleHex);
+            if (this.addressInfo.isNULSLedger) {
+              this.handleSign()
             } else {
               this.$refs.password.showPassword(true)
             }
@@ -416,85 +392,18 @@
           }
         });
       },
-
-      /**
-       *  获取密码框的密码
-       * @param password
-       **/
-      async passSubmit(password) {
-        const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password);
-        const newAddressInfo = nuls.importByKey(this.addressInfo.chainId, pri, password, this.prefix);
-        let amount = this.contractCreateTxData.gasLimit * this.contractCreateTxData.price;
-        //console.log(this.contractCreateTxData);
-        if (newAddressInfo.address === this.addressInfo.address) {
-          let transferInfo = {
-            fromAddress: this.addressInfo.address,
-            assetsChainId: chainID(),
-            assetsId: 1,
-            amount: amount,
-            fee: 100000
-          };
-          let pub = this.addressInfo.pub;
-          let remark = this.deployForm.addtion;
-          //console.log(transferInfo);
-          //console.log(this.balanceInfo);
-          let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 15);
-          if (!inOrOutputs.success) {
-            this.$message({message: inOrOutputs.data, type: 'error', duration: 1000});
-          }
-          //console.log(inOrOutputs);
-          let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 15, this.contractCreateTxData);
-          //console.log(tAssemble);
-          let txhex = '';
-          //获取手续费
-          let newFee = countFee(tAssemble, 1);
-          //手续费大于0.001的时候重新组装交易及签名
-          if (transferInfo.fee !== newFee) {
-            transferInfo.fee = newFee;
-            inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 15);
-            tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 15, this.contractCreateTxData);
-            txhex = await nuls.transactionSerialize(pri, pub, tAssemble);
-          } else {
-            txhex = await nuls.transactionSerialize(pri, pub, tAssemble);
-          }
-          //console.log(txhex);
-          await validateTx(txhex).then((response) => {
-            //console.log(response);
-            if (response.success) {
-              broadcastTx(txhex).then((response) => {
-                //console.log(response);
-                if (response.success) {
-                  this.$router.push({
-                    name: "txList"
-                  })
-                } else {
-                  this.$message({
-                    message: this.$t('public.err') + JSON.stringify(response.data),
-                    type: 'error',
-                    duration: 2000
-                  });
-                }
-              }).catch((err) => {
-                this.$message({message: this.$t('public.err0') + JSON.stringify(err), type: 'error', duration: 2000});
-              });
-            } else {
-              this.$message({
-                message: this.$t('public.err') + JSON.stringify(response.data),
-                type: 'error',
-                duration: 2000
-              });
-            }
-          }).catch((err) => {
-            this.$message({message: this.$t('public.err0') + JSON.stringify(err), type: 'error', duration: 2000});
-          });
-        } else {
-          this.$message({message: this.$t('address.address13'), type: 'error', duration: 2000});
+      async handleSign() {
+        try {
+          const tAssemble = await this.getAssemble()
+          const unSignedHex = tAssemble.txSerialize().toString('hex')
+          this.signByLedger(unSignedHex, this.addressInfo.pathIndex, this.handleMessage)
+        } catch (e) {
+          this.$message({message: e.message || e, type: 'error', duration: 1000});
         }
       },
-
       async getAssemble() {
-        let amount = this.contractCreateTxData.gasLimit * this.contractCreateTxData.price;
-        let transferInfo = {
+        const amount = this.contractCreateTxData.gasLimit * this.contractCreateTxData.price;
+        const transferInfo = {
           fromAddress: this.addressInfo.address,
           assetsChainId: chainID(),
           assetsId: 1,
@@ -503,10 +412,6 @@
         };
         let remark = this.deployForm.addtion;
         let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 15);
-        if (!inOrOutputs.success) {
-          this.$message({message: inOrOutputs.data, type: 'error', duration: 3000});
-          return {success: false}
-        }
         let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 15, this.contractCreateTxData);
         //获取手续费
         let newFee = countFee(tAssemble, 1);
@@ -516,7 +421,43 @@
           inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 15);
           tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 15, this.contractCreateTxData);
         }
-        return {success: true, data: tAssemble}
+        return tAssemble
+      },
+      handleMessage(data) {
+        if (data.success) {
+          this.broadcastTx(data.result)
+        }
+      },
+
+      /**
+       *  获取密码框的密码
+       * @param password
+       **/
+      async passSubmit(password) {
+        const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password);
+        const newAddressInfo = nuls.importByKey(this.addressInfo.chainId, pri, password, this.$store.state.prefix);
+        //console.log(this.contractCreateTxData);
+        if (newAddressInfo.address === this.addressInfo.address) {
+          const tAssemble = await this.getAssemble()
+          const txHex = await nuls.transactionSerialize(pri, this.addressInfo.pub, tAssemble);
+          this.broadcastTx(txHex)
+        } else {
+          this.$message({message: this.$t('address.address13'), type: 'error', duration: 2000});
+        }
+      },
+      async broadcastTx(txHex) {
+        const response = await validateAndBroadcast(txHex)
+        if (response.success) {
+          this.$router.push({
+            name: "txList"
+          })
+        } else {
+          this.$message({
+            message: this.$t('tips.tips00') + JSON.stringify(response.data),
+            type: 'error',
+            duration: 2000
+          });
+        }
       },
 
       /**

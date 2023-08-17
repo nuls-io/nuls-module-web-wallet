@@ -108,7 +108,8 @@
       </el-tabs>
 
     </div>
-    <Password ref="password" @passwordSubmit="passSubmit"></Password>
+    <Password ref="password" @passwordSubmit="passSubmit" />
+    <LedgerConfirm :visible="ledgerVisible" @closed="ledgerVisible=false" />
   </div>
 
 </template>
@@ -119,15 +120,16 @@
   import BackBar from '@/components/BackBar'
   import SelectBar from '@/components/SelectBar';
   import Call from './Call'
-  import {timesDecimals, getLocalTime, superLong, addressInfo, connectToExplorer} from '@/api/util'
+  import {timesDecimals, getLocalTime, superLong, connectToExplorer} from '@/api/util'
   import {getNulsBalance, inputsOrOutputs, validateAndBroadcast} from '@/api/requestData'
   import Password from '@/components/PasswordBar'
+  import LedgerConfirm from '@/components/LedgerConfirm'
+  import ledgerMixin from '@/mixins/ledgerMixin'
 
   export default {
     data() {
       return {
         activeName: this.$route.query.activeName ? this.$route.query.activeName : 'first',
-        addressInfo: {},//账户信息
         contractAddress: this.$route.query.contractAddress,//合约地址
         contractInfo: {},//合约详情
         isCancel: false,
@@ -150,12 +152,11 @@
 
       };
     },
-    created() {
-      this.addressInfo = addressInfo(1);
-      setInterval(() => {
-        this.addressInfo = addressInfo(1);
-      }, 500);
-
+    mixins: [ledgerMixin],
+    computed: {
+      addressInfo() {
+        return this.$store.getters.currentAccount
+      }
     },
     mounted() {
       setTimeout(() => {
@@ -174,7 +175,8 @@
       BackBar,
       SelectBar,
       Call,
-      Password
+      Password,
+      LedgerConfirm
     },
     watch: {
       addressInfo(val, old) {
@@ -311,7 +313,57 @@
        * 注销合约
        **/
       cancelContract() {
-        this.$refs.password.showPassword(true)
+        if (this.addressInfo.isNULSLedger) {
+          this.handleSign()
+        } else {
+          this.$refs.password.showPassword(true);
+        }
+      },
+      async handleSign() {
+        try {
+          const tAssemble = await this.getAssemble()
+          if (tAssemble) {
+            const unSignedHex = tAssemble.txSerialize().toString('hex')
+            this.signByLedger(unSignedHex, this.addressInfo.pathIndex, this.handleMessage)
+          }
+        } catch (e) {
+          this.$message({message: e.message || e, type: 'error', duration: 1000});
+        }
+      },
+
+      async getAssemble() {
+        const amount = 0;
+        const transferInfo = {
+          fromAddress: this.addressInfo.address,
+          assetsChainId: this.addressInfo.chainId,
+          assetsId: 1,
+          amount: amount,
+          fee: 100000
+        };
+        const contractDelete = {
+          chainId: this.addressInfo.chainId,
+          sender: this.addressInfo.address,
+          contractAddress: this.contractAddress
+        };
+        const deleteValidateResult = await this.validateContractDelete(contractDelete.sender, contractDelete.contractAddress);
+        if (!deleteValidateResult.success) {
+          this.$message({
+            message: this.$t('contractInfo.contractInfo13') + deleteValidateResult.msg,
+            type: 'error',
+            duration: 3000
+          });
+          return null;
+        }
+        const remark = '';
+        const inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 17);
+        const tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 17, contractDelete);
+        return tAssemble
+      },
+
+       handleMessage(data) {
+        if (data.success) {
+          this.broadcastTx(data.result)
+        }
       },
 
       /**
@@ -323,47 +375,22 @@
         let pub = this.addressInfo.pub;
         const newAddressInfo = nuls.importByKey(this.addressInfo.chainId, pri, password);
         if (newAddressInfo.address === this.addressInfo.address) {
-          let amount = 0;
-          let transferInfo = {
-            fromAddress: this.addressInfo.address,
-            assetsChainId: this.addressInfo.chainId,
-            assetsId: 1,
-            amount: amount,
-            fee: 100000
-          };
-          let contractDelete = {
-            chainId: this.addressInfo.chainId,
-            sender: this.addressInfo.address,
-            contractAddress: this.contractAddress
-          };
-          let deleteValidateResult = await this.validateContractDelete(contractDelete.sender, contractDelete.contractAddress);
-          if (!deleteValidateResult.success) {
-            this.$message({
-              message: this.$t('contractInfo.contractInfo13') + deleteValidateResult.msg,
-              type: 'error',
-              duration: 3000
-            });
-            return;
-          }
-          let remark = '';
-          let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 17);
-          let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 17, contractDelete);
-          let txhex = await nuls.transactionSerialize(pri, pub, tAssemble);
-          //console.log(txhex);
-          //验证并广播交易
-          await validateAndBroadcast(txhex).then((response) => {
-            if (response.success) {
-              this.$router.push({
-                name: "txList"
-              })
-            } else {
-              this.$message({message: this.$t('error.' + response.data.code), type: 'error', duration: 3000});
-            }
-          }).catch((err) => {
-            this.$message({message: this.$t('public.err1') + err, type: 'error', duration: 1000});
-          });
+          const tAssemble = await this.getAssemble()
+          const txHex = await nuls.transactionSerialize(pri, pub, tAssemble);
+          this.broadcastTx(txHex)
         } else {
           this.$message({message: this.$t('address.address13'), type: 'error', duration: 1000});
+        }
+      },
+
+      async broadcastTx(txHex) {
+        const response = await validateAndBroadcast(txHex)
+        if (response.success) {
+          this.$router.push({
+            name: "txList"
+          })
+        } else {
+          this.$message({message: this.$t('error.' + response.data.code), type: 'error', duration: 3000});
         }
       },
 
