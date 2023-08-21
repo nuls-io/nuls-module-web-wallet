@@ -53,7 +53,8 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
-    }
+    },
+    // icon: 
   });
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
@@ -72,14 +73,17 @@ function createWindow() {
 }
 
 async function getProvider() {
-  const transport = await TransportNodeHid.open()
+  const deviceList = await TransportNodeHid.list()
+  const path = deviceList && deviceList[0]
+  // console.log(path, '33333')
+  const transport = await TransportNodeHid.open(path)
   console.log('transport: ', transport)
   const provider = new Nuls(transport)
   return provider
 }
 
 const getPath = (index) => {
-  console.log(`44'/60'/${index || 0}'/0/0`, "==path==");
+  // console.log(`44'/60'/${index || 0}'/0/0`, "==path==");
   return `44'/60'/${index || 0}'/0/0`;
 };
 

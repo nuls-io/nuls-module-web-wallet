@@ -50,7 +50,7 @@
           <el-input type="textarea" :rows="2" v-model="transferForm.remarks" maxlength="200" show-word-limit>
           </el-input>
         </el-form-item>
-        <div class="font14 mb_20">
+        <div class="font14 mb_20 fee-wrap">
           <el-tooltip placement="top">
             <div slot="content">{{$t('transfer.transfer5')}}</div>
             <i class="el-icon-warning"></i>
@@ -1433,6 +1433,7 @@
         }
         .balance {
           margin: 5px 0 0 0;
+          color: @labelColor;
         }
         .all {
           margin: -45px -26px 0 0;
@@ -1458,6 +1459,9 @@
         .senior_list {
         }
       }
+    }
+    .fee-wrap {
+      color: @labelColor;
     }
 
     .confirm-dialog {

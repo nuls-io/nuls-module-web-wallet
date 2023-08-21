@@ -25,6 +25,12 @@
     }
   }
 }
+.el-menu--horizontal>.el-menu-item {
+  color: @Fcolour;
+}
+.el-submenu__title i {
+  color: @Fcolour;
+}
 
 .el-tabs {
   .el-tabs__header {
@@ -141,6 +147,7 @@
     margin: 0 0 15px 0;
     .el-form-item__label {
       line-height: 24px;
+      color: @labelColor;
     }
     .el-form-item__content {
       .el-form-item__error {
@@ -192,6 +199,16 @@
     width: 400px;
     margin: 0 auto !important;
   }
+}
+.el-button--success {
+  background-color: @Ncolour;
+  border-color: @Ncolour;
+}
+.el-button--success:focus, .el-button--success:hover {
+  background: @Ncolour;
+  border-color: @Ncolour;
+  color: #FFF;
+  opacity: 0.9;
 }
 
 .el-dialog {

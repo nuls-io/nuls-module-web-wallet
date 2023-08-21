@@ -168,6 +168,7 @@ export default {
 </script>
 
 <style lang="less">
+@import "../../assets/css/style.less";
 .connect-ledger {
   * {
     color: #606266;
@@ -222,7 +223,7 @@ export default {
       margin-bottom: 30px;
       span {
         margin: 0 5px;
-        color: #7db46d;
+        color: @Ncolour;
       }
       .disabled {
         cursor: not-allowed;
@@ -232,14 +233,14 @@ export default {
     }
     .el-checkbox {
       .el-checkbox__input.is-checked .el-checkbox__inner, .el-checkbox__input.is-indeterminate .el-checkbox__inner {
-        border-color: #7db46d;
-        background-color: #7db46d;
+        border-color: @Ncolour;
+        background-color: @Ncolour;
       }
       .el-checkbox__input.is-focus .el-checkbox__inner {
-        border-color: #7db46d;
+        border-color: @Ncolour;
       }
       .el-checkbox__inner:hover {
-        border-color: #7db46d;
+        border-color: @Ncolour;
       }
       
     }

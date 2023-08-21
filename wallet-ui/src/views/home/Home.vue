@@ -146,37 +146,11 @@
       </el-tabs>
     </div>
 
-    <el-dialog title="" :visible.sync="qrcodeDialog" width="22.5rem" center class="token-diolog">
-      <el-tabs v-model="activeName" @tab-click="payeeHandleClick">
-        <el-tab-pane :label="$t('tips.tips12')" name="payeeInfo">
-          <el-form :model="payeeForm" class="payee_form">
-            <el-form-item label="">
-              <el-input v-model="payeeForm.amount" autocomplete="off" :placeholder="$t('tips.tips13')">
-              </el-input>
-            </el-form-item>
-            <el-form-item label="">
-              <el-select v-model="payeeForm.currency" :placeholder="$t('tips.tips14')">
-                <el-option label="NULS" value="NULS">
-                </el-option>
-              </el-select>
-            </el-form-item>
-            <div class="tc ">
-              <el-button @click="payeeNext(0)">{{$t('tips.tips15')}}</el-button>
-              <el-button type="success" @click="payeeNext(1)">{{$t('public.next')}}</el-button>
-            </div>
-          </el-form>
-        </el-tab-pane>
-        <el-tab-pane :label="$t('tips.tips16')" name="payeeScan">
-          <div id="qrcode" class="qrcode"></div>
-          <div class="font12 tc" style="margin: 20px 0 0 0">
-            {{$t('tips.tips18')}}
-            <font class="click td" @click="toUrl('nuls','http://nabox.io/',1)">Nabox</font>
-            /
-            <font class="click td" @click="toUrl('nuls','https://www.denglu1.cn/',1)">{{$t('tips.tips11')}}</font>
-            {{$t('tips.tips21')}}
-          </div>
-        </el-tab-pane>
-      </el-tabs>
+    <el-dialog :title="$t('tab.tab27')" :visible.sync="qrcodeDialog" width="23.5rem" center class="token-diolog">
+      <div class="code-wrap">
+        <div id="qrcode" class="qrcode"></div>
+        <div class="address">{{addressInfo.address}}</div>
+      </div>
     </el-dialog>
 
     <el-dialog :title="$t('home.home9')" class="token-diolog" width="37rem"
@@ -250,7 +224,6 @@
         crossLinkData: [],//跨链资产
         crossLinkDataLoading: true, //资产加载动画
         qrcodeDialog: false,//二维码弹框
-        activeName: 'payeeInfo', //tab
         payeeForm: {
           amount: 100,
           currency: 'NULS',
@@ -336,25 +309,13 @@
        * @author: Wave
        */
       showCode() {
-        this.activeName = 'payeeInfo';
         this.qrcodeDialog = true;
         if (document.getElementById('qrcode')) {
-          document.getElementById('qrcode').innerHTML = '';
+          document.getElementById('qrcode').innerHTML = ''
         }
-      },
-
-      /**
-       * @disc:
-       * @params:
-       * @date: 2019-12-11 13:44
-       * @author: Wave
-       */
-      payeeNext() {
-        if (document.getElementById('qrcode')) {
-          document.getElementById('qrcode').innerHTML = '';
-        }
-        this.activeName = 'payeeScan';
-        this.qrcode(this.addressInfo.address);
+        this.$nextTick(() => {
+          this.qrcode(this.addressInfo.address);
+        })
       },
 
       /**
@@ -365,21 +326,13 @@
        */
       qrcode(address) {
         let qrcode = new QRCode('qrcode', {
-          width: 250,
-          height: 250,
+          width: 200,
+          height: 200,
           colorDark: "#000000",
           colorLight: "#ffffff",
         });
 
-        let qrcodeInfo = {
-          "address": address,
-          "chainId": 1,
-          "assetId": 1,
-          "contractAddress": "",
-          "amount": this.payeeForm.amount,
-          "payer": ""
-        };
-        qrcode.makeCode(JSON.stringify(qrcodeInfo))
+        qrcode.makeCode(address)
       },
 
       /**
@@ -742,7 +695,7 @@
         text-align: left;
         background-color: #f9fafd;
         line-height: 40px;
-        color: #475472;
+        // color: #9C9CBA;
         height: 40px;
         font-size: 16px;
         padding: 0 20px;
@@ -765,19 +718,19 @@
       p {
         font-size: 16px;
         font-weight: 600;
-        color: #8794b1;
+        color: #9C9CBA;
         padding: 20px 30px 5px;
       }
       h6 {
         font-weight: 600;
         font-size: 24px;
-        color: #475472;
+        // color: #475472;
         padding: 0 30px;
         font {
           padding: 0 20px 0 0;
           font-weight: 600;
           font-size: 24px;
-          color: #475472;
+          // color: #475472;
         }
       }
       .total {
@@ -843,15 +796,15 @@
       }
     }
     .el-tabs .el-tabs__header .el-tabs__nav-wrap .is-active {
-      color: #6ab71a;
+      color: @Ncolour;
       span {
-        color: #6ab71a;
+        color: @Ncolour;
       }
     }
     .tabs {
       .el-tabs .el-tabs__header .el-tabs__nav-wrap .el-tabs__active-bar {
         height: 2px;
-        background-color: #6ab71a;
+        background-color: @Ncolour;
       }
       .el-tabs {
         .el-tabs__header {
@@ -882,7 +835,7 @@
           }
         }
         .el-tabs__active-bar {
-          background-color: #6ab71a;
+          background-color: @Ncolour;
         }
 
       }
@@ -990,6 +943,17 @@
         }
       }
       .el-dialog__footer {
+      }
+    }
+    .code-wrap {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      .address {
+        margin-top: 20px;
+        margin-bottom: 20px;
+        text-align: center;
       }
     }
   }

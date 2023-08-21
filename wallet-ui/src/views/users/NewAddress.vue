@@ -363,12 +363,12 @@
               margin: 10px 20px 20px;
               border-radius: 4px;
               &:hover {
-                background: linear-gradient(to right, #67C23A, #67C23A);
+                background: linear-gradient(to right, #00DB82, #00DB82);
                 color: #FFFFFF;
               }
             }
             .is-active {
-              background: linear-gradient(to right, #67C23A, #67C23A);
+              background: linear-gradient(to right, #00DB82, #00DB82);
               color: #FFFFFF;
             }
           }
