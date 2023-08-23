@@ -47,11 +47,12 @@
                   element-loading-spinner="el-icon-loading">
           <el-table-column :label="$t('tab.tab0')" align="center" width="200">
             <template slot-scope="scope">
-              <div style="margin: 0 0 0 30%">
-                <img src="../../assets/img/nvt-logo.svg" class="fl" style="width: 25px;margin: 3px 2px 0 0"
-                     v-show="scope.row.symbol ==='NVT'"/>
-                <img src="../../assets/img/eth-logo.png" class="fl" style="width: 25px;margin: 3px 2px 0 0"
-                     v-show="scope.row.symbol ==='ETH'"/>
+              <div class="cross-item-wrap">
+                <img src="../../assets/img/nvt-logo.svg" class="fl cross-icon"
+                     v-if="scope.row.symbol ==='NVT'"/>
+                <img src="../../assets/img/eth-logo.png" class="fl cross-icon"
+                     v-else-if="scope.row.symbol ==='ETH'"/>
+                <span v-else class="fl cross-icon"></span>
                 <span class="fl">{{scope.row.symbol}}</span>
               </div>
             </template>
@@ -718,7 +719,7 @@
       p {
         font-size: 16px;
         font-weight: 600;
-        color: #9C9CBA;
+        color: @labelColor;
         padding: 20px 30px 5px;
       }
       h6 {
@@ -955,6 +956,17 @@
         margin-bottom: 20px;
         text-align: center;
       }
+    }
+    .cross-item-wrap {
+      margin-left: 30%;
+      display: flex;
+      align-items: center;
+    }
+    .cross-icon {
+      width: 25px;
+      display: inline-block;
+      margin-right: 5px;
+      // margin: 3px 2px 0 0 ;
     }
   }
 </style>

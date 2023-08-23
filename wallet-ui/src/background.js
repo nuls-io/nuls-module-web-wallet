@@ -64,6 +64,8 @@ function createWindow() {
     win.loadURL('app://./index.html')
   }
 
+  
+
   win.on('closed', () => {
     win = null
   });

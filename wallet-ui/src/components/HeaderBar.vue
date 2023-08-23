@@ -5,7 +5,7 @@
         <img class="click" @click="toUrl('home')" :src=logoSvg>
       </div>
       <div class="nav">
-        <el-menu mode="horizontal" :default-active="navActives($route.path)" @select="handleSelect">
+        <el-menu mode="horizontal" :default-active="leftActiveMenu" @select="handleSelect">
           <el-menu-item index="home">{{$t('nav.wallet')}}</el-menu-item>
           <el-menu-item index="transfer" :disabled="addressList.length === 0">{{$t('nav.transfer')}}
           </el-menu-item>
@@ -18,7 +18,7 @@
         </el-menu>
       </div>
       <div class="tool">
-        <el-menu mode="horizontal" :default-active="navActive" @select="handleSelect">
+        <el-menu mode="horizontal" :default-active="rightActiveMenu" @select="handleSelect">
           <el-submenu index="address" class="user" :disabled="addressList.length === 0">
             <template slot="title"><i class="iconfont iconzhanghu"></i></template>
             <el-menu-item v-for="item of addressList" :key="item.address" :index="item.address">
@@ -27,32 +27,37 @@
                 <font v-if="item.alias" class="w100"> {{item.alias}}</font>
                 <font v-else-if="item.remark" class="w100"> {{item.remark}}</font>
                 <font v-else class="w100">{{superLong(item.address)}}</font> |
-                <span>{{item.balance}}</span>
+                <span>{{item.balance}}--{{item.selection.toString()}}</span>
               </span>
             </el-menu-item>
           </el-submenu>
+        </el-menu>
+        <el-menu mode="horizontal" :default-active="rightActiveMenu" @select="handleSelect">
           <el-submenu index="set">
             <template slot="title">{{$t('nav.set')}}</template>
             <el-menu-item index="address">{{$t('nav.addressList')}}</el-menu-item>
             <el-menu-item index="nodeService">{{$t('nav.nodeList')}}</el-menu-item>
             <el-menu-item index="contact">{{$t('public.bookList')}}</el-menu-item>
-            <el-menu-item index="seting">{{$t('public.about')}}</el-menu-item>
+            <el-menu-item index="setting">{{$t('public.about')}}</el-menu-item>
           </el-submenu>
+        </el-menu>
 
-          <el-menu-item index="lang">
-            <span>{{this.lang ==="en" ? "CN":"EN"}}</span>
-          </el-menu-item>
+        <div class="lang-wrap" @click="selectLanguage">
+          <span>{{this.lang ==="en" ? "CN":"EN"}}</span>
+        </div>
 
-          <!-- <el-submenu index="lang">
-             <template slot="title">{{this.lang ==="en" ? "Eng":"中文"}}</template>
-             <el-menu-item index="cn">中文</el-menu-item>
-             <el-menu-item index="en">English</el-menu-item>
-           </el-submenu>-->
-          <el-submenu index="more">
+        <el-menu mode="horizontal" @select="handleSelect" >
+          <el-submenu index="more" class="more-nav">
             <template slot="title"><i class="el-icon-more"></i></template>
-            <el-menu-item index="official">{{$t('tab.tab21')}}</el-menu-item>
-            <el-menu-item index="explorer">{{$t('tab.tab22')}}</el-menu-item>
-            <el-menu-item index="docs">{{$t('tab.tab23')}}</el-menu-item>
+            <el-menu-item index="official">
+              <span class="url-link">{{$t('tab.tab21')}}</span>
+            </el-menu-item>
+            <el-menu-item index="explorer">
+              <span class="url-link">{{$t('tab.tab22')}}</span>
+            </el-menu-item>
+            <el-menu-item index="docs">
+              <span class="url-link">{{$t('tab.tab23')}}</span>
+            </el-menu-item>
           </el-submenu>
         </el-menu>
 
@@ -74,7 +79,7 @@
       return {
         logoSvg: logo, //logo
         navActive: '/',//菜单选中
-        lang: 'cn', //语言选择
+        lang: this.$i18n.locale, //语言选择
         nodeServiceInfo: {}
       };
     },
@@ -82,23 +87,35 @@
     computed: {
       addressList() {
         return this.$store.state.accountList
+      },
+      leftActiveMenu() {
+        const path = this.$route.path
+         if (path === '/transfer') {
+          return 'transfer'
+        } else if (path ==='/consensus') {
+          return 'consensus'
+        } else if (path === '/contract') {
+          return 'contract'
+        } else if (path === '/' || path === '/wallet'){
+          return 'home'
+        } else {
+          return ''
+        }
+      },
+      rightActiveMenu() {
+        const path = this.$route.path
+         if (path === '/address') {
+          return 'address'
+        } else if (path === '/nodeService') {
+          return 'nodeService'
+        } else if (path === '/contract') {
+          return 'contact'
+        } else if (path === '/setting'){
+          return 'setting'
+        } else {
+          return ''
+        }
       }
-    },
-    created() {
-      let type = navigator.appName;
-      let langs = '';
-      if (type === "Netscape") {
-        langs = navigator.language;//获取浏览器配置语言，支持非IE浏览器
-      } else {
-        langs = navigator.userLanguage;//获取浏览器配置语言，支持IE5+ == navigator.systemLanguage
-      }
-      let lang = langs.substr(0, 2);//获取浏览器配置语言前两位
-      if (lang === "zh") {
-        this.lang = 'cn';
-      } else {
-        this.lang = 'en';
-      }
-      this.$i18n.locale = this.lang;
     },
     mounted() {
       setInterval(() => {
@@ -169,6 +186,7 @@
        * @param val
        **/
       navActives(val) {
+        console.log(val, '333')
         if (val.indexOf('/transfer') === 0) {
           return 'transfer'
         } else if (val.indexOf('/consensus') === 0) {
@@ -190,6 +208,7 @@
           this.lang = 'cn';
         }
         this.$i18n.locale = this.lang;
+        storage.set('language', this.lang)
       },
 
       /**
@@ -232,16 +251,25 @@
       }
     }
     .tool {
+      display: flex;
+      align-items: center;
       width: 270px;
       margin: 10px 0 0 0;
       float: right;
-      background-color: #e6a23c;
+      // background-color: #e6a23c;
       .user {
         .el-submenu__title {
           .el-icon-arrow-down {
             margin: 35px 0 0 -16px;
 
           }
+        }
+      }
+      .lang-wrap {
+        margin: 0 15px;
+        cursor: pointer;
+        &:hover {
+          color: @Ncolour;
         }
       }
     }
@@ -262,4 +290,12 @@
       width: 200px;
     }
   }
+  
+    .el-menu .el-menu-item .url-link {
+      color: #000 !important;
+      &:hover {
+        color: @Ncolour !important;
+      }
+    }
+  
 </style>

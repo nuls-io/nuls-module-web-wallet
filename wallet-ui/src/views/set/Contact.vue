@@ -11,6 +11,9 @@
         <el-table-column prop="address" :label="$t('tab.tab11')" align="center" min-width="200">
         </el-table-column>
         <el-table-column prop="alias" :label="$t('address.address3')" align="center">
+          <template slot-scope="scope">
+            <span>{{scope.row.alias || '--'}}</span>
+          </template>
         </el-table-column>
         <el-table-column :label="$t('address.address5')" align="center" width="350">
           <template slot-scope="scope">
@@ -25,7 +28,7 @@
       </div>
     </div>
 
-    <el-dialog :title="$t('tab.tab15')" width="35rem" :visible.sync="contactDialog" class="contact-dialog"
+    <el-dialog :title="isAdd === 0 ? $t('tab.tab15') : $t('tab.tab33')" width="35rem" :visible.sync="contactDialog" class="contact-dialog"
                :close-on-click-modal="false"
                :close-on-press-escape="false"
                @closed="resetForm('contacForm')">
@@ -64,7 +67,12 @@
         }
       };
       let validateAddress = (rule, value, callback) => {
-        let verify =  nuls.verifyAddress(value);
+        let verify = { right: false }
+        try {
+          verify =  nuls.verifyAddress(value);
+        } catch(e) {
+          //
+        }
         if (!value) {
           return callback(new Error(this.$t('tab.tab17')));
         } else if (this.isAdd === 0 && this.isAddressExist(value)) {

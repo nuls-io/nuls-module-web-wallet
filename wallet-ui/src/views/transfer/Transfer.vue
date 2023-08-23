@@ -1433,7 +1433,7 @@
         }
         .balance {
           margin: 5px 0 0 0;
-          color: @labelColor;
+          color: @Fcolour;
         }
         .all {
           margin: -45px -26px 0 0;
@@ -1461,18 +1461,18 @@
       }
     }
     .fee-wrap {
-      color: @labelColor;
+      color: @Fcolour;
     }
 
     .confirm-dialog {
       .remark {
         label {
-          display: block;
-          width: 490px !important;
-          float: right;
-          height: 40px;
-          overflow-y: auto;
-          line-height: 20px;
+          // display: block;
+          // width: 490px !important;
+          // float: right;
+          // height: 40px;
+          // overflow-y: auto;
+          // line-height: 20px;
           font-size: 12px;
         }
       }

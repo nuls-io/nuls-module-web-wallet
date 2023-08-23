@@ -353,11 +353,8 @@
           color: #8794b1;
         }
         .el-form-item__content {
-          .el-select {
-            width: 100%;
-            .el-input__inner {
-              width: 100%;
-            }
+          .el-input__inner {
+            padding-right: 30px;
           }
         }
       }

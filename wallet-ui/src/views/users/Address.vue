@@ -35,7 +35,7 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('address.address5')" align="center" width="370">
+        <el-table-column :label="$t('address.address5')" align="center" width="350">
           <template slot-scope="scope">
             <el-link class="click tab_bn" v-if="scope.row.aesPri ===''" disabled>{{$t('address.address6')}}</el-link>
             <label class="click tab_bn" @click="editPassword(scope.row)" v-else>{{$t('address.address6')}}</label>
@@ -82,6 +82,7 @@
 
   export default {
     data() {
+      this.timer = null
       return {
         selectAddressInfo: '', //操作的地址信息
         remarkDialog: false,//备注弹框
@@ -107,9 +108,24 @@
         })
       } else {
         this.getAddressLists()
+        this.startTimer()
       }
     },
+    beforeDestroy() {
+      this.clearTimer()
+    },
     methods: {
+      startTimer() {
+        this.clearTimer()
+        this.timer = setInterval(() => {
+          this.getAddressLists()
+        }, 10000)
+      },
+      clearTimer() {
+        if (this.timer) {
+          clearInterval(this.timer)
+        }
+      },
 
       /**
        * 获取地址网络信息

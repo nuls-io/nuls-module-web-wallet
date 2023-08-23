@@ -129,8 +129,8 @@ export default new Router({
       component: resolve => require(['@/views/set/NodeService.vue'], resolve)
     },
     {
-      path: '/set',
-      name: 'seting',
+      path: '/setting',
+      name: 'setting',
       component: resolve => require(['@/views/set/Set.vue'], resolve)
     },
     {

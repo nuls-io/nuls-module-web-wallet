@@ -56,12 +56,12 @@
             <el-input v-model="nodeServiceForm.name">
             </el-input>
           </el-form-item>
-          <el-form-item :label="$t('nodeService.nodeService25')" prop="explorerUrl">
+          <!-- <el-form-item :label="$t('nodeService.nodeService25')" prop="explorerUrl">
             <el-input type="text" autocomplete="off" maxlength="50"
                       v-model="nodeServiceForm.explorerUrl"
                       placeholder="http://192.168.1.108:18003">
             </el-input>
-          </el-form-item>
+          </el-form-item> -->
           <el-form-item :label="$t('nodeService.nodeService3')" prop="apiUrl">
             <el-input type="text" autocomplete="off" maxlength="50"
                       v-model="nodeServiceForm.apiUrl"
@@ -96,6 +96,7 @@
 
 <script>
   import axios from 'axios'
+  import { defaultNodes } from '@/config/index'
 
   export default {
     data() {
@@ -136,13 +137,13 @@
         nodeServiceForm: {
           name: '',
           apiUrl: '',
-          explorerUrl: '',
+          // explorerUrl: '',
           resource: false
         },
         //表单验证
         nodeServiceRules: {
           name: [{validator: checkName, trigger: 'blur'}],
-          explorerUrl: [{validator: validateExplorer, trigger: 'blur'}],
+          // explorerUrl: [{validator: validateExplorer, trigger: 'blur'}],
           apiUrl: [{validator: validateUrls, trigger: 'blur'}]
         },
         testInfo: {
@@ -253,6 +254,11 @@
         let that = this;
         this.$refs[formName].validate((valid) => {
           if (valid) {
+            const exist = this.nodeServiceData.find(v => v.apiUrl === this.nodeServiceForm.apiUrl)
+            if (exist) {
+              this.$message({message: this.$t('nodeService.nodeService30'), type: 'error', duration: 1000});
+              return
+            }
             that.nodeServiceDialogLoading = true;
             const params = {
               jsonrpc: "2.0",
@@ -261,7 +267,7 @@
               "id": Math.floor(Math.random() * 1000)
             };
             axios.post(this.nodeServiceForm.apiUrl, params)
-              .then(function (response) {
+              .then((response) => {
                 //console.log(response.data);
                 const result = response.data.result
                 // 暂时只允许添加nuls 正式网/测试网api
@@ -271,14 +277,16 @@
                 } else {
                   that.testInfo.state = 200000;
                   that.testInfo.result = response.data;
+                  this.$message({message: this.$t('nodeService.nodeService29'), type: 'error', duration: 1000});
                 }
                 that.nodeServiceDialogLoading = false;
               })
-              .catch(function (error) {
+              .catch((error) => {
                 console.log(that.testInfo.success);
                 that.testInfo.state = 300000;
                 that.testInfo.result = error;
                 console.log("getBestBlockHeader:" + error);
+                this.$message({message: error.message || error.msg || error, type: 'error', duration: 1000});
                 that.nodeServiceDialogLoading = false;
               });
           } else {
@@ -295,7 +303,7 @@
         this.nodeServiceDialog = true;
         this.nodeServiceForm.name = '';
         this.nodeServiceForm.apiUrl = '';
-        this.nodeServiceForm.explorerUrl = '';
+        // this.nodeServiceForm.explorerUrl = '';
       },
 
       /**
@@ -305,14 +313,16 @@
       async submitForm(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
+            const { chainId, assetId, defaultAsset, chainName } = this.testInfo.result
+            const explorerUrl = defaultNodes.find(v => v.chainId === chainId).explorerUrl
             let newNodeInfo = {
               name: this.nodeServiceForm.name,
-              chainId: this.testInfo.result.chainId,
-              assetId: this.testInfo.result.assetId,
-              decimals: this.testInfo.result.defaultAsset.decimals,
-              chainName: this.testInfo.result.chainName,
+              chainId: chainId,
+              assetId: assetId,
+              decimals: defaultAsset.decimals,
+              chainName: chainName,
               apiUrl: this.nodeServiceForm.apiUrl,
-              explorerUrl: this.nodeServiceForm.explorerUrl,
+              explorerUrl,
               delay: '',
               isDelete: true
             };
@@ -371,7 +381,7 @@
        * @param index
        **/
       removeUrl(index) {
-        this.$confirm(this.$t('nodeService.nodeService19') + this.nodeServiceData[index].apiUrl + this.$t('nodeService.nodeService20'), this.$t('nodeService.nodeService21'), {
+        this.$confirm(this.$t('nodeService.nodeService19', { apiUrl: this.nodeServiceData[index].apiUrl }), this.$t('nodeService.nodeService21'), {
           confirmButtonText: this.$t('password.password3'),
           cancelButtonText: this.$t('password.password2'),
           type: 'warning'
@@ -411,7 +421,7 @@
           .btns {
             .el-form-item__content {
               .el-button {
-                width: 130px;
+                // width: 130px;
                 span {
                   color: @Bcolour;
                 }

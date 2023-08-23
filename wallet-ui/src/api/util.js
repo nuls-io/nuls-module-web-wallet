@@ -74,9 +74,12 @@ export function timesDecimals(nu, decimals) {
   if (decimals === 0) {
     return nu
   }
-  let fmt = {groupSeparator: ',',};
-  BigNumber.config({FORMAT: fmt});
-  return Number(Division(nu, Number(Power(newDecimals))))
+  // let fmt = {groupSeparator: ',',};
+  // BigNumber.config({FORMAT: fmt});
+  // return Division(nu, Power(newDecimals)).toString()
+  return new BigNumber(Division(nu, Power(newDecimals).toString()))
+    .toFormat()
+    .replace(/[,]/g, '');
 }
 
 /**

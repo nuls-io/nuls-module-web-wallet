@@ -9,6 +9,10 @@ import storage from './api/storage'
 /*import VueElectron from 'vue-electron'
 Vue.use(VueElectron);*/
 
+const lang = storage.get('language')
+i18n.locale = lang || 'en'
+console.log(lang, 322211)
+
 Vue.config.productionTip = false;
 //定义全局变量
 Vue.prototype.$post = post;
@@ -19,7 +23,7 @@ store.dispatch('initChain')
 // console.log(a,221)
 // storage.set('chainId2', a)
 
-console.log(1113111)
+console.log(123)
 // storage.remove('chainId2')
 
 new Vue({
