@@ -65,8 +65,9 @@ export function Division(nu, arg) {
   return newDiv.div(arg);
 }
 
+
 /**
- * 数字除以精度系数
+ * 数字乘以精度系数
  */
 export function timesDecimals(nu, decimals) {
   const currentChain = getCurrentChain()
@@ -74,12 +75,8 @@ export function timesDecimals(nu, decimals) {
   if (decimals === 0) {
     return nu
   }
-  // let fmt = {groupSeparator: ',',};
-  // BigNumber.config({FORMAT: fmt});
-  // return Division(nu, Power(newDecimals)).toString()
-  return new BigNumber(Division(nu, Power(newDecimals).toString()))
-    .toFormat()
-    .replace(/[,]/g, '');
+  const result = new BigNumber(Times(nu, Power(newDecimals))).toFormat().replace(/[,]/g, '');
+  return result;
 }
 
 /**
@@ -91,23 +88,25 @@ export function divisionDecimals(nu, decimals = '') {
   if (decimals === 0) {
     return nu
   }
-  let newNu = new BigNumber(Division(nu, Power(newDecimals)).toString());
-  return newNu.toFixed()
-  // console.log(newNu, nu,'===--===',decimals)
-  // return newNu.toFormat().replace(/[,]/g, '');
+  return new BigNumber(Division(nu, Power(newDecimals)))
+    .toFormat()
+    .replace(/[,]/g, '');
 }
 
-/**
- * 数字乘以精度系数
- */
-export function timesDecimals0(nu, decimals) {
-  const currentChain = getCurrentChain()
-  const newDecimals = decimals ? decimals : currentChain.decimals || 8;
-  if (decimals === 0) {
-    return nu
-  }
-  let newNu = new BigNumber(Times(nu, Power(newDecimals)));
-  return newNu;
+export function divisionAndFix(nu, decimals = 8, fix = 6) {
+  if (!nu) return '0';
+  const newFix = fix ? fix : Number(decimals);
+  const str = new BigNumber(Division(nu, Power(decimals))).toFixed(newFix);
+  return fixNumber(str, newFix);
+}
+
+export function fixNumber(str, fix = 8) {
+  str = '' + str;
+  const int = str.split('.')[0];
+  let float = str.split('.')[1];
+  if (!float || !Number(float)) return int;
+  float = float.slice(0, fix).replace(/(0+)$/g, '');
+  return Number(float) ? int + '.' + float : int;
 }
 
 /**
@@ -139,9 +138,6 @@ export async function passwordVerification(accountInfo, password, prefix) {
   if (!prefix) {
     prefix = await getPrefixByChainId(accountInfo.chainId)
   }
-  /* if (!prefix && sessionStorage.hasOwnProperty('info')) {
-    prefix = JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol
-  } */
   const newAddressInfo = nuls.importByKey(chainID(), pri, password, prefix);
   if (newAddressInfo.address === accountInfo.address || nuls.addressEquals(accountInfo.address, newAddressInfo.address)) {
     return {success: true, pri: pri, pub: accountInfo.pub, aesPri: accountInfo.aesPri, address: newAddressInfo.address};

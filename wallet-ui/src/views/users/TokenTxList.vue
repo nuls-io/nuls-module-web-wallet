@@ -77,7 +77,7 @@
 
 <script>
   import moment from 'moment'
-  import {timesDecimals, getLocalTime, superLong,connectToExplorer} from '@/api/util'
+  import {divisionDecimals, getLocalTime, superLong,connectToExplorer} from '@/api/util'
   import BackBar from '@/components/BackBar'
 
   export default {
@@ -180,8 +180,8 @@
                 item.txid = superLong(item.txHash, 10);
                 item.fromAddresss = superLong(item.fromAddress, 6);
                 item.toAddresss = superLong(item.toAddress, 6);
-                item.balance = timesDecimals(item.fromAddress === this.addressInfo.address ? item.fromBalance : item.toBalance, item.decimals);
-                item.amount = timesDecimals(item.value, item.decimals);
+                item.balance = divisionDecimals(item.fromAddress === this.addressInfo.address ? item.fromBalance : item.toBalance, item.decimals);
+                item.amount = divisionDecimals(item.value, item.decimals);
               }
               this.txListData = response.result.list;
               this.pageTotal = response.result.totalCount;

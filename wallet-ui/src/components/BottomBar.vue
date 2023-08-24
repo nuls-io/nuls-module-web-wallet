@@ -23,7 +23,7 @@
 <script>
   import nuls from 'nuls-sdk-js'
   import axios from 'axios'
-  import {addressInfo, timesDecimals} from '@/api/util'
+  import { divisionDecimals } from '@/api/util'
   import storage from '@/api/storage'
 
   export default {
@@ -107,11 +107,11 @@
               storage.set("info", response.data.result, 'session');
             } else {
               this.heightInfo = {localHeight: 0, networkHeight: 0};
-              storage.remove("info", 'session')
+              // storage.remove("info", 'session')
             }
           })
           .catch((error) => {
-            storage.remove("info", 'session');
+            // storage.remove("info", 'session');
             this.heightInfo = {localHeight: 0, networkHeight: 0};
             console.log("getInfo:" + error)
           })
@@ -134,12 +134,12 @@
                   if (item.address === address) {
                     item.alias = response.result.alias;
                     item.symbol = response.result.symbol;
-                    item.totalBalance = timesDecimals(response.result.totalBalance);
-                    item.balance = timesDecimals(response.result.balance);
-                    item.consensusLock = timesDecimals(response.result.consensusLock);
-                    item.totalReward = timesDecimals(response.result.totalReward);
+                    item.totalBalance = divisionDecimals(response.result.totalBalance);
+                    item.balance = divisionDecimals(response.result.balance);
+                    item.consensusLock = divisionDecimals(response.result.consensusLock);
+                    item.totalReward = divisionDecimals(response.result.totalReward);
                     if (response.result.lastReward) {
-                      item.lastReward = timesDecimals(response.result.lastReward);
+                      item.lastReward = divisionDecimals(response.result.lastReward);
                     } else {
                       item.lastReward = 0;
                     }

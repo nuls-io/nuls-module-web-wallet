@@ -23,7 +23,7 @@
         <p>{{$t('public.usableBalance')}}</p>
         <h6>
           <font>{{addressNULSAssets.balance}}</font>
-          <el-button type="success" @click="toUrl('transfer',addressNULSAssets.account)">{{$t('tab.tab31')}}
+          <el-button type="success" @click="toUrl('transfer', addressNULSAssets.account)">{{$t('tab.tab31')}}
           </el-button>
           <el-button @click="showCode">{{$t('tab.tab27')}}</el-button>
         </h6>
@@ -45,7 +45,8 @@
       <div class="home_tabs" style="padding: 0">
         <el-table :data="crossLinkData" stripe border v-loading="txListDataLoading"
                   element-loading-spinner="el-icon-loading">
-          <el-table-column :label="$t('tab.tab0')" align="center" width="200">
+          <el-table-column  width="50"></el-table-column>
+          <el-table-column :label="$t('tab.tab0')" width="200">
             <template slot-scope="scope">
               <div class="cross-item-wrap">
                 <img src="../../assets/img/nvt-logo.svg" class="fl cross-icon"
@@ -70,7 +71,7 @@
           </el-table-column>
           <el-table-column fixed="right" :label="$t('public.operation')" align="center" min-width="120">
             <template slot-scope="scope">
-              <label class="click tab_bn" @click="toUrl('transfer', {type: 1, tokenSymbol: scope.row})">
+              <label class="click tab_bn" @click="toUrl('transfer', scope.row)">
                 {{$t('nav.transfer')}}
               </label>
               <span class="tab_line">|</span>
@@ -92,7 +93,8 @@
             <div class="home_tabs" style="padding: 0">
               <el-table :data="addressAssetsData" stripe border v-loading="assetsListLoading"
                         element-loading-spinner="el-icon-loading">
-                <el-table-column :label="$t('nodeService.nodeService2')" align="center" width="200">
+                <el-table-column  width="50"></el-table-column>
+                <el-table-column :label="$t('nodeService.nodeService2')" width="200">
                   <template slot-scope="scope">
                   <span class="click td" @click="toUrl('contractsInfo',scope.row.contractAddress,1)">
                     {{ scope.row.symbol ? scope.row.symbol : scope.row.tokenSymbol }}
@@ -147,9 +149,12 @@
       </el-tabs>
     </div>
 
-    <el-dialog :title="$t('tab.tab27')" :visible.sync="qrcodeDialog" width="23.5rem" center class="token-diolog">
+    <el-dialog :title="$t('tab.tab27')" :visible.sync="qrcodeDialog" width="400px" center class="token-diolog">
       <div class="code-wrap">
-        <div id="qrcode" class="qrcode"></div>
+        <div class="qrcode-wrap">
+          <div id="qrcode" class="qrcode"></div>
+        </div>
+        
         <div class="address">{{addressInfo.address}}</div>
       </div>
     </el-dialog>
@@ -188,7 +193,7 @@
   import QRCode from 'qrcodejs2'
   
   import {
-    timesDecimals,
+    divisionAndFix,
     copys,
     Times,
     superLong,
@@ -280,6 +285,7 @@
             this.active1155 = ''
             this.reFresh = false;
             this.getList()
+            this.startInterval()
             this.$nextTick(() => {
               this.reFresh = true
             })
@@ -340,7 +346,7 @@
        * tab 切换
        * @param tab
        **/
-      handleClick(tab) {
+      handleClick() {
         //
       },
 
@@ -362,9 +368,9 @@
               assetInfo.account = info.symbol
               assetInfo.chainId = info.chainId
               assetInfo.assetId = info.assetId
-              assetInfo.balance = Number(timesDecimals(info.balance)).toFixed(3);
-              assetInfo.locking = Number(timesDecimals(Plus(info.consensusLock, info.timeLock))).toFixed(3);
-              assetInfo.total = Number(timesDecimals(info.totalBalance)).toFixed(3);
+              assetInfo.balance = divisionAndFix(info.balance, 8, 3)
+              assetInfo.locking = divisionAndFix(Plus(info.consensusLock, info.timeLock), 8, 3)
+              assetInfo.total = divisionAndFix(info.totalBalance, 8, 3)
             }
             // this.addressInfo.balance = newAssetsList.balance;
             this.addressNULSAssets = assetInfo;
@@ -634,15 +640,19 @@
        * @param type 0:本网站跳转，1：跳转浏览器
        */
       toUrl(name, parms, type = 0) {
+        console.log(parms, 33113)
         if (type === 1) {
           connectToExplorer(name, parms)
         } else {
-          let newParms = {accountType: parms};
+          // let newParms = {accountType: parms};
           if (name === 'transfer') {
-            let newQuery = {contractAddress: newParms.accountType.contractAddress};
+            const contractAddress = parms.contractAddress
+            const assetKey = parms.assetKey
+            const query = {contractAddress, assetKey};
+            console.log(query, '334114')
             this.$router.push({
-              name: name,
-              query: newQuery
+              name,
+              query
             })
           } else if (name === 'frozenList') {
             this.$router.push({
@@ -735,7 +745,7 @@
         }
       }
       .total {
-        width: 441px;
+        width: 421px;
         height: 90px;
         border-right: @BD1;
         margin: 14px auto;
@@ -746,11 +756,12 @@
         }
       }
       .balance {
-        width: 35%;
+        width: 38%;
         p {
           padding: 34px 0 0 70px;
         }
         h6 {
+          display: flex;
           padding: 4px 0 0 70px;
           font {
             display: block;
@@ -769,7 +780,7 @@
         }
       }
       .locking {
-        width: 28%;
+        width: 25%;
         p {
           padding: 34px 0 0 80px;
         }
@@ -806,12 +817,6 @@
       .el-tabs .el-tabs__header .el-tabs__nav-wrap .el-tabs__active-bar {
         height: 2px;
         background-color: @Ncolour;
-      }
-      .el-tabs {
-        .el-tabs__header {
-          .el-tabs__nav-wrap {
-          }
-        }
       }
     }
     .tab_nrc721 {
@@ -898,8 +903,6 @@
     }
 
     .token-diolog {
-      .el-dialog__header {
-      }
       .el-dialog__body {
         .token-search {
           .el-input__suffix {
@@ -943,22 +946,30 @@
           }
         }
       }
-      .el-dialog__footer {
-      }
     }
     .code-wrap {
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      .qrcode-wrap {
+        padding: 15px;
+        border: 1px solid @Dcolour;
+        border-radius: 5px;
+      }
       .address {
-        margin-top: 20px;
-        margin-bottom: 20px;
-        text-align: center;
+        width: 340px;
+        height: 44px;
+        background: #F9FBFF;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 20px 0;
+        color: @subText;
       }
     }
     .cross-item-wrap {
-      margin-left: 30%;
+      // margin-left: 30%;
       display: flex;
       align-items: center;
     }

@@ -78,7 +78,7 @@
 <script>
   import nuls from 'nuls-sdk-js'
   import Password from '@/components/PasswordBar'
-  import {timesDecimals} from '@/api/util'
+  import {divisionDecimals} from '@/api/util'
 
   export default {
     data() {
@@ -101,7 +101,7 @@
       }
     },
     mounted() {
-      if (!this.addressInfo.address) {
+      if (!this.addressList.length) {
         this.$router.push({
           name: "newAddress",
           query: {'address': ''}
@@ -140,10 +140,10 @@
               for (let item of addressList) {
                 if (item.address === addressInfo.address) {
                   item.alias = response.result.alias;
-                  item.totalBalance = timesDecimals(response.result.totalBalance);
-                  item.balance = timesDecimals(response.result.balance);
-                  item.consensusLock = timesDecimals(response.result.consensusLock);
-                  item.totalReward = timesDecimals(response.result.totalReward);
+                  item.totalBalance = divisionDecimals(response.result.totalBalance);
+                  item.balance = divisionDecimals(response.result.balance);
+                  item.consensusLock = divisionDecimals(response.result.consensusLock);
+                  item.totalReward = divisionDecimals(response.result.totalReward);
                   item.tokens = [];
                   item.chainId = nuls.verifyAddress(item.address).chainId;
                 }
@@ -207,7 +207,7 @@
         if (!rowInfo.aesPri) {
           const addressList = [...this.addressList]
           addressList.splice(addressList.findIndex(item => item.address === rowInfo.address), 1);
-          if (this.selectAddressInfo.selection && addressList.length !== 0) {
+          if (rowInfo.selection && addressList.length !== 0) {
             addressList[0].selection = true;
           }
           this.$store.commit('changeAccouuntList', addressList)

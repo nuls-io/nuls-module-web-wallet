@@ -24,7 +24,10 @@ module.exports = {
         '@ledgerhq/hw-transport-node-hid',
         // '@ledgerhq/devices/hid-framing'
       ],
-      nodeIntegration: true
+      nodeIntegration: true,
+      builderOptions: {
+        productName: 'NULS Wallet'
+      }
     }
   },
 

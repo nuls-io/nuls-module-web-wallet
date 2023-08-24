@@ -8,10 +8,16 @@
       :close-on-press-escape="false"
       @closed="$emit('closed')"
     >
-
-      <img src="../assets/img/ledger.svg" alt="">
-      <div class="tip">{{$t('ledger.ledger11')}}</div>
-
+      <div class="wrap">
+        <img src="../assets/img/ledger.svg" alt="">
+        <div class="tip">{{$t('ledger.ledger11')}}</div>
+        <div class="error-tip" v-if="errorMsg">
+          {{errorMsg}}
+        </div>
+        <div class="close-btn" @click="$emit('closed')">
+          <span>{{$t('ledger.ledger13')}}</span>
+        </div>
+      </div>
     </el-dialog>
   </div>
 </template>
@@ -20,6 +26,7 @@
 export default {
   props: {
     visible: Boolean,
+    errorMsg: String
   },
   data() {
     return {
@@ -31,25 +38,46 @@ export default {
 </script>
 
 <style lang="less">
+@import "../assets/css/style";
 .ledger-confirm {
   .el-dialog {
-    width: 370px;
+    width: 380px;
     .el-dialog__body {
-      background-color: #f5f6f9 !important;
-      padding: 30px 20px 30px 20px !important;
+      .wrap {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
       img {
-        width: 120px;
+        width: 90px;
+        height: 30px;
       }
       .tip {
-        padding-top: 10px;
-        font-size: 15px;
+        margin: 20px 0 35px;
+        font-size: 16px;
         // font-weight: 600;
-        color: #000;
+        color: @Ncolour;
+      }
+      .error-tip {
+        margin: -15px 0 20px;
+        color: #F56C6C;
+      }
+      .close-btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        width: 200px;
+        height: 40px;
+        border: 1px solid #DFE3EF;
+        border-radius: 2px;
+        margin-bottom: 30px;
+        span {
+          color: @labelColor;
+        }
       }
     }
-  }
-  .el-dialog .el-dialog__header .el-dialog__headerbtn {
-    // display: none;
   }
 }
 </style>

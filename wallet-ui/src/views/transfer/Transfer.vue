@@ -21,7 +21,7 @@
             <el-option v-for="(item,index) in assetsList"
                        :key="index"
                        :label="item.symbol"
-                       :value="item">
+                       :value="item._id">
               <!--:disabled="toAddressInfo.transferType ===5 && item.type === 2">-->
             </el-option>
           </el-select>
@@ -104,11 +104,11 @@
         </div>
         <div class="div-data">
           <p>{{$t('public.fee')}}&nbsp;</p>
-          <label>{{transferForm.fee}} <span class="fCN">{{defaultInfo.defaultAsset.symbol}}</span></label>
+          <label>{{transferForm.fee}} <span class="fCN font16">{{defaultInfo.defaultAsset.symbol}}</span></label>
         </div>
         <div class="div-data cb">
           <p>{{$t('tab.tab6')}}&nbsp;</p>
-          <label class="yellow">{{transferForm.amount}} <span class="fCN">{{assetsInfo.symbol}}</span></label>
+          <label class="yellow">{{transferForm.amount}} <span class="fCN font16">{{assetsInfo.symbol}}</span></label>
         </div>
         <div class="div-data remark">
           <p>{{$t('transfer.transfer4')}}&nbsp;</p>
@@ -122,7 +122,7 @@
     </el-dialog>
 
     <Password ref="password" @passwordSubmit="passSubmit" />
-    <LedgerConfirm :visible="ledgerVisible" @closed="ledgerVisible=false" />
+    <LedgerConfirm :visible="ledgerVisible" @closed="ledgerVisible=false" :errorMsg="ledgerErrorMsg" />
   </div>
 </template>
 
@@ -142,8 +142,6 @@
     Division,
     Minus,
     timesDecimals,
-    timesDecimals0,
-    timesDecimalsBig,
     passwordVerification,
     htmlEncode,
     divisionDecimals
@@ -176,6 +174,8 @@
             }*/
           }
           if (this.toAddressInfo.type === 2 && this.toAddressInfo.right) { // 合约地址 判断是否能向其转NULS，其他平行链资产
+          this.directPayable = false;
+          this.directPayableByOtherAsset = false;
             const contractInfo = await this.contractInfoByContractAddress(value);
             this.directPayable = contractInfo.directPayable;
             this.directPayableByOtherAsset = contractInfo.directPayableByOtherAsset;
@@ -203,7 +203,9 @@
       };
       const validateAssets = (rule, value, callback) => {
         if (this.toAddressInfo.type === 2) {
-          const isMainAsset = value.chainId === this.currentChain.chainId && value.assetId === this.currentChain.assetId
+          // 往合约地址转账
+          const asset = this.assetsList.find(v => v._id === value)
+          const isMainAsset = asset.chainId === this.currentChain.chainId && asset.assetId === this.currentChain.assetId
           if (isMainAsset && this.directPayable || !isMainAsset && this.directPayableByOtherAsset) {
             callback();
           } else {
@@ -279,7 +281,7 @@
 
       return {
         defaultInfo: {},//默认链信息
-        assetsList: '',//资产列表
+        assetsList: [],//资产列表
         assetsInfo: {},//选中的资产信息
         balanceInfo: {},//balance信息
         available: 0,//可用余额
@@ -369,8 +371,9 @@
                   symbol: item.symbol,
                   chainId: item.chainId,
                   assetId: item.assetId,
-                  balance: timesDecimals(item.balance),
+                  balance: divisionDecimals(item.balance),
                   decimals: item.decimals,
+                  _id: item.chainId + '-' + item.assetId + '-' + item.symbol
                 });
                 chainId = item.chainId;
               }
@@ -401,7 +404,8 @@
                   status: itme.status,
                   balance: divisionDecimals(Minus(itme.balance, itme.lockedBalance), itme.decimals),
                   contractAddress: itme.contractAddress,
-                  decimals: itme.decimals
+                  decimals: itme.decimals,
+                  _id: chainId + '-1-' + itme.tokenSymbol + '-' + itme.contractAddress
                 })
               }
             }
@@ -429,8 +433,9 @@
                   symbol: item.symbol,
                   chainId: item.chainId,
                   assetId: item.assetId,
-                  balance: timesDecimals(item.balance, item.decimals),
-                  decimals: item.decimals
+                  balance: divisionDecimals(item.balance, item.decimals),
+                  decimals: item.decimals,
+                  _id: item.chainId + '-' + item.assetId + '-' + item.symbol
                 })
               }
             }
@@ -450,51 +455,67 @@
         });
         // console.log(this.assetsList);
 
-        const MAIN_INFO = { chainId: this.currentChain.chainId, assetId: this.currentChain.assetId }
-        let newInfo = {type: 1, tokenSymbol: MAIN_INFO};
-        if (this.$route.query.contractAddress) {
-          let newAssetsInfo = this.assetsList.filter(obj => obj.contractAddress === this.$route.query.contractAddress)[0];
-          //console.log(newAssetsInfo);
-          newInfo.type = newAssetsInfo.type;
-          newInfo.tokenSymbol = {
-            chainId: newAssetsInfo.chainId,
-            assetId: newAssetsInfo.assetId,
-            symbol: newAssetsInfo.symbol
-          };
-          newInfo.type = newAssetsInfo.type;
-          newInfo.contractAddress = newAssetsInfo.contractAddress;
-          //console.log(newInfo);
-          this.transferForm.assetType = newInfo.tokenSymbol.symbol;
+        const { contractAddress, assetKey } = this.$route.query
+        let asset
+        if (contractAddress) {
+          asset = this.assetsList.find(v => v.contractAddress === contractAddress)
+        } else if (assetKey) {
+          asset = this.assetsList.find(v => (v.chainId + '-' + v.assetId === assetKey))
+        } else {
+          // asset = this.
+          asset = this.assetsList.find(v => {
+            return v.chainId === this.currentChain.chainId && v.assetId === this.currentChain.assetId && !v.contractAddress
+          })
+        }
+        this.changeType(asset._id)
+        console.log(this.assetsList, '3331111')
 
-          this.assetsInfo = newAssetsInfo;
-          // this.assetsInfo.balance = '0.000000000321148484'
-          // console.log(this.assetsInfo);
-        }
-        if (this.$route.query.accountType === 'NULS') {
-          newInfo = {type: 1, tokenSymbol: MAIN_INFO};
-          newInfo.tokenSymbol.symbol = 'NULS';
-        }
-        if (!newInfo.contractAddress && !newInfo.tokenSymbol.symbol) {
-          newInfo.tokenSymbol.symbol = 'NULS';
-        }
-        //console.log(newInfo);
-        for (let item of this.assetsList) {
-          if (item.type === 1) {
-            if (item.assetId === newInfo.tokenSymbol.assetId && item.chainId === newInfo.tokenSymbol.chainId) {
-              if (!this.transferForm.assetType) {
-                this.changeType(item);
-              }
-              this.transferLoading = false;
-              return
-            }
-          } else {
-            if (item.contractAddress && item.contractAddress === newInfo.contractAddress) {
-              //this.changeType(item);
-              this.transferLoading = false;
-              return;
-            }
-          }
-        }
+        // const MAIN_INFO = { chainId: this.currentChain.chainId, assetId: this.currentChain.assetId }
+        // let newInfo = {type: 1, tokenSymbol: MAIN_INFO};
+        // if (this.$route.query.contractAddress) {
+        //   let newAssetsInfo = this.assetsList.filter(obj => obj.contractAddress === this.$route.query.contractAddress)[0];
+        //   //console.log(newAssetsInfo);
+        //   newInfo.type = newAssetsInfo.type;
+        //   newInfo.tokenSymbol = {
+        //     chainId: newAssetsInfo.chainId,
+        //     assetId: newAssetsInfo.assetId,
+        //     symbol: newAssetsInfo.symbol
+        //   };
+        //   newInfo.type = newAssetsInfo.type;
+        //   newInfo.contractAddress = newAssetsInfo.contractAddress;
+        //   //console.log(newInfo);
+        //   this.transferForm.assetType = newInfo.tokenSymbol.symbol;
+
+        //   this.assetsInfo = newAssetsInfo;
+        //   // this.assetsInfo.balance = '0.000000000321148484'
+        //   // console.log(this.assetsInfo);
+        // }
+        // if (this.$route.query.accountType === 'NULS') {
+        //   newInfo = {type: 1, tokenSymbol: MAIN_INFO};
+        //   newInfo.tokenSymbol.symbol = 'NULS';
+        // }
+        // if (!newInfo.contractAddress && !newInfo.tokenSymbol.symbol) {
+        //   newInfo.tokenSymbol.symbol = 'NULS';
+        // }
+        // //console.log(newInfo);
+        // console.log(this.assetsList, this.transferForm.assetType, '3331111')
+        // for (let item of this.assetsList) {
+        //   if (item.type === 1) {
+        //     if (item.assetId === newInfo.tokenSymbol.assetId && item.chainId === newInfo.tokenSymbol.chainId) {
+        //       if (!this.transferForm.assetType) {
+        //         this.changeType(item);
+        //       }
+        //       this.transferLoading = false;
+        //       return
+        //     }
+        //   } else {
+        //     if (item.contractAddress && item.contractAddress === newInfo.contractAddress) {
+        //       //this.changeType(item);
+        //       this.transferLoading = false;
+        //       return;
+        //     }
+        //   }
+        // }
         this.transferLoading = false;
       },
 
@@ -553,14 +574,16 @@
         }
       },
 
-      /**
-       * 资产类型选择
-       * @param type
-       **/
-      async changeType(type) {
+      // 选择资产
+      async changeType(_id) {
+        if (!_id) {
+          return;
+        }
+        const asset = this.assetsList.find(v => v._id === _id)
+        // console.log(asset, '--asset--')
         //console.log(type);
-        this.assetsInfo = type;
-        this.transferForm.assetType = type.symbol;
+        this.assetsInfo = asset;
+        this.transferForm.assetType = _id;
         this.parameterValidation();
         if (this.transferForm.amount !== '') {
           this.$refs.transferForm.validateField('amount');
@@ -624,7 +647,7 @@
         let contractAddress = this.assetsInfo.contractAddress;
         let methodName = 'transfer';
         let methodDesc = '';
-        let args = [this.aliasToAddress ? this.aliasToAddress : this.transferForm.toAddress, timesDecimalsBig(this.transferForm.amount, this.assetsInfo.decimals).toString()];
+        let args = [this.aliasToAddress ? this.aliasToAddress : this.transferForm.toAddress, timesDecimals(this.transferForm.amount, this.assetsInfo.decimals)];
         this.validateContractCall(this.addressInfo.address, 0, gasLimit, price, contractAddress, methodName, methodDesc, args);
       },
 
@@ -659,7 +682,7 @@
         let args = [];
         const multyAssets = [
           {
-            value: timesDecimalsBig(this.transferForm.amount, this.assetsInfo.decimals).toString(),
+            value: timesDecimals(this.transferForm.amount, this.assetsInfo.decimals),
             assetChainId: this.assetsInfo.chainId,
             assetId: this.assetsInfo.assetId
           }
@@ -679,8 +702,8 @@
         let contractAddress = this.assetsInfo.contractAddress;
         let methodName = 'transferCrossChain';
         let methodDesc = '';
-        let args = [this.transferForm.toAddress, this.assetsInfo.decimals <= 9 ? Number(timesDecimals0(this.transferForm.amount, this.assetsInfo.decimals)) : timesDecimalsBig(this.transferForm.amount, this.assetsInfo.decimals)];
-        let newValue = Number(timesDecimals0(0.1, 8));
+        let args = [this.transferForm.toAddress, this.assetsInfo.decimals <= 9 ? Number(timesDecimals(this.transferForm.amount, this.assetsInfo.decimals)) : timesDecimals(this.transferForm.amount, this.assetsInfo.decimals)];
+        let newValue = Number(timesDecimals(0.1, 8));
         this.validateContractCall(this.addressInfo.address, newValue, gasLimit, price, contractAddress, methodName, methodDesc, args);
       },
 
@@ -745,12 +768,12 @@
         const transferInfo = {
           fromAddress: this.transferForm.fromAddress,
           toAddress: this.aliasToAddress ? this.aliasToAddress : this.transferForm.toAddress,
-          assetType: this.transferForm.assetType,
-          amount: timesDecimalsBig(this.transferForm.amount, this.assetsInfo.decimals).toString(),
+          // assetType: this.transferForm.assetType,
+          amount: timesDecimals(this.transferForm.amount, this.assetsInfo.decimals),
           gas: this.transferForm.gas,
           price: this.transferForm.price,
           remarks: this.transferForm.remarks,
-          fee: Number(timesDecimals0(this.transferForm.fee, this.defaultInfo.defaultAsset.decimals)),
+          fee: Number(timesDecimals(this.transferForm.fee, this.defaultInfo.defaultAsset.decimals)),
           assetsChainId: this.assetsInfo.chainId,
           assetsId: this.assetsInfo.assetId,
         };
@@ -789,7 +812,7 @@
         } else if (this.toAddressInfo.transferType === 7) { //7：向合约转平行链资产
           const multyAssets = [
             {
-              value: timesDecimalsBig(this.transferForm.amount, this.assetsInfo.decimals),
+              value: timesDecimals(this.transferForm.amount, this.assetsInfo.decimals),
               assetChainId: this.assetsInfo.chainId,
               assetId: this.assetsInfo.assetId
             }
@@ -849,135 +872,6 @@
           this.$message({message: e.message || e, type: 'error', duration: 1000});
         }
         this.transferLoading = false;
-      },
-
-      /**
-       *  获取密码框的密码
-       * @param password
-       **/
-      async passSubmit1(password) {
-        let passwordInfo = await passwordVerification(this.addressInfo, password);
-        if (!passwordInfo.success) {
-          this.$message({message: this.$t('address.address13'), type: 'error', duration: 3000});
-          return;
-        }
-
-        this.transferDiolog = false;
-        this.transferLoading = true;
-        this.balanceInfo = await this.getNulsBalance(this.assetsInfo.chainId, this.assetsInfo.assetId, this.transferForm.fromAddress);
-        //console.log(this.balanceInfo);
-
-        let transferInfo = {
-          fromAddress: this.transferForm.fromAddress,
-          toAddress: this.aliasToAddress ? this.aliasToAddress : this.transferForm.toAddress,
-          assetType: this.transferForm.assetType,
-          amount: timesDecimalsBig(this.transferForm.amount, this.assetsInfo.decimals).toString(),
-          gas: this.transferForm.gas,
-          price: this.transferForm.price,
-          remarks: this.transferForm.remarks,
-          fee: Number(timesDecimals0(this.transferForm.fee, this.defaultInfo.defaultAsset.decimals)),
-          assetsChainId: this.assetsInfo.chainId,
-          assetsId: this.assetsInfo.assetId,
-        };
-        //console.log(transferInfo);
-
-        const MAIN_INFO = { chainId: this.currentChain.chainId, assetId: this.currentChain.assetId }
-        let inOrOutputs = {};
-        let tAssemble = [];
-        let txHex = "";//交易签名
-        //console.log(transferInfo);
-        //console.log(this.toAddressInfo.transferType);
-        if (this.toAddressInfo.transferType === 1) { //1:NULS转账
-          //console.log(this.balanceInfo);
-          inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 2);
-          //console.log(inOrOutputs);
-          tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, htmlEncode(this.transferForm.remarks), 2);
-          //console.log(tAssemble);
-        } else if (this.toAddressInfo.transferType === 2) { //2：token转账
-          transferInfo.amount = Number(Plus(0, Number(Times(this.transferForm.gas, this.transferForm.price)))).toString();
-          inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
-          //console.log(this.contractCallData);
-          tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, htmlEncode(this.transferForm.remarks), 16, this.contractCallData);
-        } else if (this.toAddressInfo.transferType === 3) { //3：向合约转NULS
-          this.contractCallData.chainId = MAIN_INFO.chainId;
-          transferInfo.value = transferInfo.amount;
-          // transferInfo.amount = Number(Plus(transferInfo.fee, Number(Times(this.transferForm.gas, this.transferForm.price)))).toString();
-          transferInfo.amount = Times(this.transferForm.gas, this.transferForm.price).toString();
-          transferInfo.amount = Plus(transferInfo.amount, transferInfo.value).toString();
-          inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
-          tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, htmlEncode(this.transferForm.remarks), 16, this.contractCallData);
-        } else if (this.toAddressInfo.transferType === 4) { //4：向合约转token
-          transferInfo.amount = Number(Plus(0, Number(Times(this.transferForm.gas, this.transferForm.price)))).toString();
-          inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
-          tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, htmlEncode(this.transferForm.remarks), 16, this.contractCallData);
-        } else if (this.toAddressInfo.transferType === 5) { //5：跨链交易
-          // transferInfo.amount = Number(transferInfo.amount).toString();
-          transferInfo.fee = Number(transferInfo.fee);
-          //console.log(transferInfo);
-          let crossTxHex = await this.crossTxhexs(passwordInfo.pri, passwordInfo.pub, this.addressInfo.chainId, transferInfo);
-          //console.log(crossTxHex);
-          try {
-            let resData = await this.$post('/', 'sendCrossTx', [crossTxHex]);
-            //console.log(resData);
-            if (!resData.hasOwnProperty('result')) {
-              this.$message({
-                message: this.$t('tips.tips00') + JSON.stringify(resData.error),
-                type: 'error',
-                duration: 3000
-              });
-              this.transferLoading = false;
-            } else {
-              this.toUrl("txList");
-              this.transferLoading = false;
-            }
-          } catch (err) {
-            //console.log(err);
-            this.$message({message: this.$t('tips.tips00') + JSON.stringify(err), type: 'error', duration: 3000});
-            this.transferLoading = false;
-          }
-          return;
-        } else if (this.toAddressInfo.transferType === 6) { //6：NRC20跨链交易
-          //参数: to(跨链地址) value(token数量, 要乘以10的n次方，n是token的精度)
-          transferInfo.amount = Number(Plus(20000000, Number(Times(this.transferForm.gas, this.transferForm.price)))).toString();
-          transferInfo.value = 10000000;
-          transferInfo.toAddress = this.assetsInfo.contractAddress;
-          //console.log(transferInfo);
-          inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 16);
-          //console.log(this.contractCallData);
-          tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, htmlEncode(this.transferForm.remarks), 16, this.contractCallData);
-        } else if (this.toAddressInfo.transferType === 7) { //7：向合约转平行链资产
-          const multyAssets = [
-            {
-              value: timesDecimalsBig(this.transferForm.amount, this.assetsInfo.decimals),
-              assetChainId: this.assetsInfo.chainId,
-              assetId: this.assetsInfo.assetId
-            }
-          ];
-          this.contractCallData.chainId = MAIN_INFO.chainId;
-          transferInfo.value = 0;
-          transferInfo.amount = Times(this.transferForm.gas, this.transferForm.price);
-          transferInfo.assetsChainId = MAIN_INFO.chainId;
-          transferInfo.assetsId = MAIN_INFO.assetId;
-          const balanceInfo = await this.getNulsBalance(MAIN_INFO.chainId, MAIN_INFO.assetId, this.transferForm.fromAddress);
-          inOrOutputs = await inputsOrOutputs(transferInfo, balanceInfo, 16, multyAssets);
-          tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, htmlEncode(this.transferForm.remarks), 16, this.contractCallData);
-        }
-        //console.log(inOrOutputs);
-        txHex = await nuls.transactionSerialize(passwordInfo.pri, passwordInfo.pub, tAssemble);
-        //console.log(txHex);
-        let broadcastResult = await validateAndBroadcast(txHex);
-        //console.log(broadcastResult);
-        if (!broadcastResult.success) {
-          this.$message({
-            message: this.$t('tips.tips00') + JSON.stringify(broadcastResult.data),
-            type: 'error',
-            duration: 3000
-          });
-          this.transferLoading = false;
-        } else {
-          this.toUrl("txList");
-          this.transferLoading = false;
-        }
       },
 
       /**
@@ -1404,7 +1298,7 @@
             }
 
             .el-form-item__error {
-              font-size: 10px;
+              font-size: 12px;
               padding: 1px 0 0 0;
             }
             .asset_type {

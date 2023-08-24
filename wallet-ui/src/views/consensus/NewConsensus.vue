@@ -46,7 +46,7 @@
     </div>
 
     <Password ref="password" @passwordSubmit="passSubmit" />
-    <LedgerConfirm :visible="ledgerVisible" @closed="ledgerVisible=false" />
+    <LedgerConfirm :visible="ledgerVisible" @closed="ledgerVisible=false" :errorMsg="ledgerErrorMsg" />
 
     <el-dialog :title="$t('newConsensus.newConsensus1')" :visible.sync="newConsensusVisible" width="40rem"
                class="confirm-dialog">

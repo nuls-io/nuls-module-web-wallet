@@ -15,7 +15,7 @@
             </el-input>
           </el-form-item>
         </div>
-        <el-form-item label="HEX" prop="hex" v-show="resource ==='0'" class="hex">
+        <el-form-item label="Hex" prop="hex" v-show="resource ==='0'" class="hex">
           <el-input type="textarea" :rows="10" v-model.trim="deployForm.hex" @change="getParameter"
                     autocomplete="off">
           </el-input>
@@ -68,7 +68,7 @@
       </el-form-item>
     </el-form>
     <Password ref="password" @passwordSubmit="passSubmit" />
-    <LedgerConfirm :visible="ledgerVisible" @closed="ledgerVisible=false" />
+    <LedgerConfirm :visible="ledgerVisible" @closed="ledgerVisible=false" :errorMsg="ledgerErrorMsg" />
     
   </div>
 </template>

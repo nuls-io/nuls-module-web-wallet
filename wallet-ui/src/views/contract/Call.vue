@@ -59,7 +59,7 @@
       {{callResult}}
     </div>
     <Password ref="password" @passwordSubmit="passSubmit" />
-    <LedgerConfirm :visible="ledgerVisible" @closed="ledgerVisible=false" />
+    <LedgerConfirm :visible="ledgerVisible" @closed="ledgerVisible=false" :errorMsg="ledgerErrorMsg" />
   </div>
 </template>
 
@@ -76,7 +76,7 @@
   import Password from '@/components/PasswordBar'
   import LedgerConfirm from '@/components/LedgerConfirm'
   import ledgerMixin from '@/mixins/ledgerMixin'
-  import {getArgs, timesDecimals0, Times, Plus, chainID, timesDecimalsBig} from '@/api/util'
+  import {getArgs, timesDecimals, Times, Plus, chainID} from '@/api/util'
 
   export default {
     data() {
@@ -300,7 +300,7 @@
                 let multyAssets = [], value;
                 if (this.assetInfo) {
                   const { chainId: assetChainId, assetId, decimals } = this.assetInfo;
-                  value = timesDecimalsBig(this.callForm.otherValue, decimals);
+                  value = timesDecimals(this.callForm.otherValue, decimals);
                   multyAssets = [
                     { value, assetChainId, assetId }
                   ]
@@ -311,7 +311,7 @@
                   if (!this.assetInfo) return false
                   // 往合约转其他资产
                   const { chainId: assetChainId, assetId, decimals } = this.assetInfo;
-                  const value = timesDecimals0(this.callForm.otherValue, decimals);
+                  const value = timesDecimals(this.callForm.otherValue, decimals);
                   const nulsValue = Number(Times(this.callForm.values, 100000000))
                   const multyAssets = [
                     { value, assetChainId, assetId }
@@ -324,7 +324,7 @@
                   if (!this.assetInfo) return false
                   // 往合约转其他资产
                   const { chainId: assetChainId, assetId, decimals } = this.assetInfo;
-                  const value = timesDecimals0(this.callForm.otherValue, decimals);
+                  const value = timesDecimals(this.callForm.otherValue, decimals);
                   const multyAssets = [
                     { value, assetChainId, assetId }
                   ];
@@ -374,7 +374,7 @@
         amount = Number(Plus(transferInfo.fee, amount));
         if (this.callForm.values > 0) {
           transferInfo.toAddress = this.contractAddress;
-          transferInfo.value = Number(timesDecimals0(this.callForm.values));
+          transferInfo.value = Number(timesDecimals(this.callForm.values));
           transferInfo.amount = Number(Plus(transferInfo.value, amount))
         }
         let multyAssets = []
@@ -382,12 +382,12 @@
           const { chainId: assetChainId, assetId, decimals } = this.assetInfo
           multyAssets = [
             {
-              value: timesDecimalsBig(this.callForm.otherValue, decimals),
+              value: timesDecimals(this.callForm.otherValue, decimals),
               assetChainId,
               assetId
             }
           ];
-          transferInfo.value = Number(timesDecimals0(this.callForm.values));
+          transferInfo.value = Number(timesDecimals(this.callForm.values));
           transferInfo.amount = Number(Plus(transferInfo.value, amount))
           transferInfo.assetsChainId = this.MAIN_INFO.chainId;
           transferInfo.assetsId = this.MAIN_INFO.assetId;
@@ -611,7 +611,7 @@
         this.assetInfo = asset;
         this.callForm.assetInfo = asset.symbol;
         const { chainId: assetChainId, assetId, decimals } = this.assetInfo;
-        const value = timesDecimalsBig(this.callForm.otherValue, decimals);
+        const value = timesDecimals(this.callForm.otherValue, decimals);
         const multyAssets = [
           { value, assetChainId, assetId }
         ];

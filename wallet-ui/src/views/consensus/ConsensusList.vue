@@ -45,7 +45,7 @@
 
 <script>
   import moment from 'moment'
-  import {timesDecimals, getLocalTime} from '@/api/util'
+  import {divisionDecimals, getLocalTime} from '@/api/util'
   import BackBar from '@/components/BackBar'
 
   export default {
@@ -87,7 +87,7 @@
             //console.log(response);
             if (response.hasOwnProperty("result")) {
               for (let itme of response.result.list) {
-                itme.amount = timesDecimals(itme.amount);
+                itme.amount = divisionDecimals(itme.amount);
                 //itme.txHashs = superLong(itme.txHash, 20);
                 itme.agendID = itme.agentHash.substr(-8);
                 itme.createTime = moment(getLocalTime(itme.createTime * 1000)).format('YYYY-MM-DD HH:mm:ss');

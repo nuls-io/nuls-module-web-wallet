@@ -109,7 +109,7 @@
     </div>
 
     <Password ref="password" @passwordSubmit="passSubmit" />
-    <LedgerConfirm :visible="ledgerVisible" @closed="ledgerVisible=false" />
+    <LedgerConfirm :visible="ledgerVisible" @closed="ledgerVisible=false" :errorMsg="ledgerErrorMsg" />
   </div>
 </template>
 
@@ -124,7 +124,7 @@
     agentDeposistList
   } from '@/api/requestData'
   import {
-    timesDecimals,
+    divisionDecimals,
     getLocalTime,
     Minus,
     Times,
@@ -151,7 +151,7 @@
         } else if (value > usable) {
           return callback(new Error(this.$t('consensusInfo.consensusInfo41') + usable + this.$t('consensusInfo.consensusInfo42')));
         } else if (balance < 0.001) {
-          return callback(new Error(this.$t('transfer.transfer131') + Number(Minus(Number(timesDecimals(this.balanceInfo.balance)), 0.001))));
+          return callback(new Error(this.$t('transfer.transfer131') + Minus(divisionDecimals(this.balanceInfo.balance)), 0.001));
         } else {
           callback()
         }
@@ -213,10 +213,10 @@
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
-              response.result.agentReward = timesDecimals(response.result.agentReward);
-              response.result.deposits = timesDecimals(response.result.deposit);
-              response.result.totalDeposit = timesDecimals(response.result.totalDeposit);
-              response.result.totalReward = timesDecimals(response.result.totalReward);
+              response.result.agentReward = divisionDecimals(response.result.agentReward);
+              response.result.deposits = divisionDecimals(response.result.deposit);
+              response.result.totalDeposit = divisionDecimals(response.result.totalDeposit);
+              response.result.totalReward = divisionDecimals(response.result.totalReward);
               response.result.createTime = moment(getLocalTime(response.result.createTime * 1000)).format('YYYY-MM-DD HH:mm:ss');
               this.nodeInfo = response.result;
             }
@@ -239,8 +239,8 @@
             //console.log(response);
             if (response.hasOwnProperty("result")) {
               for (let itme of response.result.list) {
-                itme.amount = timesDecimals(itme.amount);
-                itme.fee = timesDecimals(itme.fee);
+                itme.amount = divisionDecimals(itme.amount);
+                itme.fee = divisionDecimals(itme.fee);
                 itme.createTime = moment(getLocalTime(itme.createTime * 1000)).format('YYYY-MM-DD HH:mm:ss');
               }
               this.nodeDepositData = response.result.list;

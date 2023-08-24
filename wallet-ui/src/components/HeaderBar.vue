@@ -27,7 +27,7 @@
                 <font v-if="item.alias" class="w100"> {{item.alias}}</font>
                 <font v-else-if="item.remark" class="w100"> {{item.remark}}</font>
                 <font v-else class="w100">{{superLong(item.address)}}</font> |
-                <span>{{item.balance}}--{{item.selection.toString()}}</span>
+                <span>{{item.balance}}</span>
               </span>
             </el-menu-item>
           </el-submenu>

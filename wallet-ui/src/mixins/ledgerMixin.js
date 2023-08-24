@@ -5,11 +5,13 @@ export default {
     this.handler = null
     this.requestBody = {}
     return {
-      ledgerVisible: false
+      ledgerVisible: false,
+      ledgerErrorMsg: ''
     }
   },
   methods: {
     sendMessageToElectron(message, handler) {
+      this.ledgerErrorMsg = ''
       if (this.handler) {
         this._removeListener()
       }
@@ -38,9 +40,17 @@ export default {
       const result = args.result || ''
       if (method === this.requestBody.method) {
         if (error) {
-          this.$message({message: error.message, type: 'error', duration: 2000});
+          let message = error.message
+          if (message === 'NoDevice' || message === 'DisconnectedDevice') {
+            message = this.$t('ledger.ledger12')
+          }
+          this.ledgerErrorMsg = message
+          this.$message({message: message, type: 'error', duration: 2000});
+        } else {
+          this.ledgerErrorMsg = ''
+          this.ledgerVisible = false
         }
-        this.ledgerVisible = false
+        // this.ledgerVisible = false
         console.log(this.handler, '--=--=')
         this.handler({
           success: !error,
@@ -54,19 +64,16 @@ export default {
     requestSignTx(data, handler) {
       this.sendMessageToElectron({ method: 'signTransaction', data }, handler)
     },
-    async signByLedger(hex, pathIndex, handler) {
-      try {
-        this.ledgerVisible = true
-        this.requestSignTx({
-          hex,
-          index: pathIndex
-          },
-        handler)
+    signByLedger(hex, pathIndex, handler) {
+      this.ledgerVisible = true
+      this.requestSignTx({ hex, index: pathIndex }, handler)
+      /* try {
+        
       } catch (e) {
         console.log(e, 33)
-        this.ledgerVisible = false
+        // this.ledgerVisible = false
         this.$message({message: e.message || e, type: 'error', duration: 1000});
-      }
+      } */
     }
   },
   beforeDestroy() {

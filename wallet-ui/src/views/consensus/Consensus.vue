@@ -9,24 +9,24 @@
       <div class="card-info left fl">
         <h5 class="card-title font18">
           {{$t('consensus.consensus0')}}
-          <span class="font14 fr">{{Number(addressInfo.totalReward).toFixed(3)}}<font class="fCN"> {{addressInfo.symbol}}</font></span>
+          <span class="font14 fr">{{fixNumber(addressInfo.totalReward, 3)}}<font class="fCN"> {{addressInfo.symbol}}</font></span>
         </h5>
         <ul>
           <li>
             {{$t('consensus.consensus1')}}
             <label>
               <u class="click"
-                 @click="toUrl('consensusList',addressInfo.consensusLock)">{{Number(addressInfo.consensusLock).toFixed(3)}}</u>
+                 @click="toUrl('consensusList',addressInfo.consensusLock)">{{fixNumber(addressInfo.consensusLock, 3)}}</u>
               <span class="fCN">{{addressInfo.symbol}}</span>
             </label>
           </li>
           <li>
             {{$t('consensus.consensus2')}}
-            <label>{{Number(addressInfo.balance).toFixed(3)}}<span class="fCN">{{addressInfo.symbol}}</span></label>
+            <label>{{fixNumber(addressInfo.balance, 3)}}<span class="fCN">{{addressInfo.symbol}}</span></label>
           </li>
           <li>
             {{$t('consensus.consensus3')}}
-            <label>{{Number(addressInfo.lastReward).toFixed(3)}}<span class="fCN">{{addressInfo.symbol}}</span></label>
+            <label>{{fixNumber(addressInfo.lastReward, 3)}}<span class="fCN">{{addressInfo.symbol}}</span></label>
           </li>
         </ul>
       </div>
@@ -40,7 +40,7 @@
         <ul>
           <li>
             {{$t('consensus.consensus8')}}
-            <label>{{Number(nulsCount.consensusTotal).toFixed(3)}}<span
+            <label>{{fixNumber(nulsCount.consensusTotal, 3)}}<span
                     class="fCN">{{addressInfo.symbol}}</span></label>
           </li>
           <li>{{$t('consensus.consensus7')}} <label>{{nodeCount.agentCount}}</label></li>
@@ -114,11 +114,12 @@
 
 <script>
   import SelectBar from '@/components/SelectBar';
-  import {timesDecimals, copys} from '@/api/util'
+  import {divisionDecimals, copys, divisionAndFix, fixNumber} from '@/api/util'
 
   export default {
     name: 'consensus',
     data() {
+      this.fixNumber = fixNumber;
       return {
         consensusActive: 'consensusFirst',
         //节点信息
@@ -236,16 +237,16 @@
                 if (item.address === address) {
                   item.alias = response.result.alias;
                   item.symbol = response.result.symbol;
-                  item.balance = timesDecimals(response.result.balance);
-                  item.consensusLock = timesDecimals(response.result.consensusLock);
-                  item.totalReward = timesDecimals(response.result.totalReward);
+                  item.balance = divisionDecimals(response.result.balance);
+                  item.consensusLock = divisionDecimals(response.result.consensusLock);
+                  item.totalReward = divisionDecimals(response.result.totalReward);
                   if (response.result.lastReward) {
-                    item.lastReward = timesDecimals(response.result.lastReward);
+                    item.lastReward = divisionDecimals(response.result.lastReward);
                   } else {
                     item.lastReward = 0;
                   }
-                  // item.totalIn = timesDecimals(response.result.totalIn);
-                  // item.totalOut = timesDecimals(response.result.totalOut);
+                  // item.totalIn = divisionDecimals(response.result.totalIn);
+                  // item.totalOut = divisionDecimals(response.result.totalOut);
                 }
               }
               this.$store.commit('changeAccouuntList', accountList);
@@ -285,9 +286,9 @@
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
-              this.nulsCount.circulation = timesDecimals(response.result.circulation);
-              this.nulsCount.consensusTotal = timesDecimals(response.result.consensusTotal);
-              this.nulsCount.total = timesDecimals(response.result.total);
+              this.nulsCount.circulation = divisionDecimals(response.result.circulation);
+              this.nulsCount.consensusTotal = divisionDecimals(response.result.consensusTotal);
+              this.nulsCount.total = divisionDecimals(response.result.total);
             } else {
               this.nulsCount.circulation = 0;
               this.nulsCount.consensusTotal = 0;
@@ -322,10 +323,10 @@
                   itme.isCollect = false;
                 }
                 itme.bozhengjin = itme.deposit;
-                itme.deposit = Number(timesDecimals(itme.deposit)).toFixed(3);
-                itme.agentReward = Number(timesDecimals(itme.agentReward)).toFixed(3);
-                itme.totalDeposit = Number(timesDecimals(itme.totalDeposit)).toFixed(3);
-                itme.totalReward = Number(timesDecimals(itme.totalReward)).toFixed(3);
+                itme.deposit = divisionAndFix(itme.deposit, 8, 3);
+                itme.agentReward = divisionAndFix(itme.agentReward, 8, 3);
+                itme.totalDeposit = divisionAndFix(itme.totalDeposit, 8, 3);
+                itme.totalReward = divisionAndFix(itme.totalReward, 8, 3);
                 //console.log(this.addressInfo.address);
                 if (itme.agentAddress === this.addressInfo.address) {
                   this.isNew = true;//创建的节点
@@ -408,9 +409,9 @@
                   item.isCollect = false;
                 }
                 newAgentIdList.push(item.agentId);
-                item.deposit = Number(timesDecimals(item.deposit)).toFixed(3);
-                item.totalDeposit = Number(timesDecimals(item.totalDeposit)).toFixed(3);
-                item.totalReward = Number(timesDecimals(item.totalReward)).toFixed(3);
+                item.deposit = divisionAndFix(item.deposit, 8, 3);
+                item.totalDeposit = divisionAndFix(item.totalDeposit, 8, 3);
+                item.totalReward = divisionAndFix(item.totalReward, 8, 3);
                 if (item.agentAddress === this.addressInfo.address) {
                   item.isNew = true;//创建的节点
                   this.isNew = true;

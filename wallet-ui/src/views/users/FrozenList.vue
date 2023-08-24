@@ -50,7 +50,7 @@
 
 <script>
   import moment from 'moment'
-  import {timesDecimals, getLocalTime, superLong} from '@/api/util'
+  import {divisionDecimals, divisionAndFix, getLocalTime, superLong} from '@/api/util'
   import BackBar from '@/components/BackBar'
 
   export default {
@@ -108,8 +108,8 @@
               for (let item of response.result.list) {
                 item.createTime = moment(getLocalTime(item.time * 1000)).format('YYYY-MM-DD HH:mm:ss');
                 item.txHashs = superLong(item.txHash, 16);
-                item.balance = timesDecimals(item.amount);
-                item.values = Number(timesDecimals(item.amount)).toFixed(3);
+                item.balance = divisionDecimals(item.amount);
+                item.values = divisionAndFix(item.amount, 8, 3);
                 item.lockedTime = moment(getLocalTime(item.lockedValue*1000)).format('YYYY-MM-DD HH:mm:ss');
                 if (item.type === 2) {
                   item.reason = "注销节点";

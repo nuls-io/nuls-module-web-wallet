@@ -45,7 +45,7 @@
           <el-table-column :label="$t('tab.tab6')" align="center">
             <template slot-scope="scope">
               <span :class="scope.row.transferType === -1 ? 'fred':'fCN'">
-                {{scope.row.amount * scope.row.transferType}}
+                {{scope.row.transferType === -1 ? '-' : ''}}{{scope.row.amount}}
               </span>
             </template>
           </el-table-column>
@@ -75,7 +75,7 @@
 
 <script>
   import moment from 'moment'
-  import {timesDecimals, getLocalTime, superLong, addressInfo} from '@/api/util'
+  import {divisionDecimals, getLocalTime, superLong} from '@/api/util'
   import BackBar from '@/components/BackBar'
 
   export default {
@@ -196,12 +196,11 @@
               for (let item of response.result.list) {
                 item.createTime = moment(getLocalTime(item.createTime * 1000)).format('YYYY-MM-DD HH:mm:ss');
                 item.txid = superLong(item.txHash, 8);
-                item.balance = timesDecimals(item.balance, item.decimals);
+                item.balance = divisionDecimals(item.balance, item.decimals);
                 if (item.type === 16) {
-                  item.amount = timesDecimals(item.fee.value, item.decimals);
+                  item.amount = divisionDecimals(item.fee.value, item.decimals);
                 } else {
-                  //item.amount = Number(timesDecimals(item.values, item.decimals)).toFixed(3);'
-                  item.amount = timesDecimals(item.values, item.decimals);
+                  item.amount = divisionDecimals(item.values, item.decimals);
                 }
               }
               this.txListData = response.result.list;

@@ -147,10 +147,11 @@
   .el-form-item {
     margin: 0 0 15px 0;
     .el-form-item__label {
-      line-height: 24px;
+      line-height: 20px;
       color: @Fcolour;
     }
     .el-form-item__content {
+      line-height: 30px;
       .el-form-item__error {
         padding-top: 0;
       }
@@ -213,19 +214,29 @@
 }
 
 .el-dialog {
-  background-color: @Bcolour2 !important;
+  background-color: @Bcolour !important;
   .el-dialog__header {
+    background-color: @Bcolour2;
     border-bottom: @BD1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 20px;
+    height: 60px;
     .el-dialog__headerbtn {
       top: -15px;
       right: -15px;
-      background-color: @Bcolour;
+      background-color: @Bcolour2;
       height: 30px;
       width: 30px;
       border-radius: 15px;
       .el-icon-close {
-        font-size: 20px;
+        font-size: 22px;
+        color: @labelColor;
       }
+    }
+    span {
+      color: @subText;
     }
   }
   .el-dialog__body {

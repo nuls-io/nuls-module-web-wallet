@@ -109,7 +109,7 @@
 
     </div>
     <Password ref="password" @passwordSubmit="passSubmit" />
-    <LedgerConfirm :visible="ledgerVisible" @closed="ledgerVisible=false" />
+    <LedgerConfirm :visible="ledgerVisible" @closed="ledgerVisible=false" :errorMsg="ledgerErrorMsg" />
   </div>
 
 </template>
@@ -120,7 +120,7 @@
   import BackBar from '@/components/BackBar'
   import SelectBar from '@/components/SelectBar';
   import Call from './Call'
-  import {timesDecimals, getLocalTime, superLong, connectToExplorer} from '@/api/util'
+  import {divisionDecimals, getLocalTime, superLong, connectToExplorer} from '@/api/util'
   import {getNulsBalance, inputsOrOutputs, validateAndBroadcast} from '@/api/requestData'
   import Password from '@/components/PasswordBar'
   import LedgerConfirm from '@/components/LedgerConfirm'
@@ -203,7 +203,7 @@
             //console.log(response);
             if (response.hasOwnProperty("result")) {
               response.result.createTxHashs = superLong(response.result.createTxHash, 5);
-              response.result.balance = timesDecimals(response.result.balance);
+              response.result.balance = divisionDecimals(response.result.balance);
               this.contractInfo = response.result;
               for (let item in response.result.methods) {
                 //console.log(response.result.methods[item].event);
@@ -241,7 +241,7 @@
               for (let item of response.result.list) {
                 item.time = moment(getLocalTime(item.time * 1000)).format('YYYY-MM-DD HH:mm:ss');
                 item.txHashs = superLong(item.txHash, 20);
-                item.fees = timesDecimals(item.fee.value);
+                item.fees = divisionDecimals(item.fee.value);
               }
               this.contractTxData = response.result.list;
               this.pageTotal = response.result.totalCount;

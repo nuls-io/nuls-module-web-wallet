@@ -631,7 +631,7 @@ const cn = {
     "password1": "请输入密码",
     "password2": "取 消",
     "password3": "确 定",
-    "password4": "记住密码(浏览器关闭会清除)",
+    "password4": "记住密码(应用关闭会清除)",
   },
 
   "home": {
@@ -1149,11 +1149,13 @@ const cn = {
     ledger4: '将您的钱包直接连接到电脑。解锁Ledger并打开NULS应用程序',
     ledger5: '连接中...',
     ledger6: '正在加载...',
-    ledger7: '选择账户',
+    ledger7: '选择希望用于 Nuls Wallet 的账户',
     ledger8: '上一页',
     ledger9: '下一页',
-    ledger10: '签名',
+    ledger10: '发送中',
     ledger11: '请在Ledger设备中确认签名',
+    ledger12: '请解锁Ledger并打开NULS应用程序',
+    ledger13: '关闭',
   },
   ...zhLocale
 };

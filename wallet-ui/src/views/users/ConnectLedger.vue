@@ -2,40 +2,50 @@
   <div class="new_address connect-ledger">
     <div
       class="w630"
-      v-loading="loading"
+      v-loading="loading && !accounts.length"
       element-loading-spinner="el-icon-loading"
     >
       <template v-if="!accounts.length">
-        <h3>{{ $t("ledger.ledger2") }}</h3>
-        <div class="ledger-logo">
-          <img src="../../assets/img/ledger.svg" alt="" />
-        </div>
-        <h4>{{ $t("ledger.ledger3") }}</h4>
-        <p>{{ $t("ledger.ledger4") }}</p>
-        <div class="next tc">
-          <el-button type="success" @click="getAccounts">{{
-            $t("public.next")
-          }}</el-button>
+        <div class="connect-wrap">
+          <h3 class="tc">{{ $t("ledger.ledger2") }}</h3>
+          <div class="ledger-logo">
+            <img src="../../assets/img/ledger.svg" alt="" />
+          </div>
+          <h4>{{ $t("ledger.ledger3") }}</h4>
+          <p class="before-connect">{{ $t("ledger.ledger4") }}</p>
+          <div class="next tc">
+            <el-button type="success" @click="getAccounts">{{
+              $t("public.next")
+            }}</el-button>
+          </div>
         </div>
       </template>
       <template v-else>
-        <p class="choose-account">{{ $t('ledger.ledger7') }}</p>
-        <div class="address-wrap">
-          <template v-for="item in accounts">
-            <div class="address-item" :key="item.address">
-              <el-checkbox size="medium" v-if="item.disabled" :value="true" :disabled="item.disabled" />
-              <el-checkbox size="medium" v-else v-model="item.selected" @change="(status) => changeSelect(status, item)" />
-              <span style="width: 20px">{{ item.index + 1 }}</span>
-              <span>{{ superLong(item.address) }}</span>
-            </div>
-          </template>
-        </div>
-        <div class="pagination">
-          <span :class="['click', { disabled: pageIndex === 1 }]" @click="previous">{{ $t('ledger.ledger8') }}</span>
-          <span class="click" @click="next">{{ $t('ledger.ledger9') }}</span>
-        </div>
-        <div class="tc">
-          <el-button :disabled="!selectedAccounts.length" @click="confirmConnect" type="success">{{ $t('public.confirm') }}</el-button>
+        <div class="connect-wrap">
+          <p class="choose-account">{{ $t('ledger.ledger7') }}</p>
+          <div class="address-wrap" v-infinite-scroll="next">
+            <template v-for="item in accounts">
+              <div class="address-item" :key="item.address" :class="{disabled: item.disabled}" @click="changeSelect(item)">
+                <div class="icon-wrap" :class="{selected : item.selected, disabled: item.disabled}">
+                  <div class="dot" v-if="item.selected"></div>
+                </div>
+                <!-- <el-checkbox size="medium" v-if="item.disabled" :value="true" :disabled="item.disabled" /> -->
+                <!-- <el-checkbox size="medium" v-else v-model="item.selected" @change="(status) => changeSelect(status, item)" /> -->
+                <span class="account-index">{{ item.index + 1 }}</span>
+                <span>{{item.address}}</span>
+              </div>
+            </template>
+            <p class="tc" style="margin-top: 10px">
+              <span class="el-icon-loading" v-if="loading"></span>
+            </p>
+          </div>
+          <!-- <div class="pagination">
+            <span :class="['click', { disabled: pageIndex === 1 }]" @click="previous">{{ $t('ledger.ledger8') }}</span>
+            <span class="click" @click="next">{{ $t('ledger.ledger9') }}</span>
+          </div> -->
+          <div class="tc">
+            <el-button :disabled="!selectedAccounts.length" @click="confirmConnect" type="success">{{ $t('public.confirm') }}</el-button>
+          </div>
         </div>
       </template>
     </div>
@@ -58,7 +68,7 @@ export default {
       step: 1, // 1 选择连接，2 选择账户，3 未找到设备
       ledger: null,
       pageIndex: 1,
-      pageSize: 5,
+      pageSize: 10,
       loading: false,
       accounts: [], // 当前获取的账户
       selectedAccounts: [], // 已选择连接账户
@@ -91,7 +101,7 @@ export default {
       const { success, result } = data
       if (success) {
         const { chainId, prefix } = this.currentChain
-        this.accounts = result.map((account, i) => {
+        const accounts = result.map((account, i) => {
           const address = sdk.getStringAddress(chainId, '', account.publicKey, prefix)
           return {
             address,
@@ -101,6 +111,7 @@ export default {
             index: i + (this.pageIndex - 1) * this.pageSize,
           }
         });
+        this.accounts = this.accounts.concat(accounts)
       }
       this.loading = false;
     },
@@ -117,7 +128,13 @@ export default {
     checkIsSelected(address) {
       return !!this.accountList.find((v) => v.address === address);
     },
-    changeSelect(status, account) {
+    changeSelect(account) {
+      if (account.disabled) {
+        return;
+      }
+      account.selected = !account.selected
+      // console.log(this.accounts, 33)
+      const status = account.selected
       if (status) {
         this.selectedAccounts.push(account);
       } else {
@@ -135,6 +152,9 @@ export default {
       this.getAccounts();
     },
     next() {
+      if (this.loading) {
+        return;
+      }
       this.pageIndex++;
       this.getAccounts();
     },
@@ -171,78 +191,123 @@ export default {
 @import "../../assets/css/style.less";
 .connect-ledger {
   * {
-    color: #606266;
-    font-size: 14px;
+    color: @subText;
+    font-size: 16px;
+  }
+  .connect-wrap {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
   h4 {
-    color: #000;
-    font-size: 15px;
-    font-weight: 600;
-    margin: 10px 0;
+    margin-bottom: 10px;
   }
   .ledger-logo {
-    background-color: #f2f4f6;
-    margin: 20px 0;
-    width: 200px;
+    width: 400px;
+    height: 150px;
+    background-color: #F9FBFF;
+    margin: 35px 0;
     border-radius: 5px;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 10px;
     img {
-      width: 100%;
+      width: 228px;
+      height: 77px;
     }
   }
+  .before-connect {
+    color: @labelColor;
+  }
   .el-button {
-    margin-top: 20px;
-    width: 190px;
+    margin-top: 50px;
+    width: 390px;
     span {
       color: #fff !important;
     }
   }
   .choose-account {
     font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 10px;
+    margin-bottom: 35px;
   }
   .address-wrap {
-      margin-bottom: 10px;
-    }
-    .address-item {
-      display: flex;
-      margin-bottom: 5px;
-      padding-bottom: 5px;
-      border-bottom: 1px solid #d6d9dc;
-      .el-checkbox {
-        margin-right: 8px;
-      }
-    }
-    .pagination {
-      display: flex;
-      justify-content: flex-end;
-      margin-bottom: 30px;
-      span {
-        margin: 0 5px;
-        color: @Ncolour;
-      }
-      .disabled {
-        cursor: not-allowed;
-        // color: #C0C4CC;
-        opacity: 0.3;
-      }
+    height: 380px;
+    overflow-y: auto;
+  }
+  .address-item {
+    display: flex;
+    align-items: center;
+    width: 520px;
+    height: 48px;
+    background: #F9FBFF;
+    border: 1px solid @Dcolour;
+    margin-bottom: 12px;
+    padding: 0 16px;
+    cursor: pointer;
+    &.disabled {
+      cursor: not-allowed;
+      // pointer-events: none;
     }
     .el-checkbox {
-      .el-checkbox__input.is-checked .el-checkbox__inner, .el-checkbox__input.is-indeterminate .el-checkbox__inner {
+      margin-right: 8px;
+    }
+    .icon-wrap {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 1px solid @Dcolour;
+      background-color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-right: 10px;
+      &.selected {
         border-color: @Ncolour;
+      }
+      &.disabled {
+        opacity: 0.7;
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
         background-color: @Ncolour;
       }
-      .el-checkbox__input.is-focus .el-checkbox__inner {
-        border-color: @Ncolour;
-      }
-      .el-checkbox__inner:hover {
-        border-color: @Ncolour;
-      }
-      
     }
+    .account-index {
+      width: 30px;
+    }
+  }
+  .el-icon-loading {
+    color: #409EFF;
+  }
+  .pagination {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 30px;
+    span {
+      margin: 0 5px;
+      color: @Ncolour;
+    }
+    .disabled {
+      cursor: not-allowed;
+      // color: #C0C4CC;
+      opacity: 0.3;
+    }
+  }
+  .el-checkbox {
+    .el-checkbox__input.is-checked .el-checkbox__inner, .el-checkbox__input.is-indeterminate .el-checkbox__inner {
+      border-color: @Ncolour;
+      background-color: @Ncolour;
+    }
+    .el-checkbox__input.is-focus .el-checkbox__inner {
+      border-color: @Ncolour;
+    }
+    .el-checkbox__inner:hover {
+      border-color: @Ncolour;
+    }
+    
+  }
 }
 </style>

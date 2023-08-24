@@ -10,9 +10,9 @@
       <el-table :data="nodeServiceData" stripe border>
         <!-- <el-table-column prop="chainName" :label="$t('nodeService.nodeService23')" align="center">
         </el-table-column> -->
-        <el-table-column :label="$t('nodeService.nodeService2')" align="center" prop="name"></el-table-column>
-        <el-table-column prop="apiUrl" :label="$t('nodeService.nodeService3')" align="center" min-width="160"></el-table-column>
-        <el-table-column prop="explorerUrl" :label="$t('nodeService.nodeService25')" align="center" min-width="160"></el-table-column>
+        <el-table-column :label="$t('nodeService.nodeService2')"  prop="name"></el-table-column>
+        <el-table-column prop="apiUrl" :label="$t('nodeService.nodeService3')"  min-width="160"></el-table-column>
+        <el-table-column prop="explorerUrl" :label="$t('nodeService.nodeService25')"  min-width="160"></el-table-column>
         <el-table-column :label="$t('nodeService.nodeService4')" align="center">
           <template slot-scope="scope">
             <span v-if="scope.row.delay === 100000">{{ $t('nodeService.nodeService17') }}</span>

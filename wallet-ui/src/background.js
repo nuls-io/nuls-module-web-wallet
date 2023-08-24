@@ -51,6 +51,7 @@ function createWindow() {
     minWidth: 1300,
     minHeight: 800,
     webPreferences: {
+      webSecurity: false, // 取消跨域限制
       nodeIntegration: true,
       contextIsolation: false
     },
@@ -81,7 +82,16 @@ async function getProvider() {
   const transport = await TransportNodeHid.open(path)
   console.log('transport: ', transport)
   const provider = new Nuls(transport)
+  await checkVersion(provider)
   return provider
+}
+
+async function checkVersion(provider) {
+  try {
+    return await provider.getAppConfiguration()
+  } catch(e) {
+    throw new Error('NoDevice')
+  }
 }
 
 const getPath = (index) => {

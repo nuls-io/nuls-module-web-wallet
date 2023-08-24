@@ -32,7 +32,7 @@
     </el-form>
 
     <Password ref="password" @passwordSubmit="passSubmit" />  
-    <LedgerConfirm :visible="ledgerVisible" @closed="ledgerVisible=false" />
+    <LedgerConfirm :visible="ledgerVisible" @closed="ledgerVisible=false" :errorMsg="ledgerErrorMsg" />
   </div>
 </template>
 
