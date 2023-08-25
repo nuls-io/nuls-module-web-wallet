@@ -43,26 +43,26 @@
           <el-table :data="contractTxData" stripe border style="width: 100%;margin-top: 14px">
             <el-table-column label="" width="20">
             </el-table-column>
-            <el-table-column prop="height" :label="$t('public.height')" width="80" align="left">
+            <el-table-column prop="height" :label="$t('public.height')" width="80">
               <template slot-scope="scope">
                 <span class="cursor-p click">{{ scope.row.blockHeight }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('contractInfo.contractInfo5')" width="180" align="left">
+            <el-table-column :label="$t('contractInfo.contractInfo5')" width="180">
               <template slot-scope="scope"><span>{{ $t('type.'+scope.row.type) }}</span></template>
             </el-table-column>
-            <el-table-column prop="contractMethod" :label="$t('contractInfo.contractInfo51')" width="180" align="left">
+            <el-table-column prop="contractMethod" :label="$t('contractInfo.contractInfo51')" width="180">
             </el-table-column>
-            <el-table-column label="TXID" min-width="280" align="left">
+            <el-table-column label="TXID" min-width="280">
               <template slot-scope="scope">
                 <span class="cursor-p click td" @click="toUrl('transactionInfo',scope.row.txHash,1)">
                   {{ scope.row.txHashs }}
                 </span>
               </template>
             </el-table-column>
-            <el-table-column prop="time" :label="$t('public.time')" width="180" align="left">
+            <el-table-column prop="time" :label="$t('public.time')" width="180">
             </el-table-column>
-            <el-table-column :label="$t('public.fee')" width="180" align="left">
+            <el-table-column :label="$t('public.fee')" width="180">
               <template slot-scope="scope">{{scope.row.fees}}</template>
             </el-table-column>
           </el-table>
@@ -88,14 +88,14 @@
           <el-table :data="modeList" stripe border style="width: 100%" class="mzt_20 mb_100">
             <el-table-column label="" width="30">
             </el-table-column>
-            <el-table-column prop="name" :label="$t('contractInfo.contractInfo6')" width="280" align="left">
+            <el-table-column prop="name" :label="$t('contractInfo.contractInfo6')" width="280">
             </el-table-column>
-            <el-table-column prop="height" :label="$t('contractInfo.contractInfo7')" min-width="280" align="left">
+            <el-table-column prop="height" :label="$t('contractInfo.contractInfo7')" min-width="280">
               <template slot-scope="scope">
                 <span v-for="item in scope.row.params" :key="item.name">{{item.name}}-</span>
               </template>
             </el-table-column>
-            <el-table-column prop="returnType" :label="$t('contractInfo.contractInfo8')" width="280" align="left">
+            <el-table-column prop="returnType" :label="$t('contractInfo.contractInfo8')" width="280">
             </el-table-column>
           </el-table>
 

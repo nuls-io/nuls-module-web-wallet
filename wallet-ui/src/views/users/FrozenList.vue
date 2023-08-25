@@ -9,24 +9,25 @@
 
     <div class="w1200 mt_20">
       <el-table :data="txListData" stripe border>
-        <el-table-column :label="$t('tab.tab1')" align="center">
+        <el-table-column width="30"></el-table-column>
+        <el-table-column :label="$t('tab.tab1')">
           <template slot-scope="scope"><span>{{ $t('frozenType.'+scope.row.type) }}</span></template>
         </el-table-column>
-        <el-table-column label="txHash" align="center" min-width="150">
+        <el-table-column label="txHash" min-width="150">
           <template slot-scope="scope">
             <span class="click" @click="toUrl('transferInfo',scope.row.txHash)">{{scope.row.txHashs}}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" :label="$t('tab.tab5')" align="center">
+        <el-table-column prop="createTime" :label="$t('tab.tab5')">
         </el-table-column>
-        <el-table-column prop="values" :label="$t('tab.tab6')" align="center">
+        <el-table-column prop="values" :label="$t('tab.tab6')">
         </el-table-column>
-        <el-table-column :label=" $t('tab.tab7')" align="center">
+        <el-table-column :label=" $t('tab.tab7')">
           <template slot-scope="scope">
             <span>{{scope.row.lockedValue === -1 ? '--': scope.row.lockedTime}}</span>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('tab.tab8')" align="center">
+        <el-table-column :label="$t('tab.tab8')">
           <template slot-scope="scope">
             <span>{{scope.row.type === 3 ? $t('type.5'):  $t('frozenType.'+scope.row.type)}}</span>
           </template>

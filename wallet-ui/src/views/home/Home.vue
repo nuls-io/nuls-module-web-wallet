@@ -58,7 +58,7 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column prop="totalBalance" :label="$t('tab.tab2')" align="left" width="230">
+          <el-table-column prop="totalBalance" :label="$t('tab.tab2')" width="230">
           </el-table-column>
           <el-table-column :label="$t('tab.tab3')" width="230">
             <template slot-scope="scope">
@@ -69,7 +69,7 @@
           </el-table-column>
           <el-table-column prop="balance" :label="$t('tab.tab4')" width="230">
           </el-table-column>
-          <el-table-column fixed="right" :label="$t('public.operation')" align="center" min-width="120">
+          <el-table-column fixed="right" :label="$t('public.operation')" min-width="120">
             <template slot-scope="scope">
               <label class="click tab_bn" @click="toUrl('transfer', scope.row)">
                 {{$t('nav.transfer')}}
@@ -101,7 +101,7 @@
                   </span>
                   </template>
                 </el-table-column>
-                <el-table-column prop="total" :label="$t('tab.tab2')" align="left" width="230">
+                <el-table-column prop="total" :label="$t('tab.tab2')" width="230">
                 </el-table-column>
                 <el-table-column prop="balance" :label="$t('tab.tab4')" width="230">
                 </el-table-column>
@@ -110,7 +110,7 @@
                     <span>{{scope.row.locking}}</span>
                   </template>
                 </el-table-column>
-                <el-table-column fixed="right" :label="$t('public.operation')" align="center" min-width="120">
+                <el-table-column fixed="right" :label="$t('public.operation')" min-width="120">
                   <template slot-scope="scope">
                     <label class="click tab_bn" @click="toUrl('transfer',scope.row)">{{$t('nav.transfer')}}</label>
                     <span class="tab_line">|</span>

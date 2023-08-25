@@ -6,16 +6,17 @@
         <i class="el-icon-plus click" @click="addOrEditContact()"></i>
       </div>
       <el-table :data="contactList" stripe border>
-        <el-table-column prop="name" :label="$t('transfer.transfer4')" align="center">
+        <el-table-column width="30"></el-table-column>
+        <el-table-column prop="name" :label="$t('transfer.transfer4')">
         </el-table-column>
-        <el-table-column prop="address" :label="$t('tab.tab11')" align="center" min-width="200">
+        <el-table-column prop="address" :label="$t('tab.tab11')" min-width="200">
         </el-table-column>
-        <el-table-column prop="alias" :label="$t('address.address3')" align="center">
+        <el-table-column prop="alias" :label="$t('address.address3')">
           <template slot-scope="scope">
             <span>{{scope.row.alias || '--'}}</span>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('address.address5')" align="center" width="350">
+        <el-table-column :label="$t('address.address5')" width="350">
           <template slot-scope="scope">
             <label class="click tab_bn" @click="addOrEditContact(scope.row)">{{ $t('tab.tab13')}}</label>
             <span class="tab_line">|</span>

@@ -27,12 +27,13 @@
           </el-switch>
         </div>
         <el-table :data="txListData" stripe border>
-          <el-table-column prop="symbol" :label="$t('tab.tab0')" align="center" width="100">
+          <el-table-column width="30"></el-table-column>
+          <el-table-column prop="symbol" :label="$t('tab.tab0')" width="100">
           </el-table-column>
-          <el-table-column :label="$t('tab.tab1')" align="center" width="150">
+          <el-table-column :label="$t('tab.tab1')" width="150">
             <template slot-scope="scope"><span>{{ $t('type.'+scope.row.type) }}</span></template>
           </el-table-column>
-          <el-table-column label="TxID" align="center">
+          <el-table-column label="TxID">
             <template slot-scope="scope">
               <router-link class="click" tag="a" :to="{name:'transferInfo',query:{hash:scope.row.txHash}}">
                 {{ scope.row.txid }}
@@ -40,18 +41,18 @@
               <!--<span class="click " @click="toUrl('transferInfo',scope.row.txHash)">{{scope.row.txid}}</span>-->
             </template>
           </el-table-column>
-          <el-table-column prop="createTime" :label="$t('tab.tab5')" align="center">
+          <el-table-column prop="createTime" :label="$t('tab.tab5')">
           </el-table-column>
-          <el-table-column :label="$t('tab.tab6')" align="center">
+          <el-table-column :label="$t('tab.tab6')">
             <template slot-scope="scope">
               <span :class="scope.row.transferType === -1 ? 'fred':'fCN'">
                 {{scope.row.transferType === -1 ? '-' : ''}}{{scope.row.amount}}
               </span>
             </template>
           </el-table-column>
-          <el-table-column prop="balance" :label="$t('tab.tab9')" align="center">
+          <el-table-column prop="balance" :label="$t('tab.tab9')">
           </el-table-column>
-          <el-table-column :label="$t('tab.tab10')" align="center" width="120">
+          <el-table-column :label="$t('tab.tab10')" width="120">
             <template slot-scope="scope"><span>{{ $t('transferStatus.'+scope.row.status) }}</span></template>
           </el-table-column>
         </el-table>

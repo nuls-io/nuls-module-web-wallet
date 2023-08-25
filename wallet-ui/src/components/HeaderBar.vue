@@ -43,7 +43,7 @@
         </el-menu>
 
         <div class="lang-wrap" @click="selectLanguage">
-          <span>{{this.lang ==="en" ? "CN":"EN"}}</span>
+          <span>{{this.lang ==="en" ? "ZH":"EN"}}</span>
         </div>
 
         <el-menu mode="horizontal" @select="handleSelect" >

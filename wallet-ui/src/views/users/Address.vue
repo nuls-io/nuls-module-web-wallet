@@ -7,14 +7,15 @@
         <i class="el-icon-plus click" @click="toUrl('newAddress')"></i>
       </div>
       <el-table :data="addressList" stripe border>
-        <el-table-column prop="address" :label="$t('address.address1')" align="center" min-width="350">
+        <el-table-column width="10"></el-table-column>
+        <el-table-column prop="address" :label="$t('address.address1')" min-width="350">
         </el-table-column>
-        <el-table-column :label="$t('tab.tab2')" align="center" width="150">
+        <el-table-column :label="$t('tab.tab2')" align="right" width="150">
           <template slot-scope="scope">
             <span>{{scope.row.totalBalance }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="balance" :label="$t('consensus.consensus2')" align="center" width="150">
+        <el-table-column prop="balance" :label="$t('consensus.consensus2')" align="right" width="150">
         </el-table-column>
         <!-- <el-table-column prop="consensusLock" :label="$t('tab.tab3')" align="center" width="140">
          </el-table-column>-->

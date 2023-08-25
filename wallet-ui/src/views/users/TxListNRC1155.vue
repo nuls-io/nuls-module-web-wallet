@@ -11,12 +11,13 @@
     <div class="w1200">
       <div v-loading="txListDataLoading" class="mb_100">
         <el-table :data="txListData" stripe border>
-          <el-table-column :label="$t('public.height')" align="center" width="80">
+          <el-table-column width="20"></el-table-column>
+          <el-table-column :label="$t('public.height')" width="80">
             <template slot-scope="scope">
               <span class="click td" @click="openUrl('height',scope.row.height,1)">{{scope.row.height}}</span>
             </template>
           </el-table-column>
-          <el-table-column label="TxID" align="center" min-width="200">
+          <el-table-column label="TxID" min-width="200">
             <template slot-scope="scope">
               <router-link class="click" tag="a" :to="{name:'transferInfo',query:{hash:scope.row.txHash}}">
                 {{ scope.row.txid }}
@@ -24,33 +25,33 @@
               <!--<span class="click " @click="toUrl('transferInfo',scope.row.txHash)">{{scope.row.txid}}</span>-->
             </template>
           </el-table-column>
-          <el-table-column :label="$t('public.fromAddresss')" align="center" width="160">
+          <el-table-column :label="$t('public.fromAddresss')" width="160">
             <template slot-scope="scope">
               <span class="click td" @click="openUrl('address',scope.row.fromAddress,1)">{{scope.row.fromAddresss}}</span>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('public.toAddresss')" align="center" width="160">
+          <el-table-column :label="$t('public.toAddresss')" width="160">
             <template slot-scope="scope">
               <span class="click td" @click="openUrl('address',scope.row.toAddress,1)">{{scope.row.toAddresss}}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="createTime" :label="$t('tab.tab5')" align="center" width="160">
+          <el-table-column prop="createTime" :label="$t('tab.tab5')" width="160">
           </el-table-column>
-          <el-table-column :label="'Token'+$t('nodeService.nodeService2')" align="center" width="130">
+          <el-table-column :label="'Token'+$t('nodeService.nodeService2')" width="130">
             <template slot-scope="scope">
               <span>
                 {{scope.row.symbol}}
               </span>
             </template>
           </el-table-column>
-          <el-table-column label="Token ID" align="center" width="130">
+          <el-table-column label="Token ID" width="130">
             <template slot-scope="scope">
               <span>
                 #{{scope.row.tokenId}}
               </span>
             </template>
           </el-table-column>
-          <el-table-column prop="value" :label="$t('public.amount')" align="center" width="130" ></el-table-column>
+          <el-table-column prop="value" :label="$t('public.amount')" width="130" ></el-table-column>
         </el-table>
         <div class="pages">
           <div class="page-total">

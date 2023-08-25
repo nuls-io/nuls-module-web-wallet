@@ -80,14 +80,15 @@
           <i class="el-icon-plus click" @click="showNodeList"></i>
         </div>
         <el-table :data="nodeDepositData" stripe border>
-          <el-table-column prop="blockHeight" :label="$t('public.height')" align="center">
+          <el-table-column width="30"></el-table-column>
+          <el-table-column prop="blockHeight" :label="$t('public.height')">
           </el-table-column>
-          <el-table-column prop="createTime" :label="$t('consensusList.consensusList1')" align="center">
+          <el-table-column prop="createTime" :label="$t('consensusList.consensusList1')">
           </el-table-column>
           <el-table-column prop="amount" :label="$t('public.amount') + '('+agentAsset.agentAsset.symbol+')'"
-                           align="center">
+                          >
           </el-table-column>
-          <el-table-column :label="$t('public.operation')" align="center">
+          <el-table-column :label="$t('public.operation')">
             <template slot-scope="scope">
               <label class="click tab_bn"
                      @click="cancelDeposit(scope.row)">{{$t('consensusInfo.consensusInfo0')}}</label>
@@ -527,7 +528,8 @@
       .entrust_add {
         margin: 30px auto 50px;
         .balance {
-          margin: 10px 0 0 0;
+          display: block;
+          margin-top: 5px;
         }
       }
     }

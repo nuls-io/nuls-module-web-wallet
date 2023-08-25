@@ -10,24 +10,25 @@
                    element-loading-spinner="el-icon-loading">
         <div class="my_contract">
           <el-table :data="myContractData" stripe border>
-            <el-table-column :label="$t('contract.contract2')" align="center" min-width="220">
+            <el-table-column width="30"></el-table-column>
+            <el-table-column :label="$t('contract.contract2')" min-width="220">
               <template slot-scope="scope">
                 <span v-if="scope.row.status === 3">{{scope.row.contractAddress}}</span>
                 <span class="click" @click="toUrl('contractInfo',scope.row.contractAddress,0,'first')"
                       v-if="scope.row.status !== 3">{{scope.row.contractAddress}}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('public.contractName')" align="center">
+            <el-table-column :label="$t('public.contractName')">
               <template slot-scope="scope">
                 <span>{{scope.row.alias}}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('public.status')" align="center">
+            <el-table-column :label="$t('public.status')">
               <template slot-scope="scope"><span>{{ $t('contractStatus.'+scope.row.status) }}</span></template>
             </el-table-column>
-            <el-table-column prop="createTime" :label="$t('public.time')" align="center">
+            <el-table-column prop="createTime" :label="$t('public.time')">
             </el-table-column>
-            <el-table-column :label="$t('public.operation')" align="center">
+            <el-table-column :label="$t('public.operation')">
               <template slot-scope="scope">
                 <label class="tab_bn" v-if="scope.row.status ===3 || scope.row.status ===-1">--</label>
                 <label class="click tab_bn" v-else @click="toUrl('contractInfo',scope.row.contractAddress,0,'fourth')">{{$t('contract.contract4')}}</label>

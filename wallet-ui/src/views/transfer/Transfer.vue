@@ -69,13 +69,13 @@
                :close-on-click-modal="false"
                :close-on-press-escape="false">
       <el-table :data="contacts">
-        <el-table-column property="name" :label="$t('transfer.transfer4')" width="100" align="center">
+        <el-table-column property="name" :label="$t('transfer.transfer4')" width="100">
         </el-table-column>
-        <el-table-column property="address" :label="$t('tab.tab11')" min-width="300" align="center">
+        <el-table-column property="address" :label="$t('tab.tab11')" min-width="300">
         </el-table-column>
-        <el-table-column property="alias" :label="$t('address.address3')" width="100" align="center">
+        <el-table-column property="alias" :label="$t('address.address3')" width="100">
         </el-table-column>
-        <el-table-column label="" width="100" align="center">
+        <el-table-column label="" width="100">
           <template slot-scope="scope">
             <span @click="selectBook(scope.row)" class="click td" style="color: #608FFF">{{$t('public.choice')}}</span>
           </template>

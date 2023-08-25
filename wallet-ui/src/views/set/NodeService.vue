@@ -3,17 +3,18 @@
        element-loading-spinner="el-icon-loading">
     <h3 class="title">{{$t('nodeService.nodeService1')}}</h3>
 
+    <span @click="xxx">ccccc</span>
+
     <div class="w1200 mt_20" v-loading="nodeServiceLoading">
       <div class="top_ico">
         <i class="el-icon-plus click" @click="addNodeService"></i>
       </div>
       <el-table :data="nodeServiceData" stripe border>
-        <!-- <el-table-column prop="chainName" :label="$t('nodeService.nodeService23')" align="center">
-        </el-table-column> -->
+        <el-table-column width="30"></el-table-column>
         <el-table-column :label="$t('nodeService.nodeService2')"  prop="name"></el-table-column>
         <el-table-column prop="apiUrl" :label="$t('nodeService.nodeService3')"  min-width="160"></el-table-column>
         <el-table-column prop="explorerUrl" :label="$t('nodeService.nodeService25')"  min-width="160"></el-table-column>
-        <el-table-column :label="$t('nodeService.nodeService4')" align="center">
+        <el-table-column :label="$t('nodeService.nodeService4')">
           <template slot-scope="scope">
             <span v-if="scope.row.delay === 100000">{{ $t('nodeService.nodeService17') }}</span>
             <span v-else-if="scope.row.delay === 200000">{{ $t('nodeService.nodeService18') }}</span>
@@ -21,7 +22,7 @@
             <span v-else>{{ scope.row.delay }} ms</span>
           </template>
         </el-table-column>
-        <el-table-column prop="state" :label="$t('nodeService.nodeService5')" align="center">
+        <el-table-column prop="state" :label="$t('nodeService.nodeService5')">
           <template slot-scope="scope">
             <span @click="editState(scope.row)">
               <i class="iconfont clicks"
@@ -29,7 +30,7 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('nodeService.nodeService6')" align="center">
+        <el-table-column :label="$t('nodeService.nodeService6')">
           <template slot-scope="scope">
             <div v-if="scope.row.isDelete">
               <label class="click tab_bn" @click="edit(scope.$index)">{{$t('nodeService.nodeService7')}}</label>
@@ -70,13 +71,15 @@
             </el-input>
           </el-form-item>
           <el-form-item class="btns tl" style="margin-top: 2.5rem">
-            <el-button type="success" class="fl" @click="testSubmitForm('nodeServiceForm')">
+            <el-button type="success" @click="testSubmitForm('nodeServiceForm')">
               {{$t('nodeService.nodeService11')}}
             </el-button>
-            <div class="fl ml_50" v-show="testInfo.state !==0">
+            <div class="invalid-rpc el-form-item__error" v-if="invalidRpc">{{$t('nodeService.nodeService29')}}</div>
+            
+            <!-- <div class="fl ml_50" v-show="testInfo.state !==0">
               <i :class="testInfo.state === 1 ? 'el-icon-circle-check fCN' : 'el-icon-circle-close fred' "></i>&nbsp;
               <span v-show="testInfo.state ===2" class="fred font12">{{testInfo.result}}</span>
-            </div>
+            </div> -->
           </el-form-item>
           <div v-show="testInfo.state ===1">
             <el-form-item>
@@ -118,6 +121,7 @@
         }
       };
       const validateUrls = (rule, value, callback) => {
+        this.invalidRpc = false
         const patrn = /(http|https):\/\/([\w.]+\/?)\S*/;
         if (value === '') {
           callback(new Error(this.$t('nodeService.nodeService14')));
@@ -151,6 +155,7 @@
           result: {}
         },//测试连接提示信息
         editIndex: 10000, //编辑ID
+        invalidRpc: false
       };
     },
     computed: {
@@ -165,6 +170,9 @@
       }, 500);
     },
     methods: {
+      xxx() {
+        location.reload()
+      },
 
       /**
        * @disc: 连接或断开
@@ -275,6 +283,7 @@
                   that.testInfo.state = 1;
                   that.testInfo.result = result;
                 } else {
+                  this.invalidRpc = true
                   that.testInfo.state = 200000;
                   that.testInfo.result = response.data;
                   this.$message({message: this.$t('nodeService.nodeService29'), type: 'error', duration: 1000});
@@ -283,6 +292,7 @@
               })
               .catch((error) => {
                 console.log(that.testInfo.success);
+                this.invalidRpc = true
                 that.testInfo.state = 300000;
                 that.testInfo.result = error;
                 console.log("getBestBlockHeader:" + error);
@@ -435,6 +445,10 @@
           }
         }
       }
+    }
+    .invalid-rpc {
+      // width: 100%;
+      margin-top: 5px;
     }
   }
 </style>

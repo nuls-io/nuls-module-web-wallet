@@ -17,12 +17,13 @@
           </el-select>
         </div>
         <el-table :data="txListData" stripe border>
-          <el-table-column :label="$t('public.height')" align="center" width="80">
+          <el-table-column width="10"></el-table-column>
+          <el-table-column :label="$t('public.height')" width="80">
             <template slot-scope="scope">
               <span class="click td" @click="toUrl('height',scope.row.height,1)">{{scope.row.height}}</span>
             </template>
           </el-table-column>
-          <el-table-column label="TxID" align="center" width="210">
+          <el-table-column label="TxID" width="210">
             <template slot-scope="scope">
               <router-link class="click" tag="a" :to="{name:'transferInfo',query:{hash:scope.row.txHash}}">
                 {{ scope.row.txid }}
@@ -30,29 +31,30 @@
               <!--<span class="click " @click="toUrl('transferInfo',scope.row.txHash)">{{scope.row.txid}}</span>-->
             </template>
           </el-table-column>
-          <el-table-column :label="$t('public.fromAddresss')" align="center" width="160">
+          <el-table-column :label="$t('public.fromAddresss')" width="160">
             <template slot-scope="scope">
               <span class="click td" @click="toUrl('address',scope.row.fromAddress,1)">{{scope.row.fromAddresss}}</span>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('public.toAddresss')" align="center" width="160">
+          <el-table-column :label="$t('public.toAddresss')" width="160">
             <template slot-scope="scope">
               <span class="click td" @click="toUrl('address',scope.row.toAddress,1)">{{scope.row.toAddresss}}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="createTime" :label="$t('tab.tab5')" align="center">
+          <el-table-column prop="createTime" :label="$t('tab.tab5')">
           </el-table-column>
-          <el-table-column :label="$t('public.amount')" align="center">
+          <el-table-column :label="$t('public.amount')">
             <template slot-scope="scope">
               <span :class="scope.row.fromAddress === addressInfo.address ? 'fred':'fCN'">
-                {{scope.row.fromAddress === addressInfo.address ? -1*scope.row.amount:scope.row.amount}}({{scope.row.symbol}})
+                {{scope.row.fromAddress === addressInfo.address === -1 ? '-' : ''}}{{scope.row.amount}} {{scope.row.symbol}}
+                <!-- {{scope.row.fromAddress === addressInfo.address ? -1*scope.row.amount:scope.row.amount}}({{scope.row.symbol}}) -->
               </span>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('public.balance')" align="center">
+          <el-table-column :label="$t('public.balance')">
             <template slot-scope="scope">
               <span>
-                {{scope.row.balance}}({{scope.row.symbol}})
+                {{scope.row.balance}} {{scope.row.symbol}}
               </span>
             </template>
           </el-table-column>

@@ -12,18 +12,17 @@
         {{$t('public.totalStake')}}：{{this.$route.query.consensusLock}} <span class="fCN">{{agentAsset.agentAsset.symbol}}</span>
       </div>
       <el-table :data="consensusData" stripe border v-loading="consensusDataLoading">
-        <el-table-column prop="blockHeight" :label="$t('public.height')" align="center">
+        <el-table-column prop="blockHeight" :label="$t('public.height')">
         </el-table-column>
-        <el-table-column prop="createTime" :label="$t('consensusList.consensusList1')" align="center">
+        <el-table-column prop="createTime" :label="$t('consensusList.consensusList1')">
         </el-table-column>
-        <el-table-column :label="$t('consensusList.consensusList2')" align="center" min-width="200">
+        <el-table-column :label="$t('consensusList.consensusList2')" min-width="200">
           <template slot-scope="scope">
             <span class="click uppercase"
                   @click="toUrl('consensusInfo',scope.row.agentHash)">{{scope.row.agendID}}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="amount" :label="$t('public.amount') + '('+agentAsset.agentAsset.symbol+')'"
-                         align="center">
+        <el-table-column prop="amount" :label="$t('public.amount') + '('+agentAsset.agentAsset.symbol+')'">
         </el-table-column>
       </el-table>
       <div class="pages">
