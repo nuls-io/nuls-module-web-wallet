@@ -85,7 +85,7 @@ const cn = {
 
     "developers": "开发者：",
     "sponsoredAddress": "赞助地址：",
-
+    "noData": "暂无数据"
   },
 
   "status": {
@@ -784,6 +784,9 @@ const cn = {
     "nodeService28": "请输入正确的浏览器地址",
     "nodeService29": "无效的服务地址",
     "nodeService30": "网络重复",
+    "nodeService31": "连接成功",
+    "nodeService32": "无法连接",
+    "nodeService33": "仅添加",
   },
 
   "address": {

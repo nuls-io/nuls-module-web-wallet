@@ -85,7 +85,7 @@ const en = {
 
     "developers": "Developers：",
     "sponsoredAddress": "Sponsored Address：",
-
+    "noData": "No Data"
   },
 
   "status": {
@@ -758,8 +758,8 @@ const en = {
     "nodeService8": "Remove",
     "nodeService9": "Add Node Service Address",
     "nodeService10": "The unofficial address you entered may not work properly, so the loss will be borne by you.",
-    "nodeService11": "Test Connection",
-    "nodeService12": "Immediate Use",
+    "nodeService11": "Test",
+    "nodeService12": "Use Now",
     "nodeService13": "Name cannot be empty",
     "nodeService14": "Address cannot be empty",
     "nodeService15": "Please enter the correct connection address",
@@ -780,6 +780,9 @@ const en = {
     "nodeService28": "Please enter the correct address",
     "nodeService29": "Invalid service address",
     "nodeService30": "Duplicate service",
+    "nodeService31": "Success",
+    "nodeService32": "Failed",
+    "nodeService33": "Add",
   },
 
   "address": {

@@ -18,6 +18,9 @@
     "postuninstall": "electron-builder install-app-deps",
     "build-icon": "electron-icon-builder --input=./public/icon.png --output=build --flatten"
   },
+  "build": {
+    "productName": "NULS Wallet"
+  },
   "dependencies": {
     "@ledgerhq/hw-transport-node-hid": "^6.27.20",
     "axios": "^0.19.0",

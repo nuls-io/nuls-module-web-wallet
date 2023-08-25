@@ -358,9 +358,6 @@
               width: 100%;
             }
           }
-          .el-input__inner {
-            padding-right: 30px;
-          }
         }
       }
       .send {

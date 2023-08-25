@@ -64,31 +64,41 @@
             </el-input>
           </el-form-item> -->
           <el-form-item :label="$t('nodeService.nodeService3')" prop="apiUrl">
-            <el-input type="text" autocomplete="off" maxlength="50"
+            <div class="test-wrap">
+              <el-input type="text" autocomplete="off" maxlength="50"
                       v-model="nodeServiceForm.apiUrl"
                       placeholder="http://192.168.1.108:18003"
                       @change="changeUrls">
-            </el-input>
+              </el-input>
+              <template v-if="testInfo.state===0">
+                <el-button type="success" @click="testSubmitForm('nodeServiceForm')">
+                {{$t('nodeService.nodeService11')}}
+              </el-button>
+              </template>
+              <template v-else-if="testInfo.state===1">
+                <div class="test-result-wrap">
+                  <span class="el-icon-circle-check"></span>
+                  <span>{{$t('nodeService.nodeService31')}}</span>
+                </div>
+              </template>
+              <template v-else>
+                <div class="test-result-wrap result-fail">
+                  <span class="el-icon-remove-outline"></span>
+                  <span>{{$t('nodeService.nodeService32')}}</span>
+                </div>
+              </template>
+            </div>
+            
           </el-form-item>
-          <el-form-item class="btns tl" style="margin-top: 2.5rem">
+          <div class="invalid-rpc" v-if="testInfo.state!==0 && testInfo.state!==1">{{$t('nodeService.nodeService29')}}</div>
+          <!-- <el-form-item class="btns tl" style="margin-top: 2.5rem">
             <el-button type="success" @click="testSubmitForm('nodeServiceForm')">
               {{$t('nodeService.nodeService11')}}
             </el-button>
-            <div class="invalid-rpc el-form-item__error" v-if="invalidRpc">{{$t('nodeService.nodeService29')}}</div>
-            
-            <!-- <div class="fl ml_50" v-show="testInfo.state !==0">
-              <i :class="testInfo.state === 1 ? 'el-icon-circle-check fCN' : 'el-icon-circle-close fred' "></i>&nbsp;
-              <span v-show="testInfo.state ===2" class="fred font12">{{testInfo.result}}</span>
-            </div> -->
-          </el-form-item>
-          <div v-show="testInfo.state ===1">
-            <el-form-item>
-              <el-checkbox v-model="nodeServiceForm.resource">{{$t('nodeService.nodeService12')}}</el-checkbox>
-            </el-form-item>
-            <el-form-item class="btns tc">
-              <el-button @click="resetForm('nodeServiceForm')">{{$t('password.password2')}}</el-button>
-              <el-button type="success" @click="submitForm('nodeServiceForm')">{{$t('password.password3')}}</el-button>
-            </el-form-item>
+          </el-form-item> -->
+          <div v-if="testInfo.state===1" class="add-wrap">
+            <el-button @click="submitForm('nodeServiceForm')">{{$t('nodeService.nodeService33')}}</el-button>
+              <el-button type="success" @click="submitForm('nodeServiceForm', true)">{{$t('nodeService.nodeService12')}}</el-button>
           </div>
           <div class="cb"></div>
         </el-form>
@@ -121,7 +131,7 @@
         }
       };
       const validateUrls = (rule, value, callback) => {
-        this.invalidRpc = false
+        this.testInfo.state = 0
         const patrn = /(http|https):\/\/([\w.]+\/?)\S*/;
         if (value === '') {
           callback(new Error(this.$t('nodeService.nodeService14')));
@@ -142,7 +152,6 @@
           name: '',
           apiUrl: '',
           // explorerUrl: '',
-          resource: false
         },
         //表单验证
         nodeServiceRules: {
@@ -155,7 +164,6 @@
           result: {}
         },//测试连接提示信息
         editIndex: 10000, //编辑ID
-        invalidRpc: false
       };
     },
     computed: {
@@ -279,24 +287,22 @@
                 //console.log(response.data);
                 const result = response.data.result
                 // 暂时只允许添加nuls 正式网/测试网api
-                if (result && result.chainId === 2 || result.chainId === 1) {
+                if (result && (result.chainId === 2 || result.chainId === 1)) {
                   that.testInfo.state = 1;
                   that.testInfo.result = result;
                 } else {
-                  this.invalidRpc = true
                   that.testInfo.state = 200000;
                   that.testInfo.result = response.data;
-                  this.$message({message: this.$t('nodeService.nodeService29'), type: 'error', duration: 1000});
+                  // this.$message({message: this.$t('nodeService.nodeService29'), type: 'error', duration: 1000});
                 }
                 that.nodeServiceDialogLoading = false;
               })
               .catch((error) => {
-                console.log(that.testInfo.success);
-                this.invalidRpc = true
+                // console.log(that.testInfo.success);
                 that.testInfo.state = 300000;
                 that.testInfo.result = error;
                 console.log("getBestBlockHeader:" + error);
-                this.$message({message: error.message || error.msg || error, type: 'error', duration: 1000});
+                // this.$message({message: error.message || error.msg || error, type: 'error', duration: 1000});
                 that.nodeServiceDialogLoading = false;
               });
           } else {
@@ -320,7 +326,7 @@
        * 添加节点提交
        * @param formName
        */
-      async submitForm(formName) {
+      async submitForm(formName, useNow = false) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
             const { chainId, assetId, defaultAsset, chainName } = this.testInfo.result
@@ -337,13 +343,15 @@
               isDelete: true
             };
             //立即使用
-            if (this.nodeServiceForm.resource) {
+            if (useNow) {
               this.$store.dispatch('changeCurrentChain', newNodeInfo)
             }
             if (this.editIndex !== 10000) {
+              // 编辑
               this.nodeServiceData[this.editIndex] = newNodeInfo;
               this.$store.commit('changeChainList', this.nodeServiceData);
             } else {
+              // 新增
               this.nodeServiceData.push(newNodeInfo);
               this.$store.commit('changeChainList', this.nodeServiceData);
             }
@@ -396,6 +404,12 @@
           cancelButtonText: this.$t('password.password2'),
           type: 'warning'
         }).then(() => {
+          
+          const node = this.nodeServiceData[index]
+          console.log(index, node)
+          if (node.apiUrl === this.currentChain.apiUrl) {
+            this.$store.dispatch('changeCurrentChain', this.nodeServiceData[0])
+          }
           this.$message({type: 'success', message: this.$t('nodeService.nodeService22')});
           this.nodeServiceData.splice(index, 1);
           this.getDelays();
@@ -427,7 +441,7 @@
         padding-bottom: 50px;
         .bg-white {
           margin: 20px auto 0;
-          padding: 20px;
+          // padding: 5px;
           .btns {
             .el-form-item__content {
               .el-button {
@@ -446,9 +460,66 @@
         }
       }
     }
+    .test-wrap {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      .el-input {
+        margin-right: 10px;
+        flex: 1
+      }
+      .el-button {
+        padding: 8px 20px;
+        border-radius: 2px;
+        span {
+          color: #fff;
+        }
+      }
+      .test-result-wrap {
+        display: flex;
+        align-items: center;
+        border: 1px solid @Ncolour;
+        padding: 0 8px;
+        border-radius: 2px;
+        span {
+          color: @Ncolour;
+          &:first-child {
+            margin-right: 2px;
+          }
+        }
+      }
+      .result-fail {
+        border-color: #F56C6C;
+        span {
+          color: #F56C6C;
+        }
+      }
+    }
     .invalid-rpc {
-      // width: 100%;
-      margin-top: 5px;
+      margin-top: 15px;
+      color: #F56C6C;
+      font-size: 14px;
+    }
+    .add-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 20px;
+      .el-button {
+        margin: 0 10px;
+        min-width: 130px;
+        span {
+          color: #fff;
+        }
+      }
+      .el-button--default {
+        span {
+          color: #606266;
+        }
+        &:hover span{
+          color: #409eff;
+        }
+      }
     }
   }
 </style>

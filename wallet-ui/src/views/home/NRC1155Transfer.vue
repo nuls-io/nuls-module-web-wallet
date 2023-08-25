@@ -352,11 +352,6 @@
         .el-form-item__label {
           color: #8794b1;
         }
-        .el-form-item__content {
-          .el-input__inner {
-            padding-right: 30px;
-          }
-        }
       }
       .send {
         margin: 0 30px 0 0;

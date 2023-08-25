@@ -267,6 +267,10 @@ export default {
       }
       &.disabled {
         opacity: 0.7;
+        border-color: #b3e19d;
+        .dot {
+          background-color: #b3e19d;
+        }
       }
       .dot {
         width: 8px;

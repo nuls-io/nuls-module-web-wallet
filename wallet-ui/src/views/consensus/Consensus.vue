@@ -105,6 +105,7 @@
               <li>{{$t('public.credit')}}<span>{{item.creditValue}}</span></li>
             </ul>
           </div>
+          <div class="no-data">{{$t('public.noData')}}</div>
           <div class="cb"></div>
         </div>
       </el-tab-pane>
