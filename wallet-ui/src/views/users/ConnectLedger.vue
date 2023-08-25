@@ -44,7 +44,8 @@
             <span class="click" @click="next">{{ $t('ledger.ledger9') }}</span>
           </div> -->
           <div class="tc">
-            <el-button :disabled="!selectedAccounts.length" @click="confirmConnect" type="success">{{ $t('public.confirm') }}</el-button>
+            <el-button v-if="!selectedAccounts.length" type="info" disabled>{{ $t('public.confirm') }}</el-button>
+            <el-button v-else @click="confirmConnect" type="success">{{ $t('public.confirm') }}</el-button>
           </div>
         </div>
       </template>
@@ -266,10 +267,10 @@ export default {
         border-color: @Ncolour;
       }
       &.disabled {
-        opacity: 0.7;
-        border-color: #b3e19d;
+        // opacity: 0.7;
+        // border-color: #b3e19d;
         .dot {
-          background-color: #b3e19d;
+          // background-color: #b3e19d;
         }
       }
       .dot {
