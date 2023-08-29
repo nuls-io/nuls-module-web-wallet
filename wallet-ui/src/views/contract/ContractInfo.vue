@@ -35,7 +35,7 @@
       </div>
       <div class="cb"></div>
       <el-tabs v-model="activeName" @tab-click="handleClick">
-        <el-tab-pane :label="$t('home.home2')" name="first" class="mb_100">
+        <el-tab-pane :label="$t('home.home2')" name="first">
           <SelectBar v-model="contractsTypeRegion" :typeOptions="contractsStatusOptions" typeName="type"
                      @change="changeType">
           </SelectBar>
@@ -85,7 +85,7 @@
           <CodeInfo></CodeInfo>
         </el-tab-pane>-->
         <el-tab-pane :label="$t('contractInfo.contractInfo6')" name="third">
-          <el-table :data="modeList" stripe border style="width: 100%" class="mzt_20 mb_100">
+          <el-table :data="modeList" stripe border style="width: 100%" class="mzt_20">
             <el-table-column label="" width="30">
             </el-table-column>
             <el-table-column prop="name" :label="$t('contractInfo.contractInfo6')" width="280">
@@ -101,7 +101,7 @@
 
         </el-tab-pane>
         <el-tab-pane :label="$t('type.16')" name="fourth" class="bg-white">
-          <div class="w630" style="padding-bottom: 50px">
+          <div class="w630" style="padding-bottom: 20px">
             <Call :modelList="modelData" :contractAddress="contractAddress" :decimals="decimals"></Call>
           </div>
         </el-tab-pane>
@@ -427,7 +427,7 @@
       height: 140px;
     }
     .el-tabs {
-      margin: 30px auto 0;
+      margin: 30px auto 80px;
     }
   }
 </style>

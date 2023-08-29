@@ -55,6 +55,7 @@ function createWindow() {
       nodeIntegration: true,
       contextIsolation: false
     },
+    title: 'NULS Wallet'
     // icon: 
   });
   if (process.env.WEBPACK_DEV_SERVER_URL) {
@@ -75,12 +76,15 @@ function createWindow() {
   })
 }
 
+let transport
 async function getProvider() {
-  const deviceList = await TransportNodeHid.list()
-  const path = deviceList && deviceList[0]
-  // console.log(path, '33333')
-  const transport = await TransportNodeHid.open(path)
-  console.log('transport: ', transport)
+  if (!transport || transport.disconnected) {
+    const deviceList = await TransportNodeHid.list()
+    const path = deviceList && deviceList[0]
+    // console.log(path, '33333')
+    transport = await TransportNodeHid.open(path)
+  }
+  console.log('transport disconnected1: ', transport.disconnected)
   const provider = new Nuls(transport)
   await checkVersion(provider)
   return provider

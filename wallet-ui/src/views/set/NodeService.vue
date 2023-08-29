@@ -3,8 +3,6 @@
        element-loading-spinner="el-icon-loading">
     <h3 class="title">{{$t('nodeService.nodeService1')}}</h3>
 
-    <span @click="xxx">ccccc</span>
-
     <div class="w1200 mt_20" v-loading="nodeServiceLoading">
       <div class="top_ico">
         <i class="el-icon-plus click" @click="addNodeService"></i>
@@ -37,6 +35,7 @@
               <span class="tab_line">|</span>
               <label class="click tab_bn" @click="removeUrl(scope.$index)">{{$t('nodeService.nodeService8')}}</label>
             </div>
+            <div v-else>--</div>
           </template>
         </el-table-column>
       </el-table>
@@ -178,9 +177,6 @@
       }, 500);
     },
     methods: {
-      xxx() {
-        location.reload()
-      },
 
       /**
        * @disc: 连接或断开
