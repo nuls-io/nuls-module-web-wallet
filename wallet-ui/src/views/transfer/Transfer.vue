@@ -174,11 +174,11 @@
             }*/
           }
           if (this.toAddressInfo.type === 2 && this.toAddressInfo.right) { // 合约地址 判断是否能向其转NULS，其他平行链资产
-          this.directPayable = false;
-          this.directPayableByOtherAsset = false;
+          // this.directPayable = false;
+          // this.directPayableByOtherAsset = false;
             const contractInfo = await this.contractInfoByContractAddress(value);
-            this.directPayable = contractInfo.directPayable;
-            this.directPayableByOtherAsset = contractInfo.directPayableByOtherAsset;
+            // this.directPayable = contractInfo.directPayable;
+            // this.directPayableByOtherAsset = contractInfo.directPayableByOtherAsset;
             if (this.assetsInfo.chainId) {
               this.$refs.transferForm.validateField('assetType');
             }
@@ -205,8 +205,13 @@
         if (this.toAddressInfo.type === 2) {
           // 往合约地址转账
           const asset = this.assetsList.find(v => v._id === value)
-          const isMainAsset = asset.chainId === this.currentChain.chainId && asset.assetId === this.currentChain.assetId
-          if (isMainAsset && this.directPayable || !isMainAsset && this.directPayableByOtherAsset) {
+          const { chainId, assetId, contractAddress } = asset
+          const isMainAsset = chainId === this.currentChain.chainId && assetId === this.currentChain.assetId
+          if (contractAddress) {
+            // 往合约地址转token
+            callback();
+          } else if ((isMainAsset && this.directPayable) || (!isMainAsset && this.directPayableByOtherAsset)) {
+            // 往合约地址转nuls/跨链资产，需判断directPayable/directPayableByOtherAsset
             callback();
           } else {
             callback(new Error(this.$t('transfer.transfer25')))
@@ -584,6 +589,7 @@
         //console.log(type);
         this.assetsInfo = asset;
         this.transferForm.assetType = _id;
+        this.$refs.transferForm.validateField('assetType');
         this.parameterValidation();
         if (this.transferForm.amount !== '') {
           this.$refs.transferForm.validateField('amount');
@@ -867,6 +873,7 @@
           const tAssemble = await this.getAssemble()
           const { pri, pub } = passwordInfo
           const txHex = await nuls.transactionSerialize(pri, pub, tAssemble);
+          console.log(txHex, '22222')
           await this.broadcastTx(txHex)
         } catch(e) {
           this.$message({message: e.message || e, type: 'error', duration: 1000});
@@ -904,12 +911,18 @@
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
+              this.directPayable = response.result.directPayable
+              this.directPayableByOtherAsset = response.result.directPayableByOtherAsset
               return response.result;
             } else {
+              this.directPayable = false
+              this.directPayableByOtherAsset = false
               return []
             }
           })
           .catch((err) => {
+            this.directPayable = false
+            this.directPayableByOtherAsset = false
             console.log(err);
             return []
           })
