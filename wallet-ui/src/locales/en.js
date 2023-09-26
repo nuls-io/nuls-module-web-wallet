@@ -13,6 +13,11 @@ const en = {
     "help": "Help",
   },
 
+  stopWallet: {
+    stopWallet1: 'The web wallet will stop serving later, you can back up your private key and download {0} to continue using it.',
+    stopWallet2: 'Desktop Wallet',
+  },
+
   "public": {
     "confirm": "Confirm",
     "cancel": "Cancel",

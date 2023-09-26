@@ -13,6 +13,11 @@ const cn = {
     "help": "帮助",
   },
 
+  stopWallet: {
+    stopWallet1: '网页钱包后续将停止服务，您可备份好私钥并下载{0}继续使用',
+    stopWallet2: '桌面钱包',
+  },
+
   "public": {
     "confirm": "确 定",
     "cancel": "取 消",
