@@ -1,11 +1,25 @@
 <template>
   <div class="address bg-gray">
+
+    <div class="stop-wallet-tip">
+      <div class="w1200">
+        <!-- <h3>
+          {{ $t('stopWallet.stopWallet1') }}
+          <a href="https://nerve.network/" target="_blank">https://nerve.network/</a>
+        </h3> -->
+        <i18n path="stopWallet.stopWallet1" tag="h3" for="stopWallet.stopWallet2">
+           <a href="https://github.com/nuls-io/nuls-v2/releases" target="_blank">{{ $t('stopWallet.stopWallet2') }}</a>
+        </i18n>
+      </div>
+    </div>
+
+
     <h3 class="title">{{$t('address.address0')}}</h3>
 
     <div class="w1200 mt_20">
-      <div class="top_ico">
+      <!-- <div class="top_ico">
         <i class="el-icon-plus click" @click="toUrl('newAddress')"></i>
-      </div>
+      </div> -->
       <el-table :data="addressList" stripe border>
         <el-table-column prop="address" :label="$t('address.address1')" align="center" min-width="350">
         </el-table-column>
@@ -18,7 +32,7 @@
         </el-table-column>
         <!-- <el-table-column prop="consensusLock" :label="$t('tab.tab3')" align="center" width="140">
          </el-table-column>-->
-        <el-table-column :label="$t('address.address3')" align="center">
+        <!-- <el-table-column :label="$t('address.address3')" align="center">
           <template slot-scope="scope">
             <span v-show="scope.row.alias">{{scope.row.alias}}</span>
             <span v-show="!scope.row.alias" @click="addAlias(scope.row)">
@@ -34,19 +48,19 @@
               <i class="el-icon-edit-outline click"></i>
             </span>
           </template>
-        </el-table-column>
+        </el-table-column> -->
         <el-table-column :label="$t('address.address5')" align="center" width="370">
           <template slot-scope="scope">
-            <el-link class="click tab_bn" v-if="scope.row.aesPri ===''" disabled>{{$t('address.address6')}}</el-link>
+            <!-- <el-link class="click tab_bn" v-if="scope.row.aesPri ===''" disabled>{{$t('address.address6')}}</el-link>
             <label class="click tab_bn" @click="editPassword(scope.row)" v-else>{{$t('address.address6')}}</label>
-            <span class="tab_line">|</span>
+            <span class="tab_line">|</span> -->
             <el-link class="click tab_bn" v-if="scope.row.aesPri ===''" disabled>{{$t('address.address7')}}</el-link>
             <label class="click tab_bn" @click="backAddress(scope.row)" v-else>{{$t('address.address7')}}</label>
             <span class="tab_line">|</span>
             <label class="click tab_bn" @click="deleteAddress(scope.row)">{{$t('address.address8')}}</label>
-            <span class="tab_line">|</span>
+            <!-- <span class="tab_line">|</span>
             <el-link disabled v-if="scope.row.selection">{{$t('public.into')}}</el-link>
-            <label class="click tab_bn" @click="selectionAddress(scope.row)" v-else>{{$t('public.into')}}</label>
+            <label class="click tab_bn" @click="selectionAddress(scope.row)" v-else>{{$t('public.into')}}</label> -->
           </template>
         </el-table-column>
       </el-table>
@@ -131,12 +145,12 @@
           }
         }
         //如果没有账户跳转到创建地址界面
-        if (this.addressList.length === 0) {
-          this.$router.push({
-            name: "newAddress",
-            query: {'address': ''}
-          })
-        }
+        // if (this.addressList.length === 0) {
+        //   this.$router.push({
+        //     name: "newAddress",
+        //     query: {'address': ''}
+        //   })
+        // }
       },
 
       /**
@@ -331,6 +345,19 @@
   @import "./../../assets/css/style";
 
   .address {
+    .stop-wallet-tip {
+      padding-top: 50px;
+      background: #fff;
+      h3 {
+        //text-indent: 40px;
+        color: #F56C6C;
+        line-height: 1.5;
+        a {
+          color: #608FFF;
+        }
+      }
+    }
+
     .el-dialog__body {
       background-color: @Bcolour;
       padding: 30px 20px 50px 20px;

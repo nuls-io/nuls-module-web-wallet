@@ -9,6 +9,33 @@ export default new Router({
     {
       path: '*',
       name: 'home',
+      component: resolve => require(['@/views/users/Address.vue'], resolve)
+    },
+    {
+      path: '/',
+      name: 'home',
+      component: resolve => require(['@/views/users/Address.vue'], resolve)
+    },
+    {
+      path: '/address',
+      name: 'address',
+      component: resolve => require(['@/views/users/Address.vue'], resolve)
+    },
+    {
+      path: '/backupsAddress',
+      name: 'backupsAddress',
+      component: resolve => require(['@/views/users/BackupsAddress.vue'], resolve)
+    },
+    {
+      path: '/nodeService',
+      name: 'nodeService',
+      component: resolve => require(['@/views/set/NodeService.vue'], resolve)
+    },
+  ]
+  /* routes: [
+    {
+      path: '*',
+      name: 'home',
       component: resolve => require(['@/views/Home.vue'], resolve)
     },
     {
@@ -135,5 +162,5 @@ export default new Router({
       name: 'application',
       component: resolve => require(['@/views/application/Application.vue'], resolve)
     }
-  ]
+  ] */
 })

@@ -280,9 +280,9 @@
           }, 400);
         }, 600);
       } else {
-        this.$router.push({
-          name: "newAddress"
-        })
+        // this.$router.push({
+        //   name: "newAddress"
+        // })
       }
     },
     mounted() {

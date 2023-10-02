@@ -5,7 +5,7 @@
         <img class="click" @click="toUrl('home')" :src=logoSvg>
       </div>
       <div class="nav">
-        <el-menu mode="horizontal" :default-active="navActives($route.path)" @select="handleSelect">
+        <!-- <el-menu mode="horizontal" :default-active="navActives($route.path)" @select="handleSelect">
           <el-menu-item index="home">{{$t('nav.wallet')}}</el-menu-item>
           <el-menu-item index="transfer" :disabled="addressList.length === 0">{{$t('nav.transfer')}}
           </el-menu-item>
@@ -15,11 +15,11 @@
             {{$t('nav.contracts')}}
           </el-menu-item>
           <el-menu-item index="application">{{$t('nav.application')}}</el-menu-item>
-        </el-menu>
+        </el-menu> -->
       </div>
       <div class="tool">
         <el-menu mode="horizontal" :default-active="navActive" @select="handleSelect">
-          <el-submenu index="address" class="user" :disabled="addressList.length === 0">
+          <!-- <el-submenu index="address" class="user" :disabled="addressList.length === 0">
             <template slot="title"><i class="iconfont iconzhanghu"></i></template>
             <el-menu-item v-for="item of addressList" :key="item.address" :index="item.address">
               <span :class="item.selection ? 'fCN' : '' ">
@@ -30,14 +30,14 @@
                 <span>{{item.balance}}</span>
               </span>
             </el-menu-item>
-          </el-submenu>
+          </el-submenu> 
           <el-submenu index="set">
             <template slot="title">{{$t('nav.set')}}</template>
             <el-menu-item index="address">{{$t('nav.addressList')}}</el-menu-item>
             <el-menu-item index="nodeService">{{$t('nav.nodeList')}}</el-menu-item>
             <el-menu-item index="contact">{{$t('public.bookList')}}</el-menu-item>
             <el-menu-item index="seting">{{$t('public.about')}}</el-menu-item>
-          </el-submenu>
+          </el-submenu>-->
 
           <el-menu-item index="lang">
             <span>{{this.lang ==="en" ? "CN":"EN"}}</span>
