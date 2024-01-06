@@ -1,21 +1,42 @@
-# NULS2.0 Universal blockchain browser module
+# NULS Module Web Wallet 
+This is an open source module. 
+The NULS Web Wallet module can provide all parachains created by NULS ChainBox to quickly launch their own Web Wallet, and can easily customize their own brand and UI.
 
-## Contribution
+*Notice: Must rely on public service api-module*
 
-Contributions to NULS are welcomed! We sincerely invite developers who experienced in blockchain field to join the NULS technology community. Details: https://nuls.community/d/9-recruitment-of-community-developers To be a great community, NULS needs to welcome developers from all walks of life, with different backgrounds, and with a wide range of experience.
+## Contribute to this module
+Click Star and Fork to start contributing improvements to this module.
+Hope more contributors can submit improvement suggestions and bug reports here.
+Issues: https://github.com/nuls-io/nuls-module-web-wallet/issues
+
+
+## Contribute to NULS
+We are committed to making blockchain technology simpler and our slogan is "NULS Making It Easier to Innovate".
+
+Get to know NULS developers
+https://nuls.io/developer
+
+You are welcome to contribute to NULS! We sincerely invite developers with rich experience in the blockchain field to join the NULS technology community.
+https://nuls.io/community
+
+Documentation：https://docs.nuls.io
+NULS Brand Assets: https://nuls.io/brand-assets
+
+
 
 ## License
 
 NULS is released under the [MIT](http://opensource.org/licenses/MIT) license.
-Modules added in the future may be released under a different license which will be specified in the module library path.
+Modules added in the future may be release under different license, will specified in the module library path.
 
 ## Community
 
-- [nuls.io](https://nuls.io/)
-- [@twitter](https://twitter.com/nulsservice)
-- [facebook](https://www.facebook.com/nulscommunity/)
-- [YouTube channel](https://www.youtube.com/channel/UCVIyQ6rE49XBm1sTvNZxQVQ)
-- Telegram [NULS Community](https://t.me/Nulsio)
-- Telegram [NULS 中文社区](https://t.me/Nulscn)
+- Website: https://nuls.io
+- Twitter: https://twitter.com/nuls
+- Discord:https://discord.gg/aRCwbj47WN
+- Telegram: https://t.me/Nulsio)
+- Medium: https://nuls.medium.com
+- Forum: https://forum.nuls.io
+- GitHub: https://github.com/nuls-io
 
 ####  
