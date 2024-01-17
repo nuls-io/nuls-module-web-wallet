@@ -1,4 +1,4 @@
-# NULS Module Web Wallet 
+# NULS2.0 Web Wallet Module
 This is an open source module. 
 The NULS Web Wallet module can provide all parachains created by NULS ChainBox to quickly launch their own Web Wallet, and can easily customize their own brand and UI.
 
@@ -35,7 +35,7 @@ Modules added in the future may be release under different license, will specifi
 - Website: https://nuls.io
 - Twitter: https://twitter.com/nuls
 - Discord:https://discord.gg/aRCwbj47WN
-- Telegram: https://t.me/Nulsio)
+- Telegram: https://t.me/Nulsio
 - Medium: https://nuls.medium.com
 - Forum: https://forum.nuls.io
 - GitHub: https://github.com/nuls-io
