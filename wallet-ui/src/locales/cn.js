@@ -85,7 +85,8 @@ const cn = {
 
     "developers": "开发者：",
     "sponsoredAddress": "赞助地址：",
-    "noData": "暂无数据"
+    "noData": "暂无数据",
+    "InsufficientBalance": "余额不足"
   },
 
   "status": {

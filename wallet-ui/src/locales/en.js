@@ -85,7 +85,8 @@ const en = {
 
     "developers": "Developers：",
     "sponsoredAddress": "Sponsored Address：",
-    "noData": "No Data"
+    "noData": "No Data",
+    "InsufficientBalance": "Insufficient balance"
   },
 
   "status": {

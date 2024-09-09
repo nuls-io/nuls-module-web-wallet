@@ -11,14 +11,21 @@ export function isMainNet(chainId) {
   return chainId === currentChain.chainId;
 }
 
+export function calTxSize(tx, signatrueCount) {
+  let txSize = tx.txSerialize().length;
+  txSize += signatrueCount * 110;
+  return Math.ceil(txSize / 1024)
+}
+
 /**
  * 计算手续费
  * @param tx
  * @param signatrueCount 签名数量，默认为1
  **/
 export function countFee(tx, signatrueCount) {
-  let txSize = tx.txSerialize().length;
-  txSize += signatrueCount * 110;
+  // let txSize = tx.txSerialize().length;
+  // txSize += signatrueCount * 110;
+  const size = calTxSize(tx, signatrueCount)
   return 100000 * Math.ceil(txSize / 1024);
 }
 
@@ -186,6 +193,102 @@ export async function inputsOrOutputs(transferInfo, balanceInfo, type, multyAsse
   /*console.log(inputs);
   console.log(outputs);*/
   return {success: true, data: {inputs: inputs, outputs: outputs}};
+}
+
+export async function getTransferInOrOutPuts(transferInfo, feeInfo, type, multyAssets) {
+  //console.log(transferInfo, feeInfo, 999)
+  const { fromAddress, toAddress, assetsChainId, assetsId, amount, value } = transferInfo
+  let { feeChainId, feeAssetId, feeAmount } = feeInfo
+  feeChainId = +feeChainId
+  feeAssetId = +feeAssetId
+  const assetInfo = (await getNulsBalance(assetsChainId, assetsId, fromAddress)).data;
+  let inputs = []
+  if (Number(amount)) {
+    inputs = [{
+      address: fromAddress,
+      assetsChainId,
+      assetsId,
+      amount,
+      locked: 0,
+      nonce: assetInfo.nonce
+    }]
+  }
+  let outputs = []
+
+  if (assetsChainId === feeChainId && assetsId === feeAssetId) {
+    if (inputs[0]) {
+      inputs[0].amount = Plus(amount, feeAmount).toFixed()
+    } else {
+      inputs = [{
+        address: fromAddress,
+        assetsChainId,
+        assetsId,
+        amount: Plus(amount, feeAmount).toFixed(),
+        locked: 0,
+        nonce: assetInfo.nonce
+      }]
+    }
+  } else {
+    const feeAssetInfo = (await getNulsBalance(feeChainId, feeAssetId, fromAddress)).data;
+    inputs.push({
+      address: fromAddress,
+      assetsChainId: feeChainId,
+      assetsId: feeAssetId,
+      amount: feeAmount,
+      locked: 0,
+      nonce: feeAssetInfo.nonce
+    })
+  }
+
+  if (type === 2 || type === 10) {
+    outputs = [{
+      address: toAddress ? toAddress : fromAddress,
+      assetsChainId,
+      assetsId,
+      amount: amount,
+      lockTime: 0
+    }];
+  } else if (type === 16) {
+    // inputs[0].amount = Number(Plus(transferInfo.amount, 100000));
+    if (toAddress) {
+      if (Number(value)) { //向合约地址转nuls
+        //inputs[0].amount = transferInfo.amount;
+        outputs = [{
+          address: toAddress,
+          assetsChainId: assetsChainId,
+          assetsId: assetsId,
+          amount: value,
+          lockTime: 0
+        }];
+      }
+    }
+    if (multyAssets && multyAssets.length) { // 向合约地址转平行链资产
+      let length = multyAssets.length;
+      for (let i = 0; i < length; i++) {
+        let multyAsset = multyAssets[i];
+        let _balanceInfo = await getNulsBalance(multyAsset.assetChainId, multyAsset.assetId, fromAddress);
+        if (_balanceInfo.data.balance < Number(multyAsset.value)) {
+          throw "Your balance of " + multyAsset.assetChainId + "-" + multyAsset.assetId + " is not enough.";
+        }
+        inputs.push({
+          address: fromAddress,
+          assetsChainId: multyAsset.assetChainId,
+          assetsId: multyAsset.assetId,
+          amount: multyAsset.value,
+          locked: 0,
+          nonce: _balanceInfo.data.nonce
+        });
+        outputs.push({
+          address: toAddress,
+          assetsChainId: multyAsset.assetChainId,
+          assetsId: multyAsset.assetId,
+          amount: multyAsset.value,
+          lockTime: 0
+        });
+      }
+    }
+  }
+  return { inputs, outputs }
 }
 
 /**

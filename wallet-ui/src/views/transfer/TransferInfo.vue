@@ -17,7 +17,7 @@
           {{$t('public.height')}}
           <label class="click"><u class="td" @click="toUrl('height',txInfo.height)">{{txInfo.height}}</u></label>
         </li>
-        <li>{{$t('public.fee')}} <label>{{txInfo.fees}}<span class="fCN">{{symbol}}</span></label></li>
+        <li>{{$t('public.fee')}} <label>{{txInfo.fees}}<span class="fCN">{{txInfo.fee.symbol}}</span></label></li>
         <li>{{$t('public.type')}} <label>{{$t('type.'+txInfo.type)}}</label></li>
         <li>
           {{$t('public.status')}}
@@ -251,7 +251,7 @@
             console.log(response);
             if (response.hasOwnProperty("result")) {
               response.result.createTime = moment(getLocalTime(response.result.createTime * 1000)).format('YYYY-MM-DD HH:mm:ss');
-              response.result.fees = divisionDecimals(response.result.fee.value);
+              response.result.fees = divisionDecimals(response.result.fee.value, response.result.fee.decimals || 8);
               response.result.value = divisionDecimals(response.result.value,response.result.decimal);
               //输入
               if (response.result.coinFroms) {
