@@ -39,18 +39,6 @@
             </el-form>
           </div>
         </el-tab-pane>
-        <el-tab-pane :label="$t('tips.tips10')" name="scanImport">
-          <div class="scan tc">
-            <div id="qrcode" class="qrcode"></div>
-            <div class="font12" style="margin: 20px 0 0 0">
-              {{$t('tips.tips18')}}
-              <span class="click td" @click="toUrl('http://nabox.io/',1)">Nabox</span>
-              /
-              <span class="click td" @click="toUrl('https://www.denglu1.cn/',1)">{{$t('tips.tips11')}}</span>
-              {{$t('tips.tips19')}}
-            </div>
-          </div>
-        </el-tab-pane>
         <el-tab-pane :label="$t('importAddress.importAddress0')" name="newAddress" :disabled="resetAddress !=='0'">
           <div class="new_address">
             <el-form :model="newAddressForm" status-icon :rules="newAddressRules" ref="newAddressForm"
@@ -74,6 +62,9 @@
             </el-form>
           </div>
         </el-tab-pane>
+        <el-tab-pane :label="$t('ledger.ledger1')" name="ledger" :disabled="resetAddress !=='0'">
+          <ConnectLedger :active="activeName==='ledger'" />
+        </el-tab-pane>
       </el-tabs>
     </div>
     <Password ref="password" @passwordSubmit="keystoreImportPassSubmit">
@@ -83,20 +74,16 @@
 
 <script>
   import nuls from 'nuls-sdk-js'
-  import QRCode from 'qrcodejs2'
   import {
     chainID,
     defaultAddressInfo,
     localStorageByAddressInfo,
     passwordVerification,
-    getRamNumber,
-    timesDecimals,
-    Plus,
     connectToExplorer
   } from '@/api/util'
-  import {getPrefixByChainId} from '@/api/requestData'
   import Password from '@/components/PasswordBar'
   import Upload from '@/components/Upload.vue'
+  import ConnectLedger from './ConnectLedger.vue'
 
   export default {
     data() {
@@ -163,7 +150,6 @@
       };
       return {
         activeName: 'keystoreImport',//tab选中
-        prefix: '',//地址前缀
         isfileReader: typeof FileReader === "undefined",//浏览器是否支持FileReader
         keystoreInfo: {},//keystore导入文本信息
         resetAddress: this.$route.query.address ? this.$route.query.address : '0',//重置密码地址
@@ -185,7 +171,6 @@
           ]
         },
         importAddressInfo: {},//私钥导入地址信息
-        importRandomString: '',//扫描导入随机字符串
 
         newAddressForm: {
           pass: '',
@@ -204,52 +189,17 @@
           ],
         },
         newAddressInfo: {},//创建地址信息
-        scanImportInterval: null,
       };
     },
     components: {
       Password,
-      Upload
+      Upload,
+      ConnectLedger
     },
     created() {
-      getPrefixByChainId(chainID()).then((response) => {
-        this.prefix = response
-      }).catch((err) => {
-        console.log(err);
-        this.prefix = '';
-      });
       this.activeName = this.resetAddress !== '0' ? 'keyImport' : 'keystoreImport';
     },
-    mounted() {
-      this.ramNumber();
-    },
-    beforeDestroy() {
-      clearInterval(this.scanImportInterval);
-    },
     methods: {
-
-      /**
-       * @disc: 生成扫描登录的二维码
-       * @date: 2019-12-02 16:38
-       * @author: Wave
-       */
-      async ramNumber() {
-        if (!this.importRandomString) {
-          this.importRandomString = await getRamNumber(16);
-        }
-        let scanInfo = {
-          url: localStorage.hasOwnProperty('url') ? JSON.parse(localStorage.getItem('url')).urls : 'https://beta.wallet.nuls.io/api',
-          send: this.importRandomString,
-        };
-        console.log(this.importRandomString);
-        let qrcode = new QRCode('qrcode', {
-          width: 250,
-          height: 250,
-          colorDark: "#000000",
-          colorLight: "#ffffff",
-        });
-        qrcode.makeCode(JSON.stringify(scanInfo))
-      },
 
       /**
        * @disc: tab选择
@@ -267,71 +217,11 @@
           this.keystoreInfo = {};
           this.newAddressInfo = {};
           this.$refs['newAddressForm'].resetFields();
-        } else if (tab.name === 'scanImport') {
-          this.scanImportInterval = setInterval(() => {
-            this.getScanImport(this.importRandomString);
-          }, 3000);
         } else {
           this.keystoreInfo = {};
           this.importAddressInfo = {};
           this.$refs['importForm'].resetFields();
         }
-      },
-
-      /**
-       * @disc: 获取扫描导入后的信息
-       * @params: importRandomString
-       * @date: 2019-12-02 16:39
-       * @author: Wave
-       */
-      async getScanImport(importRandomString) {
-        await this.$post('/', 'getMsg', [importRandomString])
-          .then((response) => {
-            //console.log(response);
-            if (response.hasOwnProperty("result")) {
-              let addressInfo = {address: response.result.address, aesPri: '', pub: ''};
-              this.getAddressInfo(addressInfo);
-            }
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      },
-
-      /**
-       * 获取地址NULS资产信息
-       * @param addressInfo
-       **/
-      async getAddressInfo(addressInfo) {
-        await this.$post('/', 'getAccountLedgerList', [addressInfo.address])
-          .then((response) => {
-            //console.log(response);
-            let newAssetsList = {
-              address: addressInfo.address,
-              aesPri: addressInfo.aesPri,
-              pub: addressInfo.pub,
-              remark: ''
-            };
-            if (response.hasOwnProperty("result")) {
-              newAssetsList.account = response.result[0].symbol;
-              newAssetsList.chainId = response.result[0].chainId;
-              newAssetsList.assetId = response.result[0].assetId;
-              newAssetsList.type = 1;
-              newAssetsList.balance = Number(timesDecimals(response.result[0].balance)).toFixed(3);
-              newAssetsList.locking = Number(timesDecimals(Plus(response.result[0].consensusLock, response.result[0].timeLock))).toFixed(3);
-              newAssetsList.total = response.result[0].totalBalance !== 0 ? Number(timesDecimals(response.result[0].totalBalance)).toFixed(3) : 0;
-            } else {
-              newAssetsList.account = response.result.symbol;
-              newAssetsList.chainId = response.result.chainId;
-              newAssetsList.assetId = response.result.assetId;
-              newAssetsList.type = 1;
-              newAssetsList.total = 0;
-              newAssetsList.locking = 0;
-              newAssetsList.balance = 0;
-            }
-            localStorageByAddressInfo(newAssetsList);
-            this.toUrl('address')
-          })
       },
 
       /**
@@ -359,13 +249,14 @@
        * @author: Wave
        */
       async keystoreImportPassSubmit(password) {
-        let isPassword = passwordVerification(this.keystoreInfo, password, this.prefix);
+        let isPassword = await passwordVerification(this.keystoreInfo, password, this.$store.state.prefix);
         if (isPassword.success) {
           let keystoreAddressInfo = defaultAddressInfo;
           keystoreAddressInfo.address = isPassword.address;
           keystoreAddressInfo.aesPri = isPassword.aesPri;
           keystoreAddressInfo.pub = isPassword.pub;
-          localStorageByAddressInfo(keystoreAddressInfo);
+          const accountList = localStorageByAddressInfo(keystoreAddressInfo);
+          this.$store.commit('changeAccouuntList', accountList)
           this.toUrl('address')
         } else {
           this.$message({message: this.$t('address.address13'), type: 'error', duration: 3000});
@@ -381,7 +272,7 @@
       keyImport(formName) {
         this.$refs[formName].validate(async (valid) => {
           if (valid) {
-            const newAddressInfo = nuls.importByKey(chainID(), this.importForm.keys, this.importForm.pass, this.prefix);
+            const newAddressInfo = nuls.importByKey(chainID(), this.importForm.keys, this.importForm.pass, this.$store.state.prefix);
             if (newAddressInfo.hasOwnProperty('success') && !newAddressInfo.success) {
               this.$message({message: newAddressInfo.data, type: 'error', duration: 3000});
               return;
@@ -390,7 +281,9 @@
             keyAddressInfo.address = newAddressInfo.address;
             keyAddressInfo.aesPri = newAddressInfo.aesPri;
             keyAddressInfo.pub = newAddressInfo.pub;
-            localStorageByAddressInfo(keyAddressInfo);
+            const accountList = localStorageByAddressInfo(keyAddressInfo);
+            console.log(accountList, '33344')
+            this.$store.commit('changeAccouuntList', accountList)
             this.toUrl('address')
           } else {
             return false;
@@ -407,15 +300,16 @@
       newAddressSubmitForm(formName) {
         this.$refs[formName].validate(async (valid) => {
           if (valid) {
-            this.newAddressInfo = nuls.newAddress(chainID(), this.newAddressForm.pass, this.prefix);
+            this.newAddressInfo = nuls.newAddress(chainID(), this.newAddressForm.pass, this.$store.state.prefix);
             let newAddressInfos = defaultAddressInfo;
             newAddressInfos.address = this.newAddressInfo.address;
             newAddressInfos.aesPri = this.newAddressInfo.aesPri;
             newAddressInfos.pub = this.newAddressInfo.pub;
-            localStorageByAddressInfo(newAddressInfos);
+            const accountList = localStorageByAddressInfo(newAddressInfos);
+            this.$store.commit('changeAccouuntList', accountList)
             this.$router.push({
               name: "backupsAddress",
-              query: {'backAddressInfo': newAddressInfos}
+              query: {'address': newAddressInfos.address}
             })
           } else {
             return false;
@@ -469,12 +363,12 @@
               margin: 10px 20px 20px;
               border-radius: 4px;
               &:hover {
-                background: linear-gradient(to right, #67C23A, #67C23A);
+                background: linear-gradient(to right, #00DB82, #00DB82);
                 color: #FFFFFF;
               }
             }
             .is-active {
-              background: linear-gradient(to right, #67C23A, #67C23A);
+              background: linear-gradient(to right, #00DB82, #00DB82);
               color: #FFFFFF;
             }
           }

@@ -9,24 +9,18 @@
     </div>
     <div class="w1200 mt_20 bg-white set_info">
       <div class="tc mzt_20">
-        <h4 class="font24 mb_20">{{symbol}} Wallet</h4>
+        <h4 class="font24 mb_20">NULS Wallet</h4>
         <!--<p class="font16">{{$t('public.logInfo')}}: <span class="click" @click="seeLog">{{$t('public.see')}}</span></p>-->
         <ul>
           <li v-show="RUN_PATTERN"><span>{{$t('public.operatingSystem')}}:</span>{{system}}</li>
           <li>
             <span>{{$t('public.version')}}:</span>
-            <font v-if="RUN_DEV"> {{version}}</font>
-            <font v-else>Beta-{{version}}</font>
-          </li>
-          <li v-show="false">
-            <span>{{$t('public.version1')}}:</span>
-            <font v-if="RUN_DEV">{{newVersion}}</font>
-            <font v-else>Beta-{{newVersion}}</font>
+            <font>{{version}}</font>
           </li>
           <li v-show="RUN_PATTERN && system !== 'Darwin'"><span>{{$t('public.logInfo')}}:</span>{{logUrl}}</li>
           <li v-show="system === 'Darwin'">
-            <span>{{$t('public.downloadUrl')}}:</span>
-            <font>{{FILE_URL}}</font>
+            <span>GitHub:</span>
+            <font>https://github.com/nuls-io/nuls-v2/releases</font>
           </li>
         </ul>
         <el-button type="success" @click="checkUpdate" v-show="RUN_PATTERN">
@@ -55,13 +49,12 @@
 
 <script>
   import packages from './../../../package'
-  import {RUN_PATTERN, RUN_DEV, FILE_URL} from '@/config.js'
+  import {RUN_PATTERN, FILE_URL} from '@/config/index'
   import { openner } from "@/api/opener";
 
   export default {
     data() {
       return {
-        symbol: sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS',
         updateDialogVisible: false,//更新弹框
         tips: {},//提示信息
         downloadPercent: 0,//下载进度
@@ -70,7 +63,6 @@
         version: packages.version,//版本号
         newVersion: '1.0.0',//最新版本号
         RUN_PATTERN: RUN_PATTERN,//运行模式
-        RUN_DEV: RUN_DEV,// 运行环境
         FILE_URL: FILE_URL,//桌面程序下载路径
       };
     },

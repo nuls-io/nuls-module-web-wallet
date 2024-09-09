@@ -9,24 +9,25 @@
 
     <div class="w1200 mt_20">
       <el-table :data="txListData" stripe border>
-        <el-table-column :label="$t('tab.tab1')" align="center">
+        <el-table-column width="30"></el-table-column>
+        <el-table-column :label="$t('tab.tab1')">
           <template slot-scope="scope"><span>{{ $t('frozenType.'+scope.row.type) }}</span></template>
         </el-table-column>
-        <el-table-column label="txHash" align="center" min-width="150">
+        <el-table-column label="txHash" min-width="150">
           <template slot-scope="scope">
             <span class="click" @click="toUrl('transferInfo',scope.row.txHash)">{{scope.row.txHashs}}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" :label="$t('tab.tab5')" align="center">
+        <el-table-column prop="createTime" :label="$t('tab.tab5')">
         </el-table-column>
-        <el-table-column prop="values" :label="$t('tab.tab6')" align="center">
+        <el-table-column prop="values" :label="$t('tab.tab6')">
         </el-table-column>
-        <el-table-column :label=" $t('tab.tab7')" align="center">
+        <el-table-column :label=" $t('tab.tab7')">
           <template slot-scope="scope">
             <span>{{scope.row.lockedValue === -1 ? '--': scope.row.lockedTime}}</span>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('tab.tab8')" align="center">
+        <el-table-column :label="$t('tab.tab8')">
           <template slot-scope="scope">
             <span>{{scope.row.type === 3 ? $t('type.5'):  $t('frozenType.'+scope.row.type)}}</span>
           </template>
@@ -50,7 +51,7 @@
 
 <script>
   import moment from 'moment'
-  import {timesDecimals, getLocalTime, superLong, addressInfo} from '@/api/util'
+  import {divisionDecimals, divisionAndFix, getLocalTime, superLong} from '@/api/util'
   import BackBar from '@/components/BackBar'
 
   export default {
@@ -60,19 +61,28 @@
         pageIndex: 1, //页码
         pageSize: 10, //每页条数
         pageTotal: 0,//总页数
-        addressInfo: [], //账户信息
 
       };
     },
-    created() {
-      this.addressInfo = addressInfo(1);
-      setInterval(() => {
-        this.addressInfo = addressInfo(1);
-      }, 500);
+    computed: {
+      addressInfo() {
+        return this.$store.getters.currentAccount
+      },
+      currentChain() {
+        return this.$store.state.currentChain
+      },
     },
-    mounted() {
-      if (this.$route.query.accountInfo) {
-        this.getTxListByAddress(this.$route.query.accountInfo.chainId, this.$route.query.accountInfo.assetId, this.addressInfo.address, this.pageIndex, this.pageSize);
+    watch: {
+      'addressInfo.address': {
+        handler(val) {
+          if (val) {
+            this.pageTotal = 0
+            this.pageIndex =  1
+            this.txListData = []
+            this.getTxListByAddress()
+          }
+        },
+        immediate: true
       }
     },
     components: {
@@ -88,8 +98,10 @@
        * @param pageIndex
        * @param pageSize
        **/
-      getTxListByAddress(chainId, assetId, address, pageIndex, pageSize) {
-        this.$post('/', 'getAccountFreezes', [chainId, assetId,address, pageIndex, pageSize])
+      getTxListByAddress() {
+        console.log(this.$route.query)
+        const {chainId, assetId} = this.$route.query
+        this.$post('/', 'getAccountFreezes', [chainId, assetId, this.addressInfo.address, this.pageIndex, this.pageSize])
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
@@ -97,8 +109,8 @@
               for (let item of response.result.list) {
                 item.createTime = moment(getLocalTime(item.time * 1000)).format('YYYY-MM-DD HH:mm:ss');
                 item.txHashs = superLong(item.txHash, 16);
-                item.balance = timesDecimals(item.amount);
-                item.values = Number(timesDecimals(item.amount)).toFixed(3);
+                item.balance = divisionDecimals(item.amount);
+                item.values = divisionAndFix(item.amount, 8, 3);
                 item.lockedTime = moment(getLocalTime(item.lockedValue*1000)).format('YYYY-MM-DD HH:mm:ss');
                 if (item.type === 2) {
                   item.reason = "注销节点";
@@ -125,7 +137,7 @@
        */
       frozenListPages(val) {
         this.pageIndex = val;
-        this.getTxListByAddress(this.$route.query.accountInfo.chainId, this.$route.query.accountInfo.assetId, this.addressInfo.address, this.pageIndex, this.pageSize);
+        this.getTxListByAddress();
       },
 
       /**

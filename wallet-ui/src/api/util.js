@@ -1,8 +1,10 @@
 import nuls from 'nuls-sdk-js'
 import {BigNumber} from 'bignumber.js'
 import copy from 'copy-to-clipboard'
-import {explorerUrl, RUN_DEV} from '@/config.js'
+import { defaultNodes } from '@/config/index'
 import { openner } from "./opener";
+import storage from './storage';
+import { getPrefixByChainId } from './requestData'
 
 /**
  * 10的N 次方
@@ -63,46 +65,48 @@ export function Division(nu, arg) {
   return newDiv.div(arg);
 }
 
+
 /**
- * 数字除以精度系数
+ * 数字乘以精度系数
  */
 export function timesDecimals(nu, decimals) {
-  let newInfo = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')) : '';
-  let newDecimals = decimals ? decimals : newInfo.defaultAsset.decimals;
+  const currentChain = getCurrentChain()
+  const newDecimals = decimals ? decimals : currentChain.decimals || 8;
   if (decimals === 0) {
     return nu
   }
-  let fmt = {groupSeparator: ',',};
-  BigNumber.config({FORMAT: fmt});
-  return Number(Division(nu, Number(Power(newDecimals))))
+  const result = new BigNumber(Times(nu, Power(newDecimals))).toFormat().replace(/[,]/g, '');
+  return result;
 }
 
 /**
  * 数字除以精度系数
  */
 export function divisionDecimals(nu, decimals = '') {
-  let newInfo = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')) : '';
-  let newDecimals = decimals ? decimals : newInfo.defaultAsset.decimals;
+  const currentChain = getCurrentChain()
+  const newDecimals = decimals ? decimals : currentChain.decimals || 8;
   if (decimals === 0) {
     return nu
   }
-  let newNu = new BigNumber(Division(nu, Power(newDecimals)).toString());
-  return newNu.toFixed()
-  // console.log(newNu, nu,'===--===',decimals)
-  // return newNu.toFormat().replace(/[,]/g, '');
+  return new BigNumber(Division(nu, Power(newDecimals)))
+    .toFormat()
+    .replace(/[,]/g, '');
 }
 
-/**
- * 数字乘以精度系数
- */
-export function timesDecimals0(nu, decimals) {
-  let newInfo = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')) : '';
-  let newDecimals = decimals ? decimals : newInfo.defaultAsset.decimals;
-  if (decimals === 0) {
-    return nu
-  }
-  let newNu = new BigNumber(Times(nu, Power(newDecimals)));
-  return newNu;
+export function divisionAndFix(nu, decimals = 8, fix = 6) {
+  if (!nu) return '0';
+  const newFix = fix ? fix : Number(decimals);
+  const str = new BigNumber(Division(nu, Power(decimals))).toFixed(newFix);
+  return fixNumber(str, newFix);
+}
+
+export function fixNumber(str, fix = 8) {
+  str = '' + str;
+  const int = str.split('.')[0];
+  let float = str.split('.')[1];
+  if (!float || !Number(float)) return int;
+  float = float.slice(0, fix).replace(/(0+)$/g, '');
+  return Number(float) ? int + '.' + float : int;
 }
 
 /**
@@ -110,8 +114,8 @@ export function timesDecimals0(nu, decimals) {
  *
  */
 export function timesDecimalsBig(nu, decimals) {
-  let newInfo = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')) : '';
-  let newDecimals = decimals ? decimals : newInfo.defaultAsset.decimals;
+  const currentChain = getCurrentChain()
+  const newDecimals = decimals ? decimals : currentChain.decimals || 8;
   if (decimals === 0) {
     return nu
   }
@@ -129,10 +133,10 @@ export function timesDecimalsBig(nu, decimals) {
  * @date: 2019-08-22 12:05
  * @author: Wave
  */
-export function passwordVerification(accountInfo, password, prefix) {
+export async function passwordVerification(accountInfo, password, prefix) {
   const pri = nuls.decrypteOfAES(accountInfo.aesPri, password);
-  if (!prefix && sessionStorage.hasOwnProperty('info')) {
-    prefix = JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol
+  if (!prefix) {
+    prefix = await getPrefixByChainId(accountInfo.chainId)
   }
   const newAddressInfo = nuls.importByKey(chainID(), pri, password, prefix);
   if (newAddressInfo.address === accountInfo.address || nuls.addressEquals(accountInfo.address, newAddressInfo.address)) {
@@ -142,17 +146,18 @@ export function passwordVerification(accountInfo, password, prefix) {
   }
 }
 
+
+export function getCurrentChain() {
+  return storage.get('currentChain') || defaultNodes[0]
+}
+
 /**
  * 获取链ID
  * @returns {number}
  */
 export function chainID() {
-  if (localStorage.hasOwnProperty('url') && localStorage.getItem('url') !== 'undefined') {
-    let newUrl = JSON.parse(localStorage.getItem('url'));
-    return newUrl.chainId
-  } else {
-    return RUN_DEV ? 1 : 2;
-  }
+  const currentChain = getCurrentChain()
+  return currentChain.chainId
 }
 
 /**
@@ -170,7 +175,7 @@ export function chainIdNumber() {
  */
 export function addressInfo(type) {
   let chainNumber = 'chainId' + chainID();
-  let addressList = localStorage.hasOwnProperty(chainNumber) ? JSON.parse(localStorage.getItem(chainNumber)) : [];
+  let addressList = storage.get(chainNumber) || [];
   if (addressList) {
     if (type === 0) {
       return addressList
@@ -296,6 +301,14 @@ export function getArgs(parameterList) {
  */
 export function connectToExplorer(name, parameter) {
   let newUrl = '';
+  const currentChain = storage.get('currentChain')
+  let explorerUrl = defaultNodes[0].explorerUrl
+  if (currentChain && currentChain.explorerUrl) {
+    explorerUrl = currentChain.explorerUrl
+  }
+  if (!explorerUrl.endsWith('/')) {
+    explorerUrl += '/'
+  }
   if (name === 'height') {
     newUrl = explorerUrl + 'block/info?height=' + parameter
   } else if (name === 'address') {
@@ -315,12 +328,7 @@ export function connectToExplorer(name, parameter) {
   } else if (name === 'nuls') {
     newUrl = parameter
   }
-  //console.log(newUrl);
-  let symbol = sessionStorage.hasOwnProperty('info') ? JSON.parse(sessionStorage.getItem('info')).defaultAsset.symbol : 'NULS';
-  if (symbol === 'NULS') {
-    //console.log(newUrl);
-    openner(newUrl);
-  }
+  openner(newUrl);
 }
 
 //地址必须参数列表
@@ -365,8 +373,7 @@ export function localStorageByAddressInfo(newAddressInfo) {
     newAddressInfo.selection = true;
     addressList.push(newAddressInfo);
   }
-  //console.log(addressList);
-  localStorage.setItem(chainIdNumber(), JSON.stringify(addressList));
+  return addressList
 }
 
 /**

@@ -9,7 +9,7 @@ const cn = {
     "application": "应用",
     "set": "设置",
     "addressList": "账户管理",
-    "nodeList": "服务节点",
+    "nodeList": "网络管理",
     "help": "帮助",
   },
 
@@ -85,7 +85,8 @@ const cn = {
 
     "developers": "开发者：",
     "sponsoredAddress": "赞助地址：",
-
+    "noData": "暂无数据",
+    "InsufficientBalance": "余额不足"
   },
 
   "status": {
@@ -191,8 +192,8 @@ const cn = {
     "ac_0011": "包含未加密的账户",
     "ac_0012": "私钥格式不正确",
     "ac_0013": "删除别名失败",
-    "ac_0014": "账户keystore不存在",
-    "ac_0015": "账户keystore已损坏",
+    "ac_0014": "账户Keystore不存在",
+    "ac_0015": "账户Keystore已损坏",
     "ac_0016": "别名格式错误",
     "ac_0017": "密码格式错误",
     "ac_0018": "账户加密失败",
@@ -503,12 +504,13 @@ const cn = {
     "tab24": "完成备份",
     "tab25": "合约资产",
     "tab26": "资产概览",
-    "tab27": "充值",
+    "tab27": "收款",
     "tab28": "明细",
-    "tab29": "移除成功后，账户信息将被彻底删除，请确认已备份好账户私钥或keystore",
+    "tab29": "移除成功后，账户信息将被彻底删除，请确认已备份好账户私钥或Keystore",
     "tab30": "前往备份",
     "tab31": "转账",
     "tab32": "安全警告:",
+    "tab33": "编辑联系人"
   },
 
   "type": {
@@ -630,7 +632,7 @@ const cn = {
     "password1": "请输入密码",
     "password2": "取 消",
     "password3": "确 定",
-    "password4": "记住密码(浏览器关闭会清除)",
+    "password4": "记住密码(应用关闭会清除)",
   },
 
   "home": {
@@ -649,6 +651,11 @@ const cn = {
     "home12": "名称",
     "home13": "持有量",
     "home14": "合约地址",
+    "home15": "NRC1155资产",
+    "home16": "数量",
+    "home17": "请输入转账数量",
+    "home18": "转账数量必须为整数",
+    "home19": "最大转账数量为: ",
   },
 
   "frozenList": {
@@ -746,7 +753,7 @@ const cn = {
 
   "nodeService": {
     "nodeService0": "节点切换中...",
-    "nodeService1": "节点服务列表",
+    "nodeService1": "网络列表",
     "nodeService2": "名称",
     "nodeService3": "服务地址",
     "nodeService4": "延迟",
@@ -765,12 +772,22 @@ const cn = {
     "nodeService16": "节点不可以连接",
     "nodeService17": "连接失败",
     "nodeService18": "请求超时",
-    "nodeService19": "此操作将移除",
-    "nodeService20": "节点服务是否继续?",
+    "nodeService19": "此操作将移除 {apiUrl} 节点服务，是否继续？",
+    "nodeService20": "",
     "nodeService21": "提示",
     "nodeService22": "移除成功",
     "official": "官方",
     "nodeService23": "链名",
+    "nodeService24": "地址前缀",
+    "nodeService25": "浏览器地址",
+    "nodeService26": "地址前缀不能为空",
+    "nodeService27": "浏览器地址不能为空",
+    "nodeService28": "请输入正确的浏览器地址",
+    "nodeService29": "无效的服务地址",
+    "nodeService30": "网络重复",
+    "nodeService31": "连接成功",
+    "nodeService32": "无法连接",
+    "nodeService33": "仅添加",
   },
 
   "address": {
@@ -806,7 +823,7 @@ const cn = {
     "newAddress10": "下一步",
     "newAddress11": "导入钱包",
     "newAddress12": "您的账户地址",
-    "newAddress13": "请保存好你的keystore或私钥，如若遗失，钱包将无法帮你找回",
+    "newAddress13": "请保存好你的Keystore或私钥，如若遗失，钱包将无法帮你找回",
     "newAddress131": "请保存好你的私钥，如若遗失，钱包将无法帮你找回",
     "newAddress14": "请勿向他人分享！ 如在恶意网站使用此文件，您的资金可能面临被盗窃的风险",
     "newAddress15": "请制作备份！ 以防您的电脑故障",
@@ -820,9 +837,9 @@ const cn = {
     "newAddress23": "请输入由字母和数字组合的8-20位密码",
     "newAddress24": "请再次输入密码",
     "newAddress25": "两次输入密码不一致",
-    "newAddress26": "keystore保存失败，请重启再试一次 ",
+    "newAddress26": "Keystore保存失败，请重启再试一次 ",
     "newAddress27": "文件保存完成，位置:",
-    "newAddress28": "请选择keystore文件的保存位置",
+    "newAddress28": "请选择Keystore文件的保存位置",
     "newAddress29": "请选择知晓密码提示",
     "newAddress": "",
 
@@ -863,10 +880,10 @@ const cn = {
     "importAddress11": "请输入由字母和数字组合的8-20位密码",
     "importAddress12": "请再次输入密码",
     "importAddress13": "两次输入密码不一致",
-    "importAddress14": "请选择导入的keystore文件",
-    "importAddress15": "keystore导入失败，请重启再试一次 ",
-    "importAddress16": "请选择正确的keystore文件",
-    "importAddress17": "请选择一个要导入keystore文件",
+    "importAddress14": "请选择导入的Keystore文件",
+    "importAddress15": "Keystore导入失败，请重启再试一次 ",
+    "importAddress16": "请选择正确的Keystore文件",
+    "importAddress17": "请选择一个要导入Keystore文件",
     "importAddress18": "将文件拖到此处，或",
     "importAddress19": "点击上传",
   },
@@ -978,8 +995,8 @@ const cn = {
   },
 
   "bottom": {
-    "serviceNode": "服务节点",
-    "nodeHeight": "主网/服务节点",
+    "serviceNode": "当前网络",
+    "nodeHeight": "主网/当前网络",
     "agreement": "服务协议",
     "policy": "隐私政策",
     "updateWallet": "更新钱包",
@@ -1128,6 +1145,21 @@ const cn = {
     "application14": "一对多转账交易",
     "application15": "可以一对多转账交易支持导入",
     "application": "application",
+  },
+  "ledger": {
+    ledger1: '连接硬件钱包',
+    ledger2: '选择希望用于NULS Wallet的硬件钱包',
+    ledger3: '插入硬件钱包',
+    ledger4: '将您的钱包直接连接到电脑。解锁Ledger并打开NULS应用程序',
+    ledger5: '连接中...',
+    ledger6: '正在加载...',
+    ledger7: '选择希望用于 Nuls Wallet 的账户',
+    ledger8: '上一页',
+    ledger9: '下一页',
+    ledger10: '发送中',
+    ledger11: '请在Ledger设备中确认签名',
+    ledger12: '请解锁Ledger并打开NULS应用程序',
+    ledger13: '关闭',
   },
   ...zhLocale
 };

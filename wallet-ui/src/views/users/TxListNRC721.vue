@@ -11,12 +11,13 @@
     <div class="w1200">
       <div v-loading="txListDataLoading" class="mb_100">
         <el-table :data="txListData" stripe border>
-          <el-table-column :label="$t('public.height')" align="center" width="100">
+          <el-table-column width="20"></el-table-column>
+          <el-table-column :label="$t('public.height')" width="100">
             <template slot-scope="scope">
-              <span class="click td" @click="toUrl('height',scope.row.height,1)">{{scope.row.height}}</span>
+              <span class="click td" @click="openUrl('height',scope.row.height,1)">{{scope.row.height}}</span>
             </template>
           </el-table-column>
-          <el-table-column label="TxID" align="center" min-width="220">
+          <el-table-column label="TxID" min-width="220">
             <template slot-scope="scope">
               <router-link class="click" tag="a" :to="{name:'transferInfo',query:{hash:scope.row.txHash}}">
                 {{ scope.row.txid }}
@@ -24,26 +25,26 @@
               <!--<span class="click " @click="toUrl('transferInfo',scope.row.txHash)">{{scope.row.txid}}</span>-->
             </template>
           </el-table-column>
-          <el-table-column :label="$t('public.fromAddresss')" align="center" width="210">
+          <el-table-column :label="$t('public.fromAddresss')" width="210">
             <template slot-scope="scope">
-              <span class="click td" @click="toUrl('address',scope.row.fromAddress,1)">{{scope.row.fromAddresss}}</span>
+              <span class="click td" @click="openUrl('address',scope.row.fromAddress,1)">{{scope.row.fromAddresss}}</span>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('public.toAddresss')" align="center" width="210">
+          <el-table-column :label="$t('public.toAddresss')" width="210">
             <template slot-scope="scope">
-              <span class="click td" @click="toUrl('address',scope.row.toAddress,1)">{{scope.row.toAddresss}}</span>
+              <span class="click td" @click="openUrl('address',scope.row.toAddress,1)">{{scope.row.toAddresss}}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="createTime" :label="$t('tab.tab5')" align="center" width="180">
+          <el-table-column prop="createTime" :label="$t('tab.tab5')" width="180">
           </el-table-column>
-          <el-table-column :label="'Token'+$t('nodeService.nodeService2')" align="center" width="130">
+          <el-table-column :label="'Token'+$t('nodeService.nodeService2')" width="130">
             <template slot-scope="scope">
               <span>
                 {{scope.row.symbol}}
               </span>
             </template>
           </el-table-column>
-          <el-table-column label="Token ID" align="center" width="130">
+          <el-table-column label="Token ID" width="130">
             <template slot-scope="scope">
               <span>
                 #{{scope.row.tokenId}}
@@ -71,7 +72,7 @@
 
 <script>
   import moment from 'moment'
-  import {getLocalTime, superLong, addressInfo} from '@/api/util'
+  import {getLocalTime, superLong, connectToExplorer} from '@/api/util'
   import BackBar from '@/components/BackBar'
 
   export default {
@@ -82,23 +83,21 @@
         pageIndex: 1, //页码
         pageSize: 10, //每页条数
         pageTotal: 0,//总页数
-        addressInfo: [], //账户信息
         txListSetInterval: null,//定时器
       };
     },
-    created() {
-      this.addressInfo = addressInfo(1);
-      setInterval(() => {
-        this.addressInfo = addressInfo(1);
-      }, 500);
+    computed: {
+      addressInfo() {
+        return this.$store.getters.currentAccount
+      }
     },
     mounted() {
       setTimeout(() => {
-        this.getToken721Transfers(this.pageIndex, this.pageSize, this.addressInfo.address);
+        this.getTxList();
       }, 600);
       //10秒循环一次数据
       this.txListSetInterval = setInterval(() => {
-        this.getToken721Transfers(this.pageIndex, this.pageSize, this.addressInfo.address);
+        this.getTxList();
       }, 10000);
     },
     beforeRouteLeave(to, from, next) {
@@ -115,7 +114,14 @@
     watch: {
       addressInfo(val, old) {
         if (val.address !== old.address && old.address) {
-          this.getToken721Transfers(this.pageIndex, this.pageSize, this.addressInfo.address);
+          this.pageIndex = 1
+          this.pageTotal = 0
+          this.txListData = []
+          clearInterval(this.txListSetInterval)
+          this.getTxList();
+          this.txListSetInterval = setInterval(() => {
+            this.getTxList();
+          }, 10000);
         }
       }
     },
@@ -130,9 +136,8 @@
        * @param pageRows 每页条数
        * @param address 地址
        **/
-      getToken721Transfers(pageSize, pageRows, address) {
-        //console.log(pageSize, pageRows, address);
-        this.$post('/', 'getToken721Transfers', [pageSize, pageRows, address, null])
+      getTxList() {
+        this.$post('/', 'getToken721Transfers', [this.pageIndex, this.pageSize, this.addressInfo.address, null])
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
@@ -148,7 +153,7 @@
             }
           })
           .catch((error) => {
-            this.getTxlistByAddress(pageSize, pageRows, address);
+            this.getTxList();
             console.log("getAccountTxs:" + error);
           })
       },
@@ -160,7 +165,7 @@
       txListPages(val) {
         this.pageIndex = val;
         this.txListDataLoading = true;
-        this.getTxlistByAddress(this.pageIndex, this.pageSize, this.addressInfo.address);
+        this.getTxList();
       },
 
       /**
@@ -175,6 +180,9 @@
           query: newQuery
         })
       },
+      openUrl(name, params) {
+        connectToExplorer(name, params)
+      }
 
     }
   }

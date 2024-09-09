@@ -1,13 +1,20 @@
 import {post} from './https'
-import {Plus, chainID} from './util'
-import {MAIN_INFO} from '@/config.js'
+import {Plus, chainID, getCurrentChain} from './util'
+import storage from './storage';
 
 /**
  * 判断是否为主网
  * @param chainId
  **/
 export function isMainNet(chainId) {
-  return chainId === MAIN_INFO.chainId;
+  const currentChain = getCurrentChain()
+  return chainId === currentChain.chainId;
+}
+
+export function calTxSize(tx, signatrueCount) {
+  let txSize = tx.txSerialize().length;
+  txSize += signatrueCount * 110;
+  return Math.ceil(txSize / 1024)
 }
 
 /**
@@ -16,8 +23,9 @@ export function isMainNet(chainId) {
  * @param signatrueCount 签名数量，默认为1
  **/
 export function countFee(tx, signatrueCount) {
-  let txSize = tx.txSerialize().length;
-  txSize += signatrueCount * 110;
+  // let txSize = tx.txSerialize().length;
+  // txSize += signatrueCount * 110;
+  const size = calTxSize(tx, signatrueCount)
   return 100000 * Math.ceil(txSize / 1024);
 }
 
@@ -114,7 +122,7 @@ export async function inputsOrOutputs(transferInfo, balanceInfo, type, multyAsse
     console.log(nulsbalance);
     if (nulsbalance.data.balance < 100000) {
       console.log("余额小于手续费");
-      return
+      throw 'Insufficient fee'
     }
     inputs.push({
       address: transferInfo.fromAddress,
@@ -185,6 +193,102 @@ export async function inputsOrOutputs(transferInfo, balanceInfo, type, multyAsse
   /*console.log(inputs);
   console.log(outputs);*/
   return {success: true, data: {inputs: inputs, outputs: outputs}};
+}
+
+export async function getTransferInOrOutPuts(transferInfo, feeInfo, type, multyAssets) {
+  //console.log(transferInfo, feeInfo, 999)
+  const { fromAddress, toAddress, assetsChainId, assetsId, amount, value } = transferInfo
+  let { feeChainId, feeAssetId, feeAmount } = feeInfo
+  feeChainId = +feeChainId
+  feeAssetId = +feeAssetId
+  const assetInfo = (await getNulsBalance(assetsChainId, assetsId, fromAddress)).data;
+  let inputs = []
+  if (Number(amount)) {
+    inputs = [{
+      address: fromAddress,
+      assetsChainId,
+      assetsId,
+      amount,
+      locked: 0,
+      nonce: assetInfo.nonce
+    }]
+  }
+  let outputs = []
+
+  if (assetsChainId === feeChainId && assetsId === feeAssetId) {
+    if (inputs[0]) {
+      inputs[0].amount = Plus(amount, feeAmount).toFixed()
+    } else {
+      inputs = [{
+        address: fromAddress,
+        assetsChainId,
+        assetsId,
+        amount: Plus(amount, feeAmount).toFixed(),
+        locked: 0,
+        nonce: assetInfo.nonce
+      }]
+    }
+  } else {
+    const feeAssetInfo = (await getNulsBalance(feeChainId, feeAssetId, fromAddress)).data;
+    inputs.push({
+      address: fromAddress,
+      assetsChainId: feeChainId,
+      assetsId: feeAssetId,
+      amount: feeAmount,
+      locked: 0,
+      nonce: feeAssetInfo.nonce
+    })
+  }
+
+  if (type === 2 || type === 10) {
+    outputs = [{
+      address: toAddress ? toAddress : fromAddress,
+      assetsChainId,
+      assetsId,
+      amount: amount,
+      lockTime: 0
+    }];
+  } else if (type === 16) {
+    // inputs[0].amount = Number(Plus(transferInfo.amount, 100000));
+    if (toAddress) {
+      if (Number(value)) { //向合约地址转nuls
+        //inputs[0].amount = transferInfo.amount;
+        outputs = [{
+          address: toAddress,
+          assetsChainId: assetsChainId,
+          assetsId: assetsId,
+          amount: value,
+          lockTime: 0
+        }];
+      }
+    }
+    if (multyAssets && multyAssets.length) { // 向合约地址转平行链资产
+      let length = multyAssets.length;
+      for (let i = 0; i < length; i++) {
+        let multyAsset = multyAssets[i];
+        let _balanceInfo = await getNulsBalance(multyAsset.assetChainId, multyAsset.assetId, fromAddress);
+        if (_balanceInfo.data.balance < Number(multyAsset.value)) {
+          throw "Your balance of " + multyAsset.assetChainId + "-" + multyAsset.assetId + " is not enough.";
+        }
+        inputs.push({
+          address: fromAddress,
+          assetsChainId: multyAsset.assetChainId,
+          assetsId: multyAsset.assetId,
+          amount: multyAsset.value,
+          locked: 0,
+          nonce: _balanceInfo.data.nonce
+        });
+        outputs.push({
+          address: toAddress,
+          assetsChainId: multyAsset.assetChainId,
+          assetsId: multyAsset.assetId,
+          amount: multyAsset.value,
+          lockTime: 0
+        });
+      }
+    }
+  }
+  return { inputs, outputs }
 }
 
 /**
@@ -322,35 +426,26 @@ export async function getAllAddressPrefix() {
     {chainId: 1, addressPrefix: 'NULS'},
     {chainId: 2, addressPrefix: 'tNULS'},
   ];
-  await post('/', 'getAllAddressPrefix', [])
+  return await post('/', 'getAllAddressPrefix', [])
     .then((response) => {
-      //console.log(response);
-      if (response.hasOwnProperty("result")) {
-        if (sessionStorage.hasOwnProperty('prefixData')) {
-          sessionStorage.removeItem('prefixData')
-        }
-        sessionStorage.setItem('prefixData', JSON.stringify(response.result));
-      } else {
-        sessionStorage.setItem('prefixData', JSON.stringify(newData));
-      }
+      return response.result || newData
     })
     .catch((error) => {
       console.log(error);
-      sessionStorage.setItem('prefixData', JSON.stringify(newData));
+      return newData
     });
 }
 
 //根据链ID获取前缀
 export async function getPrefixByChainId(chainId) {
-  await getAllAddressPrefix();
-  let prefixData = JSON.parse(sessionStorage.getItem('prefixData'));
-  if (prefixData) {
-    let newInfo = prefixData.find((v) => {
-      return v.chainId === chainId;
-    });
-    return newInfo.addressPrefix;
+  const prefixData = storage.get('prefixData') || []
+  const record = prefixData.find(v => v.chainId === chainId)
+  if (record) {
+    return record.addressPrefix
   } else {
-    return '';
+    const prefixData = await getAllAddressPrefix()
+    const record = prefixData.find(v => v.chainId === chainId)
+    return record ? record.addressPrefix : 'NULS'
   }
 }
 

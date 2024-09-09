@@ -80,14 +80,15 @@
           <i class="el-icon-plus click" @click="showNodeList"></i>
         </div>
         <el-table :data="nodeDepositData" stripe border>
-          <el-table-column prop="blockHeight" :label="$t('public.height')" align="center">
+          <el-table-column width="30"></el-table-column>
+          <el-table-column prop="blockHeight" :label="$t('public.height')">
           </el-table-column>
-          <el-table-column prop="createTime" :label="$t('consensusList.consensusList1')" align="center">
+          <el-table-column prop="createTime" :label="$t('consensusList.consensusList1')">
           </el-table-column>
           <el-table-column prop="amount" :label="$t('public.amount') + '('+agentAsset.agentAsset.symbol+')'"
-                           align="center">
+                          >
           </el-table-column>
-          <el-table-column :label="$t('public.operation')" align="center">
+          <el-table-column :label="$t('public.operation')">
             <template slot-scope="scope">
               <label class="click tab_bn"
                      @click="cancelDeposit(scope.row)">{{$t('consensusInfo.consensusInfo0')}}</label>
@@ -108,8 +109,8 @@
       </div>
     </div>
 
-    <Password ref="password" @passwordSubmit="passSubmit">
-    </Password>
+    <Password ref="password" @passwordSubmit="passSubmit" />
+    <LedgerConfirm :visible="ledgerVisible" @closed="ledgerVisible=false" :errorMsg="ledgerErrorMsg" />
   </div>
 </template>
 
@@ -121,22 +122,19 @@
     countFee,
     inputsOrOutputs,
     validateAndBroadcast,
-    agentDeposistList,
-    getPrefixByChainId,
-    commitData
+    agentDeposistList
   } from '@/api/requestData'
   import {
-    timesDecimals,
+    divisionDecimals,
     getLocalTime,
     Minus,
     Times,
-    addressInfo,
-    connectToExplorer,
-    chainID,
-    getRamNumber
+    connectToExplorer
   } from '@/api/util'
   import Password from '@/components/PasswordBar'
+  import LedgerConfirm from '@/components/LedgerConfirm'
   import BackBar from '@/components/BackBar'
+  import ledgerMixin from '@/mixins/ledgerMixin'
 
   export default {
     data() {
@@ -154,14 +152,13 @@
         } else if (value > usable) {
           return callback(new Error(this.$t('consensusInfo.consensusInfo41') + usable + this.$t('consensusInfo.consensusInfo42')));
         } else if (balance < 0.001) {
-          return callback(new Error(this.$t('transfer.transfer131') + Number(Minus(Number(timesDecimals(this.balanceInfo.balance)), 0.001))));
+          return callback(new Error(this.$t('transfer.transfer131') + Minus(divisionDecimals(this.balanceInfo.balance)), 0.001));
         } else {
           callback()
         }
       };
 
       return {
-        addressInfo: {},//账户信息
         balanceInfo: {},//余额信息
         agentAsset: JSON.parse(sessionStorage.getItem('info')),//pocm合约单位等信息
         nodeInfo: {},//节点详情
@@ -182,25 +179,16 @@
             {validator: checkAmount, trigger: ['blur', 'change']}
           ]
         },
-        prefix: '',//地址前缀
 
         txHexRandom: '', //web端提交txHex到后台的key
         signDataKeyRandom: '', // app端提交签名的key
       };
     },
-    created() {
-      getPrefixByChainId(chainID()).then((response) => {
-        //console.log(response);
-        this.prefix = response
-      }).catch((err) => {
-        console.log(err);
-        this.prefix = '';
-      });
-
-      this.addressInfo = addressInfo(1);
-      setInterval(() => {
-        this.addressInfo = addressInfo(1);
-      }, 500);
+    mixins: [ledgerMixin],
+    computed: {
+      addressInfo() {
+        return this.$store.getters.currentAccount
+      }
     },
     mounted() {
       setTimeout(() => {
@@ -212,7 +200,8 @@
     },
     components: {
       Password,
-      BackBar
+      BackBar,
+      LedgerConfirm
     },
     methods: {
 
@@ -225,10 +214,10 @@
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
-              response.result.agentReward = timesDecimals(response.result.agentReward);
-              response.result.deposits = timesDecimals(response.result.deposit);
-              response.result.totalDeposit = timesDecimals(response.result.totalDeposit);
-              response.result.totalReward = timesDecimals(response.result.totalReward);
+              response.result.agentReward = divisionDecimals(response.result.agentReward);
+              response.result.deposits = divisionDecimals(response.result.deposit);
+              response.result.totalDeposit = divisionDecimals(response.result.totalDeposit);
+              response.result.totalReward = divisionDecimals(response.result.totalReward);
               response.result.createTime = moment(getLocalTime(response.result.createTime * 1000)).format('YYYY-MM-DD HH:mm:ss');
               this.nodeInfo = response.result;
             }
@@ -251,8 +240,8 @@
             //console.log(response);
             if (response.hasOwnProperty("result")) {
               for (let itme of response.result.list) {
-                itme.amount = timesDecimals(itme.amount);
-                itme.fee = timesDecimals(itme.fee);
+                itme.amount = divisionDecimals(itme.amount);
+                itme.fee = divisionDecimals(itme.fee);
                 itme.createTime = moment(getLocalTime(itme.createTime * 1000)).format('YYYY-MM-DD HH:mm:ss');
               }
               this.nodeDepositData = response.result.list;
@@ -297,24 +286,8 @@
         this.$refs[formName].validate(async (valid) => {
           if (valid) {
             this.passwordType = 0;
-            if (this.addressInfo.aesPri === '') {
-              this.txHexRandom = await getRamNumber(16);
-              this.signDataKeyRandom = await getRamNumber(16);
-              let assembleHex = await this.getAssemble();
-              if (!assembleHex.success) {
-                this.$message({message: this.$t('tips.tips3'), type: 'error', duration: 3000});
-                return;
-              }
-              let commitDatas = await commitData(this.txHexRandom, this.signDataKeyRandom,this.addressInfo.address, assembleHex.data);
-              if (!commitDatas.success) {
-                this.$message({
-                  message: this.$t('tips.tips4') + JSON.stringify(commitDatas.data),
-                  type: 'error',
-                  duration: 3000
-                });
-                return;
-              }
-              this.$refs.password.showScan(commitDatas.data.txInfo, commitDatas.data.assembleHex);
+            if (this.addressInfo.isNULSLedger) {
+              this.handleSign()
             } else {
               this.$refs.password.showPassword(true);
             }
@@ -322,6 +295,16 @@
             return false;
           }
         });
+      },
+
+      async handleSign() {
+        try {
+          const tAssemble = await this.getAssemble()
+          const unSignedHex = tAssemble.txSerialize().toString('hex')
+          this.signByLedger(unSignedHex, this.addressInfo.pathIndex, this.handleMessage)
+        } catch (e) {
+          this.$message({message: e.message || e, type: 'error', duration: 1000});
+        }
       },
 
       /**
@@ -351,24 +334,8 @@
         this.outInfo = outInfo;
         this.getBalanceByAddress(this.agentAsset.agentAsset.chainId, this.agentAsset.agentAsset.assetId, this.addressInfo.address);
         this.passwordType = 1;
-        if (this.addressInfo.aesPri === '') {
-          this.txHexRandom = await getRamNumber(16);
-          this.signDataKeyRandom = await getRamNumber(16);
-          let assembleHex = await this.getAssemble();
-          if (!assembleHex.success) {
-            this.$message({message: this.$t('tips.tips3'), type: 'error', duration: 3000});
-            return;
-          }
-          let commitDatas = await commitData(this.txHexRandom, this.signDataKeyRandom,this.addressInfo.address, assembleHex.data);
-          if (!commitDatas.success) {
-            this.$message({
-              message: this.$t('tips.tips4') + JSON.stringify(commitDatas.data),
-              type: 'error',
-              duration: 3000
-            });
-            return;
-          }
-          this.$refs.password.showScan(commitDatas.data.txInfo, commitDatas.data.assembleHex);
+        if (this.addressInfo.isNULSLedger) {
+          this.handleSign()
         } else {
           this.$refs.password.showPassword(true);
         }
@@ -380,24 +347,8 @@
       async stopNode() {
         this.getBalanceByAddress(this.agentAsset.agentAsset.chainId, this.agentAsset.agentAsset.assetId, this.addressInfo.address);
         this.passwordType = 2;
-        if (this.addressInfo.aesPri === '') {
-          this.txHexRandom = await getRamNumber(16);
-          this.signDataKeyRandom = await getRamNumber(16);
-          let assembleHex = await this.getAssemble();
-          if (!assembleHex.success) {
-            this.$message({message: this.$t('tips.tips3'), type: 'error', duration: 3000});
-            return;
-          }
-          let commitDatas = await commitData(this.txHexRandom, this.signDataKeyRandom,this.addressInfo.address, assembleHex.data);
-          if (!commitDatas.success) {
-            this.$message({
-              message: this.$t('tips.tips4') + JSON.stringify(commitDatas.data),
-              type: 'error',
-              duration: 3000
-            });
-            return;
-          }
-          this.$refs.password.showScan(commitDatas.data.txInfo, commitDatas.data.assembleHex);
+        if (this.addressInfo.isNULSLedger) {
+          this.handleSign()
         } else {
           this.$refs.password.showPassword(true);
         }
@@ -408,134 +359,22 @@
        * @param password
        **/
       async passSubmit(password) {
-        const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password);
-        const newAddressInfo = nuls.importByKey(this.addressInfo.chainId, pri, password, this.prefix);
-        if (newAddressInfo.address === this.addressInfo.address) {
-          let transferInfo = {
-            fromAddress: this.addressInfo.address,
-            assetsChainId: this.agentAsset.agentAsset.chainId,
-            assetsId: this.agentAsset.agentAsset.assetId,
-            amount: Number(Times(this.jionNodeForm.amount, 100000000)),
-            fee: 100000
-          };
-          let inOrOutputs = {};
-          let txhex = '';
-          let pub = this.addressInfo.pub;
-          let remark = '';
-          if (this.passwordType === 0) { //加入共识
-            inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 5);
-            let depositInfo = {
-              address: this.addressInfo.address,
-              agentHash: this.$route.query.hash,
-              deposit: Number(Times(this.jionNodeForm.amount, 100000000))
-            };
-            if (!inOrOutputs.success) {
-              this.$message({message: this.$t('public.err1') + inOrOutputs.data, type: 'error', duration: 1000});
-              return;
-            }
-            let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 5, depositInfo);
-            txhex = await nuls.transactionSerialize(pri, pub, tAssemble);
-          } else if (this.passwordType === 1) { //退出共识
-            transferInfo.amount = Number(Times(this.outInfo.amount, 100000000));
-            transferInfo.depositHash = this.outInfo.txHash;
-            inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 6);
-            //console.log(inOrOutputs);
-            if (inOrOutputs.success) {
-              let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 6, this.outInfo.txHash);
-              txhex = await nuls.transactionSerialize(pri, pub, tAssemble);
-            } else {
-              this.$message({message: this.$t('public.err1') + inOrOutputs.data, type: 'error', duration: 1000});
-            }
-          } else if (this.passwordType === 2) { //注销节点
-            transferInfo.amount = this.nodeInfo.deposit;
-            transferInfo.depositHash = this.$route.query.hash;
-            inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 9);
-            //console.log(inOrOutputs);
-            if (inOrOutputs.success) {
-              let newInputs = inOrOutputs.data.inputs;
-              let outputs = [];
-              const depositList = await agentDeposistList(this.$route.query.hash);
-              for (let itme of depositList.list) {
-                //console.log(itme.address);
-                newInputs.push({
-                  address: itme.address,
-                  assetsChainId: this.agentAsset.agentAsset.chainId,
-                  assetsId: this.agentAsset.agentAsset.assetId,
-                  amount: itme.amount,
-                  locked: -1,
-                  nonce: itme.txHash.substring(itme.txHash.length - 16)//这里是hash的最后16个字符
-                });
-                outputs.push({
-                  address: itme.address,
-                  assetsChainId: this.agentAsset.agentAsset.chainId,
-                  assetsId: this.agentAsset.agentAsset.assetId,
-                  amount: itme.amount,
-                  lockTime: 0
-                });
-              }
-              let addressArr = [];
-              let newOutputs = [];
-              outputs.forEach(function (item) {
-                let i;
-                if ((i = addressArr.indexOf(item.address)) > -1) {
-                  //console.log(result, i);
-                  newOutputs[i].amount = Number(newOutputs[i].amount) + Number(item.amount);
-                } else {
-                  addressArr.push(item.address);
-                  newOutputs.push({
-                    address: item.address,
-                    amount: item.amount,
-                    assetsChainId: item.assetsChainId,
-                    assetsId: item.assetsId,
-                    lockTime: item.lockTime,
-                  })
-                }
-              });
-              newOutputs.unshift(inOrOutputs.data.outputs[0]);
-              newOutputs[0].lockTime = newOutputs[0].lockTime + 86400 * 3;
-              /* console.log(newInputs);
-               console.log(newOutputs);*/
-              let tAssemble = await nuls.transactionAssemble(newInputs, newOutputs, remark, 9, this.$route.query.hash);
-              //console.log(tAssemble);
-              let newFee = countFee(tAssemble, 1);
-              //console.log(transferInfo.fee !== newFee);
-              if (transferInfo.fee !== newFee) {
-                transferInfo.fee = newFee;
-                newOutputs[0].amount = Number(Minus(this.nodeInfo.deposit, newFee).toString());
-                tAssemble = await nuls.transactionAssemble(newInputs, newOutputs, remark, 9, this.$route.query.hash);
-              }
-              txhex = await nuls.transactionSerialize(pri, pub, tAssemble);
-            }
-            else {
-              this.$message({message: this.$t('public.err1') + inOrOutputs.data, type: 'error', duration: 1000});
-            }
+        try {
+          const pri = nuls.decrypteOfAES(this.addressInfo.aesPri, password);
+          const newAddressInfo = nuls.importByKey(this.addressInfo.chainId, pri, password, this.$store.state.prefix);
+          if (newAddressInfo.address === this.addressInfo.address) {
+            const tAssemble = await this.getAssemble()
+            const txHex = await nuls.transactionSerialize(pri, this.addressInfo.pub, tAssemble);
+            this.broadcastTx(txHex)
           } else {
-            console.log("交易类型错误")
+            this.$message({message: this.$t('address.address13'), type: 'error', duration: 1000});
           }
-
-          //console.log(txhex);
-          await validateAndBroadcast(txhex).then((response) => {
-            //console.log(response);
-            if (response.success) {
-              this.$router.push({
-                name: "txList"
-              })
-            } else {
-              this.$message({message: this.$t('public.err') + response.data.code, type: 'error', duration: 1000});
-            }
-          }).catch((err) => {
-            this.$message({message: this.$t('public.err0') + err, type: 'error', duration: 1000});
-          });
-        } else {
-          this.$message({message: this.$t('address.address13'), type: 'error', duration: 1000});
+        } catch (e) {
+          this.$message({message: e.message || e, type: 'error', duration: 1000});
         }
+        
       },
 
-      /**
-       * @disc: 组装交易序列化
-       * @date: 2019-12-06 13:38
-       * @author: Wave
-       */
       async getAssemble() {
         let transferInfo = {
           fromAddress: this.addressInfo.address,
@@ -546,7 +385,7 @@
         };
         let inOrOutputs = {};
         let remark = '';
-        let tAssemble = '';
+        let tAssemble
         if (this.passwordType === 0) { //加入共识
           inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 5);
           let depositInfo = {
@@ -555,33 +394,25 @@
             deposit: Number(Times(this.jionNodeForm.amount, 100000000))
           };
           if (!inOrOutputs.success) {
-            this.$message({message: this.$t('public.err1') + inOrOutputs.data, type: 'error', duration: 3000});
-            return {success: false};
+            this.$message({message: this.$t('public.err1') + inOrOutputs.data, type: 'error', duration: 1000});
+            return;
           }
           tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 5, depositInfo);
-          return {success: true, data: tAssemble}
         } else if (this.passwordType === 1) { //退出共识
           transferInfo.amount = Number(Times(this.outInfo.amount, 100000000));
           transferInfo.depositHash = this.outInfo.txHash;
           inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 6);
           //console.log(inOrOutputs);
-          if (!inOrOutputs.success) {
-            this.$message({message: this.$t('public.err1') + inOrOutputs.data, type: 'error', duration: 3000});
-            return {success: false};
+          if (inOrOutputs.success) {
+            tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 6, this.outInfo.txHash)
+          } else {
+            this.$message({message: this.$t('public.err1') + inOrOutputs.data, type: 'error', duration: 1000});
           }
-          tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 6, this.outInfo.txHash);
-          return {success: true, data: tAssemble}
-        } else if (this.passwordType === 2) { //注销节点
+        } else { //注销节点
           transferInfo.amount = this.nodeInfo.deposit;
           transferInfo.depositHash = this.$route.query.hash;
           inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 9);
           //console.log(inOrOutputs);
-
-          if (!inOrOutputs.success) {
-            this.$message({message: this.$t('public.err1') + inOrOutputs.data, type: 'error', duration: 3000});
-            return {success: false};
-          }
-
           let newInputs = inOrOutputs.data.inputs;
           let outputs = [];
           const depositList = await agentDeposistList(this.$route.query.hash);
@@ -623,6 +454,8 @@
           });
           newOutputs.unshift(inOrOutputs.data.outputs[0]);
           newOutputs[0].lockTime = newOutputs[0].lockTime + 86400 * 3;
+          /* console.log(newInputs);
+            console.log(newOutputs);*/
           tAssemble = await nuls.transactionAssemble(newInputs, newOutputs, remark, 9, this.$route.query.hash);
           //console.log(tAssemble);
           let newFee = countFee(tAssemble, 1);
@@ -632,10 +465,8 @@
             newOutputs[0].amount = Number(Minus(this.nodeInfo.deposit, newFee).toString());
             tAssemble = await nuls.transactionAssemble(newInputs, newOutputs, remark, 9, this.$route.query.hash);
           }
-          return {success: true, data: tAssemble}
-        } else {
-          console.log("交易类型错误")
         }
+        return tAssemble
       },
 
       /**
@@ -646,6 +477,25 @@
       toUrl(name, parameter) {
         connectToExplorer(name, parameter);
       },
+      handleMessage(data) {
+        if (data.success) {
+          this.broadcastTx(data.result)
+        }
+      },
+      async broadcastTx(txHex) {
+        const response = await validateAndBroadcast(txHex)
+        if (response.success) {
+          this.$router.push({
+            name: "txList"
+          })
+        } else {
+          this.$message({
+            message: this.$t('tips.tips00') + JSON.stringify(response.data),
+            type: 'error',
+            duration: 2000
+          });
+        }
+      }
     },
     watch: {
       addressInfo(val, old) {
@@ -678,7 +528,8 @@
       .entrust_add {
         margin: 30px auto 50px;
         .balance {
-          margin: 10px 0 0 0;
+          display: block;
+          margin-top: 5px;
         }
       }
     }

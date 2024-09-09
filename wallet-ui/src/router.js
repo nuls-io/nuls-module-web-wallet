@@ -9,17 +9,17 @@ export default new Router({
     {
       path: '*',
       name: 'home',
-      component: resolve => require(['@/views/Home.vue'], resolve)
+      component: resolve => require(['@/views/home/Home.vue'], resolve)
     },
     {
       path: '/',
       name: 'home',
-      component: resolve => require(['@/views/Home.vue'], resolve)
+      component: resolve => require(['@/views/home/Home.vue'], resolve)
     },
     {
       path: '/wallet',
       name: 'home',
-      component: resolve => require(['@/views/Home.vue'], resolve)
+      component: resolve => require(['@/views/home/Home.vue'], resolve)
     },
     {
       path: '/wallet/frozenList',
@@ -38,6 +38,14 @@ export default new Router({
       path: '/wallet/txLis721',
       name: 'txLis721',
       component: resolve => require(['@/views/users/TxListNRC721.vue'], resolve),
+      meta: {
+        keepAlive: false
+      }
+    },
+    {
+      path: '/wallet/txList1155',
+      name: 'txList1155',
+      component: resolve => require(['@/views/users/TxListNRC1155.vue'], resolve),
       meta: {
         keepAlive: false
       }
@@ -121,19 +129,14 @@ export default new Router({
       component: resolve => require(['@/views/set/NodeService.vue'], resolve)
     },
     {
-      path: '/set',
-      name: 'seting',
+      path: '/setting',
+      name: 'setting',
       component: resolve => require(['@/views/set/Set.vue'], resolve)
     },
     {
       path: '/contact',
       name: 'contact',
       component: resolve => require(['@/views/set/Contact.vue'], resolve)
-    },
-    {
-      path: '/application',
-      name: 'application',
-      component: resolve => require(['@/views/application/Application.vue'], resolve)
     }
   ]
 })

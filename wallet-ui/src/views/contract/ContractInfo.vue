@@ -35,7 +35,7 @@
       </div>
       <div class="cb"></div>
       <el-tabs v-model="activeName" @tab-click="handleClick">
-        <el-tab-pane :label="$t('home.home2')" name="first" class="mb_100">
+        <el-tab-pane :label="$t('home.home2')" name="first">
           <SelectBar v-model="contractsTypeRegion" :typeOptions="contractsStatusOptions" typeName="type"
                      @change="changeType">
           </SelectBar>
@@ -43,26 +43,26 @@
           <el-table :data="contractTxData" stripe border style="width: 100%;margin-top: 14px">
             <el-table-column label="" width="20">
             </el-table-column>
-            <el-table-column prop="height" :label="$t('public.height')" width="80" align="left">
+            <el-table-column prop="height" :label="$t('public.height')" width="80">
               <template slot-scope="scope">
                 <span class="cursor-p click">{{ scope.row.blockHeight }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('contractInfo.contractInfo5')" width="180" align="left">
+            <el-table-column :label="$t('contractInfo.contractInfo5')" width="180">
               <template slot-scope="scope"><span>{{ $t('type.'+scope.row.type) }}</span></template>
             </el-table-column>
-            <el-table-column prop="contractMethod" :label="$t('contractInfo.contractInfo51')" width="180" align="left">
+            <el-table-column prop="contractMethod" :label="$t('contractInfo.contractInfo51')" width="180">
             </el-table-column>
-            <el-table-column label="TXID" min-width="280" align="left">
+            <el-table-column label="TXID" min-width="280">
               <template slot-scope="scope">
                 <span class="cursor-p click td" @click="toUrl('transactionInfo',scope.row.txHash,1)">
                   {{ scope.row.txHashs }}
                 </span>
               </template>
             </el-table-column>
-            <el-table-column prop="time" :label="$t('public.time')" width="180" align="left">
+            <el-table-column prop="time" :label="$t('public.time')" width="180">
             </el-table-column>
-            <el-table-column :label="$t('public.fee')" width="180" align="left">
+            <el-table-column :label="$t('public.fee')" width="180">
               <template slot-scope="scope">{{scope.row.fees}}</template>
             </el-table-column>
           </el-table>
@@ -85,30 +85,31 @@
           <CodeInfo></CodeInfo>
         </el-tab-pane>-->
         <el-tab-pane :label="$t('contractInfo.contractInfo6')" name="third">
-          <el-table :data="modeList" stripe border style="width: 100%" class="mzt_20 mb_100">
+          <el-table :data="modeList" stripe border style="width: 100%" class="mzt_20">
             <el-table-column label="" width="30">
             </el-table-column>
-            <el-table-column prop="name" :label="$t('contractInfo.contractInfo6')" width="280" align="left">
+            <el-table-column prop="name" :label="$t('contractInfo.contractInfo6')" width="280">
             </el-table-column>
-            <el-table-column prop="height" :label="$t('contractInfo.contractInfo7')" min-width="280" align="left">
+            <el-table-column prop="height" :label="$t('contractInfo.contractInfo7')" min-width="280">
               <template slot-scope="scope">
                 <span v-for="item in scope.row.params" :key="item.name">{{item.name}}-</span>
               </template>
             </el-table-column>
-            <el-table-column prop="returnType" :label="$t('contractInfo.contractInfo8')" width="280" align="left">
+            <el-table-column prop="returnType" :label="$t('contractInfo.contractInfo8')" width="280">
             </el-table-column>
           </el-table>
 
         </el-tab-pane>
         <el-tab-pane :label="$t('type.16')" name="fourth" class="bg-white">
-          <div class="w630" style="padding-bottom: 50px">
+          <div class="w630" style="padding-bottom: 20px">
             <Call :modelList="modelData" :contractAddress="contractAddress" :decimals="decimals"></Call>
           </div>
         </el-tab-pane>
       </el-tabs>
 
     </div>
-    <Password ref="password" @passwordSubmit="passSubmit"></Password>
+    <Password ref="password" @passwordSubmit="passSubmit" />
+    <LedgerConfirm :visible="ledgerVisible" @closed="ledgerVisible=false" :errorMsg="ledgerErrorMsg" />
   </div>
 
 </template>
@@ -119,15 +120,16 @@
   import BackBar from '@/components/BackBar'
   import SelectBar from '@/components/SelectBar';
   import Call from './Call'
-  import {timesDecimals, getLocalTime, superLong, addressInfo, connectToExplorer} from '@/api/util'
+  import {divisionDecimals, getLocalTime, superLong, connectToExplorer} from '@/api/util'
   import {getNulsBalance, inputsOrOutputs, validateAndBroadcast} from '@/api/requestData'
   import Password from '@/components/PasswordBar'
+  import LedgerConfirm from '@/components/LedgerConfirm'
+  import ledgerMixin from '@/mixins/ledgerMixin'
 
   export default {
     data() {
       return {
         activeName: this.$route.query.activeName ? this.$route.query.activeName : 'first',
-        addressInfo: {},//账户信息
         contractAddress: this.$route.query.contractAddress,//合约地址
         contractInfo: {},//合约详情
         isCancel: false,
@@ -150,12 +152,11 @@
 
       };
     },
-    created() {
-      this.addressInfo = addressInfo(1);
-      setInterval(() => {
-        this.addressInfo = addressInfo(1);
-      }, 500);
-
+    mixins: [ledgerMixin],
+    computed: {
+      addressInfo() {
+        return this.$store.getters.currentAccount
+      }
     },
     mounted() {
       setTimeout(() => {
@@ -174,7 +175,8 @@
       BackBar,
       SelectBar,
       Call,
-      Password
+      Password,
+      LedgerConfirm
     },
     watch: {
       addressInfo(val, old) {
@@ -201,7 +203,7 @@
             //console.log(response);
             if (response.hasOwnProperty("result")) {
               response.result.createTxHashs = superLong(response.result.createTxHash, 5);
-              response.result.balance = timesDecimals(response.result.balance);
+              response.result.balance = divisionDecimals(response.result.balance);
               this.contractInfo = response.result;
               for (let item in response.result.methods) {
                 //console.log(response.result.methods[item].event);
@@ -239,7 +241,7 @@
               for (let item of response.result.list) {
                 item.time = moment(getLocalTime(item.time * 1000)).format('YYYY-MM-DD HH:mm:ss');
                 item.txHashs = superLong(item.txHash, 20);
-                item.fees = timesDecimals(item.fee.value);
+                item.fees = divisionDecimals(item.fee.value);
               }
               this.contractTxData = response.result.list;
               this.pageTotal = response.result.totalCount;
@@ -311,7 +313,57 @@
        * 注销合约
        **/
       cancelContract() {
-        this.$refs.password.showPassword(true)
+        if (this.addressInfo.isNULSLedger) {
+          this.handleSign()
+        } else {
+          this.$refs.password.showPassword(true);
+        }
+      },
+      async handleSign() {
+        try {
+          const tAssemble = await this.getAssemble()
+          if (tAssemble) {
+            const unSignedHex = tAssemble.txSerialize().toString('hex')
+            this.signByLedger(unSignedHex, this.addressInfo.pathIndex, this.handleMessage)
+          }
+        } catch (e) {
+          this.$message({message: e.message || e, type: 'error', duration: 1000});
+        }
+      },
+
+      async getAssemble() {
+        const amount = 0;
+        const transferInfo = {
+          fromAddress: this.addressInfo.address,
+          assetsChainId: this.addressInfo.chainId,
+          assetsId: 1,
+          amount: amount,
+          fee: 100000
+        };
+        const contractDelete = {
+          chainId: this.addressInfo.chainId,
+          sender: this.addressInfo.address,
+          contractAddress: this.contractAddress
+        };
+        const deleteValidateResult = await this.validateContractDelete(contractDelete.sender, contractDelete.contractAddress);
+        if (!deleteValidateResult.success) {
+          this.$message({
+            message: this.$t('contractInfo.contractInfo13') + deleteValidateResult.msg,
+            type: 'error',
+            duration: 3000
+          });
+          return null;
+        }
+        const remark = '';
+        const inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 17);
+        const tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 17, contractDelete);
+        return tAssemble
+      },
+
+       handleMessage(data) {
+        if (data.success) {
+          this.broadcastTx(data.result)
+        }
       },
 
       /**
@@ -323,47 +375,22 @@
         let pub = this.addressInfo.pub;
         const newAddressInfo = nuls.importByKey(this.addressInfo.chainId, pri, password);
         if (newAddressInfo.address === this.addressInfo.address) {
-          let amount = 0;
-          let transferInfo = {
-            fromAddress: this.addressInfo.address,
-            assetsChainId: this.addressInfo.chainId,
-            assetsId: 1,
-            amount: amount,
-            fee: 100000
-          };
-          let contractDelete = {
-            chainId: this.addressInfo.chainId,
-            sender: this.addressInfo.address,
-            contractAddress: this.contractAddress
-          };
-          let deleteValidateResult = await this.validateContractDelete(contractDelete.sender, contractDelete.contractAddress);
-          if (!deleteValidateResult.success) {
-            this.$message({
-              message: this.$t('contractInfo.contractInfo13') + deleteValidateResult.msg,
-              type: 'error',
-              duration: 3000
-            });
-            return;
-          }
-          let remark = '';
-          let inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 17);
-          let tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 17, contractDelete);
-          let txhex = await nuls.transactionSerialize(pri, pub, tAssemble);
-          //console.log(txhex);
-          //验证并广播交易
-          await validateAndBroadcast(txhex).then((response) => {
-            if (response.success) {
-              this.$router.push({
-                name: "txList"
-              })
-            } else {
-              this.$message({message: this.$t('error.' + response.data.code), type: 'error', duration: 3000});
-            }
-          }).catch((err) => {
-            this.$message({message: this.$t('public.err1') + err, type: 'error', duration: 1000});
-          });
+          const tAssemble = await this.getAssemble()
+          const txHex = await nuls.transactionSerialize(pri, pub, tAssemble);
+          this.broadcastTx(txHex)
         } else {
           this.$message({message: this.$t('address.address13'), type: 'error', duration: 1000});
+        }
+      },
+
+      async broadcastTx(txHex) {
+        const response = await validateAndBroadcast(txHex)
+        if (response.success) {
+          this.$router.push({
+            name: "txList"
+          })
+        } else {
+          this.$message({message: this.$t('error.' + response.data.code), type: 'error', duration: 3000});
         }
       },
 
@@ -400,7 +427,7 @@
       height: 140px;
     }
     .el-tabs {
-      margin: 30px auto 0;
+      margin: 30px auto 80px;
     }
   }
 </style>

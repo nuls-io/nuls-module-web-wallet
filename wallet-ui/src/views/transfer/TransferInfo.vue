@@ -17,7 +17,7 @@
           {{$t('public.height')}}
           <label class="click"><u class="td" @click="toUrl('height',txInfo.height)">{{txInfo.height}}</u></label>
         </li>
-        <li>{{$t('public.fee')}} <label>{{txInfo.fees}}<span class="fCN">{{symbol}}</span></label></li>
+        <li>{{$t('public.fee')}} <label>{{txInfo.fees}}<span class="fCN">{{txInfo.fee.symbol}}</span></label></li>
         <li>{{$t('public.type')}} <label>{{$t('type.'+txInfo.type)}}</label></li>
         <li>
           {{$t('public.status')}}
@@ -199,7 +199,7 @@
 
 <script>
   import moment from 'moment'
-  import {timesDecimals, getLocalTime, copys, connectToExplorer} from '@/api/util'
+  import {divisionDecimals, getLocalTime, copys, connectToExplorer} from '@/api/util'
   import BackBar from '@/components/BackBar'
 
   export default {
@@ -251,17 +251,17 @@
             console.log(response);
             if (response.hasOwnProperty("result")) {
               response.result.createTime = moment(getLocalTime(response.result.createTime * 1000)).format('YYYY-MM-DD HH:mm:ss');
-              response.result.fees = timesDecimals(response.result.fee.value);
-              response.result.value = timesDecimals(response.result.value,response.result.decimal);
+              response.result.fees = divisionDecimals(response.result.fee.value, response.result.fee.decimals || 8);
+              response.result.value = divisionDecimals(response.result.value,response.result.decimal);
               //输入
               if (response.result.coinFroms) {
                 let assetsList = sessionStorage.hasOwnProperty('assetsList') ? JSON.parse(sessionStorage.getItem('assetsList')) : [];
                 for (let itme of response.result.coinFroms) {
                   let _acData = assetsList.find(x => x.symbol === itme.symbol);
                   if (_acData) {
-                    itme.amount = timesDecimals(itme.amount, _acData.decimals);
+                    itme.amount = divisionDecimals(itme.amount, _acData.decimals);
                   } else {
-                    itme.amount = timesDecimals(itme.amount,itme.decimal);
+                    itme.amount = divisionDecimals(itme.amount,itme.decimal);
                   }
                 }
                 this.inputData = response.result.coinFroms
@@ -272,9 +272,9 @@
                 for (let itme of response.result.coinTos) {
                   let _acData = assetsList.find(x => x.symbol === itme.symbol);
                   if (_acData) {
-                    itme.amount = timesDecimals(itme.amount, _acData.decimals);
+                    itme.amount = divisionDecimals(itme.amount, _acData.decimals);
                   } else {
-                    itme.amount = timesDecimals(itme.amount,itme.decimal);
+                    itme.amount = divisionDecimals(itme.amount,itme.decimal);
                   }
                 }
                 this.outputData = response.result.coinTos
@@ -285,20 +285,20 @@
               }
 
               if (response.result.type === 16) {
-                //response.result.txData.resultInfo.price = timesDecimals(response.result.txData.resultInfo.price).toString();
+                //response.result.txData.resultInfo.price = divisionDecimals(response.result.txData.resultInfo.price).toString();
                 //response.result.txData.resultInfo.price = response.result.txData.resultInfo.price;
                 if (response.result.txData.resultInfo.nulsTransfers.length !== 0) {
                   for (let item of response.result.txData.resultInfo.nulsTransfers) {
-                    item.value = timesDecimals(item.value);
+                    item.value = divisionDecimals(item.value);
                     for (let k of item.outputs) {
-                      k.value = timesDecimals(k.value);
+                      k.value = divisionDecimals(k.value);
                     }
                   }
                   this.nulsTransfersData = response.result.txData.resultInfo.nulsTransfers;
                 }
                 if (response.result.txData.resultInfo.tokenTransfers.length !== 0) {
                   for (let item of response.result.txData.resultInfo.tokenTransfers) {
-                    item.value = timesDecimals(item.value, item.decimals);
+                    item.value = divisionDecimals(item.value, item.decimals);
                   }
                 }
               }

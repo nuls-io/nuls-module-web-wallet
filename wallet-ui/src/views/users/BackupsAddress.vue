@@ -5,8 +5,8 @@
         <BackBar :backTitle="$t('address.address0')"></BackBar>
         <h3 class="title">
           <font>{{$t('newAddress.newAddress1')}} </font>
-          <font>:{{newAddressInfo.address}}
-            <i class="iconfont iconfuzhi clicks" @click="copy(newAddressInfo.address)"></i>
+          <font>:{{addressInfo.address}}
+            <i class="iconfont iconfuzhi clicks" @click="copy(addressInfo.address)"></i>
           </font>
         </h3>
       </div>
@@ -14,18 +14,17 @@
     <div class="new w1200 mt_20 bg-white">
       <div class="step_tow w630">
         <div class="tip bg-gray">
-          <p class="tc" v-if="RUN_PATTERN">{{$t('newAddress.newAddress13')}}</p>
-          <p class="tc" v-else>{{$t('newAddress.newAddress131')}}</p>
+          <p class="tc">{{$t('newAddress.newAddress13')}}</p>
         </div>
         <div class="btn mb_20">
           <el-button type="success" @click="backKeystore">{{$t('newAddress.newAddress16')}}</el-button>
-          <el-button type="success" @click="backScan">{{$t('tips.tips8')}}</el-button>
+          <!-- <el-button type="success" @click="backScan">{{$t('tips.tips8')}}</el-button> -->
           <el-button type="success" @click="backKey">{{$t('newAddress.newAddress17')}}</el-button>
           <el-button @click="toUrl('home')">{{$t('tab.tab24')}}</el-button>
         </div>
       </div>
     </div>
-    <Password ref="password" @passwordSubmit="passSubmit">
+    <Password ref="password" @passwordSubmit="passSubmit" :addressInfo="addressInfo">
     </Password>
     <el-dialog :title="$t('newAddress.newAddress19')" width="40%"
                :visible.sync="keyDialog"
@@ -34,10 +33,10 @@
     >
       <span>{{$t('newAddress.newAddress20')}}</span>
       <p class="bg-white">
-        {{newAddressInfo.pri}}
+        {{pri}}
       </p>
       <span slot="footer" class="dialog-footer">
-        <el-button type="success" @click="copy(newAddressInfo.pri)">{{$t('newAddress.newAddress21')}}</el-button>
+        <el-button type="success" @click="copy(pri)">{{$t('newAddress.newAddress21')}}</el-button>
       </span>
     </el-dialog>
 
@@ -61,30 +60,22 @@
   import QRCode from 'qrcodejs2'
   import Password from '@/components/PasswordBar'
   import BackBar from '@/components/BackBar'
-  import {copys, chainID, passwordVerification, connectToExplorer} from '@/api/util'
-  import {RUN_PATTERN} from '@/config.js'
-  import {getPrefixByChainId} from '@/api/requestData'
+  import {copys, passwordVerification, connectToExplorer} from '@/api/util'
 
   export default {
     data() {
       return {
-        prefix: '',//地址前缀
-        newAddressInfo: {},//备份账户信息
         keyDialog: false, //key弹框
         backType: 0,//备份类型 0：keystore备份 1：明文私钥备份 2:二维码备份
-        RUN_PATTERN: RUN_PATTERN,//运行模式
         scanDialog: false,//二维码显示框
+        pri: ''
       };
     },
-    created() {
-      getPrefixByChainId(chainID()).then((response) => {
-        //console.log(response);
-        this.prefix = response
-      }).catch((err) => {
-        console.log(err);
-        this.prefix = '';
-      });
-      this.newAddressInfo = this.$route.query.backAddressInfo;
+    computed: {
+      addressInfo() {
+        const accountList = this.$store.state.accountList
+        return accountList.find(v => v.address === this.$route.query.address)
+      }
     },
     mounted() {
     },
@@ -133,7 +124,7 @@
        * @param password
        **/
       async passSubmit(password) {
-        let isPassword = await passwordVerification(this.newAddressInfo, password, this.prefix);
+        let isPassword = await passwordVerification(this.addressInfo, password, this.$store.state.prefix);
         if (!isPassword.success) {
           this.$message({message: this.$t('address.address13'), type: 'error', duration: 3000});
           return;
@@ -149,7 +140,7 @@
           let blob = new Blob([JSON.stringify(fileInfo)], {type: "text/plain;charset=utf-8"});
           FileSaver.saveAs(blob, isPassword.address + ".keystore");
         } else if (this.backType === 1) {
-          this.newAddressInfo.pri = isPassword.pri;
+          this.pri = isPassword.pri;
           this.keyDialog = true;
         } else {
           this.scanDialog = true;
