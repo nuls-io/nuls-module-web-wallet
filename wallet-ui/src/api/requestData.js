@@ -26,7 +26,7 @@ export function countFee(tx, signatrueCount) {
   // let txSize = tx.txSerialize().length;
   // txSize += signatrueCount * 110;
   const txSize = calTxSize(tx, signatrueCount)
-  return 100000 * Math.ceil(txSize / 1024);
+  return 100000 * txSize;
 }
 
 /**
