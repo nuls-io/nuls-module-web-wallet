@@ -17,7 +17,7 @@
           {{$t('public.height')}}
           <label class="click"><u class="td" @click="toUrl('height',txInfo.height)">{{txInfo.height}}</u></label>
         </li>
-        <li>{{$t('public.fee')}} <label>{{txInfo.fees}}<span class="fCN">{{txInfo.fee.symbol}}</span></label></li>
+        <li>{{$t('public.fee')}} <label>{{txInfo.fees}}<span class="fCN">{{txInfo.fee && txInfo.fee.symbol}}</span></label></li>
         <li>{{$t('public.type')}} <label>{{$t('type.'+txInfo.type)}}</label></li>
         <li>
           {{$t('public.status')}}
@@ -70,7 +70,7 @@
         </li>
         <li v-if="txInfo.type ===9">
           {{$t('public.deposit')}}
-          <label>{{txInfo.txData.deposit/100000000}}<span class="fCN">NULS</span></label>
+          <label>{{txInfo.txData.deposit}}<span class="fCN">{{ symbol }}</span></label>
         </li>
         <li v-if="txInfo.type ===9">{{$t('public.credit')}} <label>{{txInfo.txData.creditValue}}</label></li>
 
@@ -81,8 +81,11 @@
             </u>
           </label>
         </li>
-        <li v-if="txInfo.type ===15 || txInfo.type ===16">Price<label>{{txInfo.txData.resultInfo.price}}<span
-                class="fCN">NULS</span> / GAS</label></li>
+        <li v-if="txInfo.type ===15 || txInfo.type ===16">
+          Price<label>{{txInfo.txData.resultInfo.price}}
+          <!-- <span class="fCN">{{ symbol }}</span> / GAS -->
+          </label>
+        </li>
         <li v-if="txInfo.type ===15 || txInfo.type ===16">Gas Used<label>{{txInfo.txData.resultInfo.gasUsed}}</label>
         </li>
         <li v-if="txInfo.type ===15 || txInfo.type ===16">Gas Limit<label>{{txInfo.txData.resultInfo.gasLimit}}
@@ -111,7 +114,7 @@
           <ul>
             <li v-for="item of tokenTransfersData" :key="item.address">
               <font class="click td" @click="toUrl('address',item.fromAddress)">{{item.fromAddress}}</font>
-              <label>{{item.value}}<span class="fCN">{{item.symbol}}</span></label>
+              <label>{{$toThousands(item.value)}}<span class="fCN">{{item.symbol}}</span></label>
             </li>
           </ul>
         </div>
@@ -119,7 +122,7 @@
           <ul>
             <li v-for="item of tokenTransfersData" :key="item.address">
               <font class="click td" @click="toUrl('address',item.toAddress)">{{item.toAddress}}</font>
-              <label>{{item.value}}<span class="fCN">{{item.symbol}}</span></label>
+              <label>{{$toThousands(item.value)}}<span class="fCN">{{item.symbol}}</span></label>
             </li>
           </ul>
         </div>
@@ -129,13 +132,13 @@
     <div class="cb"></div>
 
     <div class="card_long mzt_20 w1200 inorouput" v-if="nulsTransfersData.length !==0">
-      <h5 class="card-title font18" style="padding-left: 40px">NULS {{$t('nav.transfer')}}</h5>
+      <h5 class="card-title font18" style="padding-left: 40px">{{ symbol }} {{$t('nav.transfer')}}</h5>
       <div class="inorou-info bg-white">
         <div class="card-info left fl">
           <ul>
             <li v-for="item of nulsTransfersData" :key="item.address">
               <font class="click td" @click="toUrl('address',item.from)">{{item.from}}</font>
-              <label>{{item.value}}<span class="fCN">NULS</span></label>
+              <label>{{$toThousands(item.value)}}<span class="fCN">{{ symbol }}</span></label>
             </li>
           </ul>
         </div>
@@ -144,7 +147,7 @@
             <li v-for="item of nulsTransfersData" :key="item.to">
               <p v-for="k of item.outputs" :key="k.to">
                 <font class="click td" @click="toUrl('address',k.to)">{{k.to}}</font>
-                <label>{{k.value}}<span class="fCN">NULS</span></label>
+                <label>{{$toThousands(k.value)}}<span class="fCN">{{ symbol }}</span></label>
               </p>
             </li>
           </ul>
@@ -166,7 +169,7 @@
           <ul>
             <li v-for="itme of inputData" :key="itme.nonce">
               <font class="click td" @click="toUrl('address',itme.address)">{{itme.address}}</font>
-              <label>{{itme.amount}}<span class="fCN">{{itme.symbol}}</span></label>
+              <label>{{$toThousands(itme.amount)}}<span class="fCN">{{itme.symbol}}</span></label>
             </li>
             <li v-if="inputData.length ===0"></li>
           </ul>
@@ -176,7 +179,7 @@
             <li v-for="itme of outputData" :key="itme.nonce">
               <font class="click td" @click="toUrl('address',itme.address)">{{itme.address}}</font>
               <label>
-                {{itme.amount}}
+                {{$toThousands(itme.amount)}}
                 <span class="fCN">{{itme.symbol}}</span>&nbsp;
                 <el-tooltip :content="$t('lockType.'+txInfo.type)" placement="top" v-if="itme.lockTime !==0">
                   <i class="iconfont iconmima yellow"></i>
@@ -199,21 +202,22 @@
 
 <script>
   import moment from 'moment'
-  import {divisionDecimals, getLocalTime, copys, connectToExplorer} from '@/api/util'
+  import { divisionDecimals, getLocalTime, copys, connectToExplorer, timesDecimals } from '@/api/util'
   import BackBar from '@/components/BackBar'
+  import { NSymbol, NDecimals, calDecimalsAndSymbol } from '@/constants/constants'
 
   export default {
     data() {
       return {
         txInfoLoading: false,//交易详情动画加载
         hash: this.$route.query.hash,//hash
-        txInfo: [],//交易信息
+        txInfo: {},//交易信息
         inputData: [],//输入
         outputData: [],//输出
         tokenTransfersData: [],//代币转账data
         nulsTransfersData: [],//nuls转账data
         dataDialog: false,//data 弹框
-        symbol: 'NULS',
+        symbol: NSymbol,
       };
     },
     created() {
@@ -249,36 +253,41 @@
         this.$post('/', 'getTx', [hash])
           .then((response) => {
             console.log(response);
-            if (response.hasOwnProperty("result")) {
+            if (response.hasOwnProperty("result")) {    
               response.result.createTime = moment(getLocalTime(response.result.createTime * 1000)).format('YYYY-MM-DD HH:mm:ss');
-              response.result.fees = divisionDecimals(response.result.fee.value, response.result.fee.decimals || 8);
-              response.result.value = divisionDecimals(response.result.value,response.result.decimal);
+
+              const { decimals, symbol } = calDecimalsAndSymbol(response.result)
+              response.result.value = divisionDecimals(response.result.value, decimals);
+              response.result.symbol = symbol
+              const { decimals: feeDeciamls, symbol: feeSymbol } = calDecimalsAndSymbol(response.result.fee)
+              response.result.fees = divisionDecimals(response.result.fee.value, feeDeciamls);
+              response.result.fee.symbol = feeSymbol
+              console.log(feeSymbol, response.result.fee, '=====');
               //输入
               if (response.result.coinFroms) {
-                let assetsList = sessionStorage.hasOwnProperty('assetsList') ? JSON.parse(sessionStorage.getItem('assetsList')) : [];
                 for (let itme of response.result.coinFroms) {
-                  let _acData = assetsList.find(x => x.symbol === itme.symbol);
-                  if (_acData) {
-                    itme.amount = divisionDecimals(itme.amount, _acData.decimals);
-                  } else {
-                    itme.amount = divisionDecimals(itme.amount,itme.decimal);
-                  }
+                  const { decimals, symbol } = calDecimalsAndSymbol(itme)
+                  itme.amount = divisionDecimals(itme.amount, decimals);
+                  itme.symbol = symbol
                 }
                 this.inputData = response.result.coinFroms
               }
               //输出
               if (response.result.coinTos) {
-                let assetsList = sessionStorage.hasOwnProperty('assetsList') ? JSON.parse(sessionStorage.getItem('assetsList')) : [];
                 for (let itme of response.result.coinTos) {
-                  let _acData = assetsList.find(x => x.symbol === itme.symbol);
-                  if (_acData) {
-                    itme.amount = divisionDecimals(itme.amount, _acData.decimals);
-                  } else {
-                    itme.amount = divisionDecimals(itme.amount,itme.decimal);
-                  }
+                  const { decimals, symbol } = calDecimalsAndSymbol(itme)
+                  itme.amount = divisionDecimals(itme.amount, decimals);
+                  itme.symbol = symbol
                 }
                 this.outputData = response.result.coinTos
               }
+
+              if (response.result.txData && response.result.txData.deposit) {
+                response.result.txData.deposit = divisionDecimals(response.result.txData.deposit, NDecimals)
+              }
+              // if (response.result.txData && response.result.txData.resultInfo.price) {
+              //   response.result.txData.resultInfo.price = timesDecimals(response.result.txData.resultInfo.price, NDecimals)
+              // }
 
               if (response.result.type === 16 && response.result.txData.methodName === 'transfer') {
                 this.tokenTransfersData = response.result.txData.resultInfo.tokenTransfers
@@ -289,9 +298,9 @@
                 //response.result.txData.resultInfo.price = response.result.txData.resultInfo.price;
                 if (response.result.txData.resultInfo.nulsTransfers.length !== 0) {
                   for (let item of response.result.txData.resultInfo.nulsTransfers) {
-                    item.value = divisionDecimals(item.value);
+                    item.value = divisionDecimals(item.value, NDecimals);
                     for (let k of item.outputs) {
-                      k.value = divisionDecimals(k.value);
+                      k.value = divisionDecimals(k.value, NDecimals);
                     }
                   }
                   this.nulsTransfersData = response.result.txData.resultInfo.nulsTransfers;
@@ -308,7 +317,6 @@
               if (this.txInfo.txData && this.txInfo.txData.resultInfo) {
                 this.txInfo.txData.resultInfo.remark = this.txInfo.txData.resultInfo.remark.replace(/<[^<>]+>/g, '');
               }
-              this.symbol = this.txInfo.fee.symbol;
               this.txInfoLoading = false;
             }
           })

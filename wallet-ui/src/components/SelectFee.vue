@@ -14,7 +14,7 @@
         <div class="fee-between">
           <span>{{ item.symbol }}</span>
           <!-- <span>{{ item.value }}</span> -->
-          <span>{{ item.enough ? item.balance: $t('public.InsufficientBalance') }}</span>
+          <span>{{ item.enough ? $toThousands(item.balance) : $t('public.InsufficientBalance') }}</span>
         </div>
       </el-dropdown-item>
     </el-dropdown-menu>
@@ -75,8 +75,5 @@ export default {
   align-items: center;
   width: 200px;
   color: inherit;
-  &:hover {
-    color: #00db82;
-  }
 }
 </style>

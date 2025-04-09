@@ -3,9 +3,10 @@ import {
   chainID,
   divisionDecimals,
   timesDecimals,
-  Plus,
-  fixNumber,
+  Plus
 } from "../api/util";
+import { NSymbol, NDecimals, DEFAULT_FEE, FEE_PERKB, NDiffDeciamsl } from '@/constants/constants'
+
 
 function getDefaultFeeList() {
   const chainId = chainID();
@@ -13,9 +14,9 @@ function getDefaultFeeList() {
     return [
       {
         assetId: "2-1",
-        symbol: "NULS",
-        decimals: 8,
-        feePerKB: "100000",
+        symbol: NSymbol,
+        decimals: NDecimals,
+        feePerKB: FEE_PERKB,
         scFeeFoefficient: "1",
       },
     ];
@@ -23,9 +24,9 @@ function getDefaultFeeList() {
     return [
       {
         assetId: "1-1",
-        symbol: "NULS",
-        decimals: 8,
-        feePerKB: "100000",
+        symbol: NSymbol,
+        decimals: NDecimals,
+        feePerKB: FEE_PERKB,
         scFeeFoefficient: "1",
       },
     ];
@@ -37,10 +38,10 @@ export default {
     this.feeKey = "feeList" + chainID();
     return {
       txSize: 1,
-      currentFee: "NULS",
-      NULSTxFeeValue: 0.001,
+      currentFee: NSymbol,
+      NULSTxFeeValue: DEFAULT_FEE,
       NULSGasFeeValue: 0,
-      feeValue: 0.001,
+      feeValue: DEFAULT_FEE,
       feeList: [],
       disableSelectFee: false,
     };
@@ -88,13 +89,21 @@ export default {
     async getApiFeeList() {
       const result = await this.$post("/", "getChainFeeSetting", []);
       if (result.result && result.result.length) {
-        this.feeList = result.result;
+        const list = result.result
+        list.map(v => {
+          if (v.symbol === 'NULS') {
+            v.symbol = NSymbol
+            // v.feePerKB = timesDecimals(v.feePerKB, NDiffDeciamsl)
+            v.decimals = NDecimals
+          }
+        })
+        this.feeList = list;
         storage.set(this.feeKey, this.feeList);
       }
     },
 
     getTxFeeValue(feeInfo) {
-      if (feeInfo.symbol === "NULS") {
+      if (feeInfo.symbol === NSymbol) {
         return this.NULSTxFeeValue;
       }
       const size = this.txSize;
@@ -105,7 +114,7 @@ export default {
 
     getGasFeeValue(feeInfo) {
       const { scFeeFoefficient, decimals } = feeInfo;
-      const NULSGasBig = timesDecimals(this.NULSGasFeeValue, 8);
+      const NULSGasBig = timesDecimals(this.NULSGasFeeValue, NDecimals);
       return divisionDecimals(
         Math.ceil(NULSGasBig * scFeeFoefficient),
         decimals

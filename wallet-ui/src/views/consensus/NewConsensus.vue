@@ -22,8 +22,8 @@
           <el-input v-model.trim="createrForm.blockAddress" maxlength="50">
           </el-input>
         </el-form-item>
-        <el-form-item :label="$t('public.deposit') + '('+agentAsset.agentAsset.symbol+')'" prop="amount">
-          <span class="balance font12 fr">{{$t('consensus.consensus2')}}: {{balanceInfo.balance/100000000}}</span>
+        <el-form-item :label="$t('public.deposit') + '('+symbol+')'" prop="amount">
+          <span class="balance font12 fr" style="margin-top: 4px">{{$t('consensus.consensus2')}}: {{ $toThousands(addressInfo.balance)}}</span>
           <el-input v-model.trim="createrForm.amount">
           </el-input>
         </el-form-item>
@@ -36,7 +36,7 @@
             <div slot="content">{{$t('transfer.transfer5')}}</div>
             <i class="el-icon-warning"></i>
           </el-tooltip>
-          {{$t('public.fee')}}: 0.001 <span class="fCN">{{agentAsset.agentAsset.symbol}}</span>
+          {{$t('public.fee')}}: {{ DEFAULT_FEE }} <span class="fCN">{{ symbol }}</span>
         </div>
         <el-form-item class="form-next">
           <el-button type="success" @click="submitForm('createrForm')" :disabled="isRed">{{$t('password.password3')}}
@@ -69,12 +69,12 @@
         </div>
         <div class="div-data">
           <p>{{$t('public.deposit')}}:&nbsp;</p>
-          <label class="yellow">{{createrForm.amount}} <span
-                  class="fCN">{{agentAsset.agentAsset.symbol}}</span></label>
+          <label class="yellow">{{ $toThousands(createrForm.amount) }} <span
+                  class="fCN">{{ symbol }}</span></label>
         </div>
         <div class="div-data">
           <p>{{$t('public.fee')}}:&nbsp;</p>
-          <label>0.001 <span class="fCN">{{agentAsset.agentAsset.symbol}}</span></label>
+          <label>{{ DEFAULT_FEE }} <span class="fCN">{{ symbol }}</span></label>
         </div>
       </div>
       <div slot="footer" class="dialog-footer">
@@ -92,11 +92,12 @@
     inputsOrOutputs,
     validateAndBroadcast
   } from '@/api/requestData'
-  import {Times} from '@/api/util'
+  import { Minus, toThousands, timesDecimals } from '@/api/util'
   import Password from '@/components/PasswordBar'
   import BackBar from '@/components/BackBar'
   import ledgerMixin from '@/mixins/ledgerMixin'
   import LedgerConfirm from '@/components/LedgerConfirm'
+  import { NSymbol, NDecimals, DEFAULT_FEE, min_margin, max_margin } from '@/constants/constants'
 
   export default {
     data() {
@@ -131,16 +132,15 @@
       };
       let checkAmount = (rule, value, callback) => {
         let re = /^\d+(?=\.{0,1}\d+$|$)/;
-        let res = /^\d{1,8}(\.\d{1,8})?$/;
-        let balance = this.balanceInfo.balance - value * 100000000;
+        let res = /^\d{1,12}(\.\d{1,4})?$/;
         if (!value) {
           return callback(new Error(this.$t('newConsensus.newConsensus5')));
         } else if (!re.exec(value) || !res.exec(value)) {
           callback(new Error(this.$t('newConsensus.newConsensus6')));
-        } else if (balance < 0.001) {
+        } else if (Minus(this.addressInfo.balance, value).toFixed() - DEFAULT_FEE < 0) {
           callback(new Error(this.$t('newConsensus.newConsensus7')));
-        } else if (value < 20000 || value > 200000) {
-          callback(new Error(this.$t('newConsensus.newConsensus8')));
+        } else if (value - min_margin < 0 || value - max_margin > 0) {
+          callback(new Error(this.$t('newConsensus.newConsensus8', { min: toThousands(min_margin), max: toThousands(max_margin) })));
         } else {
           callback();
         }
@@ -157,7 +157,9 @@
           callback();
         }
       };
+      this.DEFAULT_FEE = DEFAULT_FEE
       return {
+        symbol: NSymbol,
         balanceInfo: {},//账户余额信息
         agentAsset: JSON.parse(sessionStorage.getItem('info')),//pocm合约单位等信息
         isRed: false,//创建地址是否有红牌惩罚
@@ -332,7 +334,7 @@
           fromAddress: this.addressInfo.address,
           assetsChainId: this.agentAsset.agentAsset.chainId,
           assetsId: this.agentAsset.agentAsset.assetId,
-          amount: Number(Times(this.createrForm.amount, 100000000).toString()),
+          amount: timesDecimals(this.createrForm.amount, NDecimals),
           fee: 100000
         };
         const inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 4);
@@ -342,7 +344,7 @@
           packingAddress: this.createrForm.blockAddress,
           rewardAddress: this.createrForm.rewardAddress,
           commissionRate: Number(this.createrForm.rate),
-          deposit: Number(Times(this.createrForm.amount, 100000000).toString())
+          deposit: timesDecimals(this.createrForm.amount, NDecimals)
         };
         return await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, '', 4, agent);
       }

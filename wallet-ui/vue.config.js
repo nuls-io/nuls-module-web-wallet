@@ -26,7 +26,17 @@ module.exports = {
       ],
       nodeIntegration: true,
       builderOptions: {
-        productName: 'NULS Wallet'
+        productName: 'NULS AI Wallet',
+        win: {
+          target: 'nsis'
+        },
+        nsis: {
+          // certificateFile: process.env.VUE_APP_CERTIFICATE_File,
+          // certificatePassword: process.env.VUE_APP_CERTIFICATE_PASSWORD,
+          // signingHashAlgorithms: ["sha256"],
+          // rfc3161TimeStampServer: "http://timestamp.digicert.com",
+          deleteAppDataOnUninstall: true
+        },
       }
     }
   },

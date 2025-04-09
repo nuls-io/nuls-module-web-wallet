@@ -9,24 +9,24 @@
       <div class="card-info left fl">
         <h5 class="card-title font18">
           {{$t('consensus.consensus0')}}
-          <span class="font14 fr">{{fixNumber(addressInfo.totalReward, 3)}}<font class="fCN"> {{addressInfo.symbol}}</font></span>
+          <span class="font14 fr">{{ $toThousands(fixNumber(addressInfo.totalReward, 3)) }}<font class="fCN"> {{ symbol }}</font></span>
         </h5>
         <ul>
           <li>
             {{$t('consensus.consensus1')}}
             <label>
               <u class="click"
-                 @click="toUrl('consensusList',addressInfo.consensusLock)">{{fixNumber(addressInfo.consensusLock, 3)}}</u>
-              <span class="fCN">{{addressInfo.symbol}}</span>
+                 @click="toUrl('consensusList',addressInfo.consensusLock)">{{ $toThousands(fixNumber(addressInfo.consensusLock, 3)) }}</u>
+              <span class="fCN">{{ symbol }}</span>
             </label>
           </li>
           <li>
             {{$t('consensus.consensus2')}}
-            <label>{{fixNumber(addressInfo.balance, 3)}}<span class="fCN">{{addressInfo.symbol}}</span></label>
+            <label>{{ $toThousands(fixNumber(addressInfo.balance, 3)) }}<span class="fCN">{{ symbol }}</span></label>
           </li>
           <li>
             {{$t('consensus.consensus3')}}
-            <label>{{fixNumber(addressInfo.lastReward, 3)}}<span class="fCN">{{addressInfo.symbol}}</span></label>
+            <label>{{ $toThousands(fixNumber(addressInfo.lastReward, 3)) }}<span class="fCN">{{ symbol }}</span></label>
           </li>
         </ul>
       </div>
@@ -40,11 +40,11 @@
         <ul>
           <li>
             {{$t('consensus.consensus8')}}
-            <label>{{fixNumber(nulsCount.consensusTotal, 3)}}<span
-                    class="fCN">{{addressInfo.symbol}}</span></label>
+            <label>{{ $toThousands(fixNumber(nulsCount.consensusTotal, 3)) }}<span
+                    class="fCN">{{ symbol }}</span></label>
           </li>
-          <li>{{$t('consensus.consensus7')}} <label>{{nodeCount.agentCount}}</label></li>
-          <li>{{$t('consensus.consensus6')}} <label>{{nodeCount.consensusCount}}</label></li>
+          <li>{{$t('consensus.consensus7')}} <label>{{ nodeCount.agentCount }}</label></li>
+          <li>{{$t('consensus.consensus6')}} <label>{{ nodeCount.consensusCount }}</label></li>
         </ul>
       </div>
     </div>
@@ -74,12 +74,12 @@
                  @click="collect(item)"></i>
             </h4>
             <ul class="bg-white click" @click="toUrl('consensusInfo',item.txHash)">
-              <li>{{$t('public.alias')}}<span>{{item.agentAlias}}</span></li>
-              <li>{{$t('public.commission')}} <span>{{item.commissionRate}}%</span></li>
-              <li>{{$t('public.totalStake')}}<span>{{item.totalDeposit}}</span></li>
-              <li>{{$t('public.participants')}}<span>{{item.depositCount}}</span></li>
-              <li>{{$t('public.deposit')}}<span>{{item.deposit}}</span></li>
-              <li>{{$t('public.credit')}}<span>{{item.creditValue}}</span></li>
+              <li>{{$t('public.alias')}}<span>{{ item.agentAlias }}</span></li>
+              <li>{{$t('public.commission')}} <span>{{ item.commissionRate }}%</span></li>
+              <li>{{$t('public.totalStake')}}<span>{{ $toThousands(item.totalDeposit) }}</span></li>
+              <li>{{$t('public.participants')}}<span>{{ item.depositCount }}</span></li>
+              <li>{{$t('public.deposit')}}<span>{{ $toThousands(item.deposit) }}</span></li>
+              <li>{{$t('public.credit')}}<span>{{ item.creditValue }}</span></li>
             </ul>
           </div>
           <div class="cb"></div>
@@ -97,12 +97,12 @@
                  @click="collect(item)"></i>
             </h4>
             <ul class="bg-white click" @click="toUrl('consensusInfo',item.txHash)">
-              <li>{{$t('public.alias')}}<span>{{item.agentAlias}}</span></li>
-              <li>{{$t('public.commission')}} <span>{{item.commissionRate}}%</span></li>
-              <li>{{$t('public.totalStake')}}<span>{{item.totalDeposit}}</span></li>
-              <li>{{$t('public.participants')}}<span>{{item.depositCount}}</span></li>
-              <li>{{$t('public.deposit')}}<span>{{item.deposit}}</span></li>
-              <li>{{$t('public.credit')}}<span>{{item.creditValue}}</span></li>
+              <li>{{$t('public.alias')}}<span>{{ item.agentAlias }}</span></li>
+              <li>{{$t('public.commission')}} <span>{{ item.commissionRate }}%</span></li>
+              <li>{{$t('public.totalStake')}}<span>{{ $toThousands(item.totalDeposit) }}</span></li>
+              <li>{{$t('public.participants')}}<span>{{ item.depositCount }}</span></li>
+              <li>{{$t('public.deposit')}}<span>{{ $toThousands(item.deposit) }}</span></li>
+              <li>{{$t('public.credit')}}<span>{{ item.creditValue }}</span></li>
             </ul>
           </div>
           <div class="no-data">{{$t('public.noData')}}</div>
@@ -116,12 +116,14 @@
 <script>
   import SelectBar from '@/components/SelectBar';
   import {divisionDecimals, copys, divisionAndFix, fixNumber} from '@/api/util'
+  import { NSymbol, NDecimals } from '@/constants/constants'
 
   export default {
     name: 'consensus',
     data() {
       this.fixNumber = fixNumber;
       return {
+        symbol: NSymbol,
         consensusActive: 'consensusFirst',
         //节点信息
         nodeCount: {agentCount: 0, totalCount: 0},
@@ -166,7 +168,7 @@
         this.getConsensusNodeCount();
         this.getCoinInfo();
         this.getConsensusNodes(this.pageIndex, this.pageSize, this.nodeTypeRegion);
-        //this.getConsensusInfoByAddress(this.pageIndex, this.pageSize);
+        // this.getConsensusInfoByAddress(this.pageIndex, this.pageSize);
         this.getAddressInfoByNode();
         this.getPunishByAddress();
       }, 600);
@@ -238,11 +240,11 @@
                 if (item.address === address) {
                   item.alias = response.result.alias;
                   item.symbol = response.result.symbol;
-                  item.balance = divisionDecimals(response.result.balance);
-                  item.consensusLock = divisionDecimals(response.result.consensusLock);
-                  item.totalReward = divisionDecimals(response.result.totalReward);
+                  item.balance = divisionDecimals(response.result.balance, NDecimals);
+                  item.consensusLock = divisionDecimals(response.result.consensusLock, NDecimals);
+                  item.totalReward = divisionDecimals(response.result.totalReward, NDecimals);
                   if (response.result.lastReward) {
-                    item.lastReward = divisionDecimals(response.result.lastReward);
+                    item.lastReward = divisionDecimals(response.result.lastReward, NDecimals);
                   } else {
                     item.lastReward = 0;
                   }
@@ -287,9 +289,9 @@
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
-              this.nulsCount.circulation = divisionDecimals(response.result.circulation);
-              this.nulsCount.consensusTotal = divisionDecimals(response.result.consensusTotal);
-              this.nulsCount.total = divisionDecimals(response.result.total);
+              this.nulsCount.circulation = divisionDecimals(response.result.circulation, NDecimals);
+              this.nulsCount.consensusTotal = divisionDecimals(response.result.consensusTotal, NDecimals);
+              this.nulsCount.total = divisionDecimals(response.result.total, NDecimals);
             } else {
               this.nulsCount.circulation = 0;
               this.nulsCount.consensusTotal = 0;
@@ -324,10 +326,10 @@
                   itme.isCollect = false;
                 }
                 itme.bozhengjin = itme.deposit;
-                itme.deposit = divisionAndFix(itme.deposit, 8, 3);
-                itme.agentReward = divisionAndFix(itme.agentReward, 8, 3);
-                itme.totalDeposit = divisionAndFix(itme.totalDeposit, 8, 3);
-                itme.totalReward = divisionAndFix(itme.totalReward, 8, 3);
+                itme.deposit = divisionAndFix(itme.deposit, NDecimals, 3);
+                itme.agentReward = divisionAndFix(itme.agentReward, NDecimals, 3);
+                itme.totalDeposit = divisionAndFix(itme.totalDeposit, NDecimals, 3);
+                itme.totalReward = divisionAndFix(itme.totalReward, NDecimals, 3);
                 //console.log(this.addressInfo.address);
                 if (itme.agentAddress === this.addressInfo.address) {
                   this.isNew = true;//创建的节点
@@ -404,15 +406,15 @@
               let newAgentIdList = [];
               const collectList = this.addressInfo.collectList || [];
               for (let item of response.result.list) {
-                if (collectList.collectList.includes(item.agentId)) {
+                if (collectList.collectList && collectList.collectList.includes(item.agentId)) {
                   item.isCollect = true;
                 } else {
                   item.isCollect = false;
                 }
                 newAgentIdList.push(item.agentId);
-                item.deposit = divisionAndFix(item.deposit, 8, 3);
-                item.totalDeposit = divisionAndFix(item.totalDeposit, 8, 3);
-                item.totalReward = divisionAndFix(item.totalReward, 8, 3);
+                item.deposit = divisionAndFix(item.deposit, NDecimals, 3);
+                item.totalDeposit = divisionAndFix(item.totalDeposit, NDecimals, 3);
+                item.totalReward = divisionAndFix(item.totalReward, NDecimals, 3);
                 if (item.agentAddress === this.addressInfo.address) {
                   item.isNew = true;//创建的节点
                   this.isNew = true;
@@ -430,6 +432,7 @@
                 newCollectList.push(this.allNodeData.filter(item => item.agentId === items)[0])
               }
               this.myNodeData = [...response.result.list, ...newCollectList];
+              console.log(this.myNodeData, '===')
             }
           })
           .catch((error) => {

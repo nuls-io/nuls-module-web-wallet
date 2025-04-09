@@ -20,7 +20,7 @@
         </el-table-column>
         <el-table-column prop="createTime" :label="$t('tab.tab5')">
         </el-table-column>
-        <el-table-column prop="values" :label="$t('tab.tab6')">
+        <el-table-column prop="values" :label="$t('tab.tab6') + '('+ symbol + ')'">
         </el-table-column>
         <el-table-column :label=" $t('tab.tab7')">
           <template slot-scope="scope">
@@ -53,10 +53,12 @@
   import moment from 'moment'
   import {divisionDecimals, divisionAndFix, getLocalTime, superLong} from '@/api/util'
   import BackBar from '@/components/BackBar'
+  import { NDecimals, NSymbol } from '@/constants/constants'
 
   export default {
     data() {
       return {
+        symbol: NSymbol,
         txListData: [],//冻结列表
         pageIndex: 1, //页码
         pageSize: 10, //每页条数
@@ -109,11 +111,11 @@
               for (let item of response.result.list) {
                 item.createTime = moment(getLocalTime(item.time * 1000)).format('YYYY-MM-DD HH:mm:ss');
                 item.txHashs = superLong(item.txHash, 16);
-                item.balance = divisionDecimals(item.amount);
-                item.values = divisionAndFix(item.amount, 8, 3);
+                // item.balance = divisionDecimals(item.amount);
+                item.values = divisionAndFix(item.amount, NDecimals, 3);
                 item.lockedTime = moment(getLocalTime(item.lockedValue*1000)).format('YYYY-MM-DD HH:mm:ss');
                 if (item.type === 2) {
-                  item.reason = "注销节点";
+                  item.reason = "Unregister Node";
                   item.lockedValue = moment(getLocalTime(item.lockedValue*1000)).format('YYYY-MM-DD HH:mm:ss');
                 } else if (item.type === 3) {
                   if (item.lockedValue === -1) {

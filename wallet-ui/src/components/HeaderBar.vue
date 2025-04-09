@@ -232,11 +232,12 @@
     border-bottom: 1px solid @Dcolour;
     height: 80px;
     .logo {
-      width: 120px;
+      width: 130px;
       float: left;
+      margin-right: 20px;
       img {
-        margin: 20px 0 0 0;
-        width: 100px;
+        margin-top: 20px;
+        width: 100%;
         height: 40px;
       }
     }

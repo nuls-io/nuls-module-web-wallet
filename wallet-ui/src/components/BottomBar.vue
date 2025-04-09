@@ -25,6 +25,7 @@
   import axios from 'axios'
   import { divisionDecimals } from '@/api/util'
   import storage from '@/api/storage'
+  import { NDecimals } from '@/constants/constants'
 
   export default {
     name: "bottom-bar",
@@ -134,12 +135,12 @@
                   if (item.address === address) {
                     item.alias = response.result.alias;
                     item.symbol = response.result.symbol;
-                    item.totalBalance = divisionDecimals(response.result.totalBalance);
-                    item.balance = divisionDecimals(response.result.balance);
-                    item.consensusLock = divisionDecimals(response.result.consensusLock);
-                    item.totalReward = divisionDecimals(response.result.totalReward);
+                    item.totalBalance = divisionDecimals(response.result.totalBalance, NDecimals);
+                    item.balance = divisionDecimals(response.result.balance, NDecimals);
+                    item.consensusLock = divisionDecimals(response.result.consensusLock, NDecimals);
+                    item.totalReward = divisionDecimals(response.result.totalReward, NDecimals);
                     if (response.result.lastReward) {
-                      item.lastReward = divisionDecimals(response.result.lastReward);
+                      item.lastReward = divisionDecimals(response.result.lastReward, NDecimals);
                     } else {
                       item.lastReward = 0;
                     }

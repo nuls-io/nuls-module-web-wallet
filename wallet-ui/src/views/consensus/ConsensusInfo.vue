@@ -18,14 +18,14 @@
       </h5>
       <ul>
         <li>{{$t('public.createAddress')}} <label>{{nodeInfo.agentAddress}}</label></li>
-        <li>{{$t('public.deposit')}} <label>{{nodeInfo.deposits}}<span
-                class="fCN">{{agentAsset.agentAsset.symbol}}</span></label>
+        <li>{{$t('public.deposit')}} <label>{{ $toThousands(nodeInfo.deposits) }}<span
+                class="fCN">{{ symbol }}</span></label>
         </li>
         <li>{{$t('public.rewardAddress')}} <label>{{nodeInfo.rewardAddress}}</label></li>
-        <li>{{$t('public.totalStake')}} <label>{{nodeInfo.totalDeposit}}<span class="fCN">{{agentAsset.agentAsset.symbol}}</span></label>
+        <li>{{$t('public.totalStake')}} <label>{{ $toThousands(nodeInfo.totalDeposit) }}<span class="fCN">{{ symbol }}</span></label>
         </li>
         <li>{{$t('public.packingAddress')}} <label>{{nodeInfo.packingAddress}}</label></li>
-        <li>{{$t('consensusInfo.consensusInfo7')}} <label>{{nodeInfo.totalReward}}<span class="fCN">{{addressInfo.symbol}}</span></label>
+        <li>{{$t('consensusInfo.consensusInfo7')}} <label>{{ $toThousands(nodeInfo.totalReward) }}<span class="fCN">{{ symbol }}</span></label>
         </li>
         <li>{{$t('consensusInfo.consensusInfo8')}} <label>{{nodeInfo.agentAlias ? nodeInfo.agentAlias :'--' }}</label>
         </li>
@@ -54,14 +54,14 @@
       <div class="entrust w1200 bg-white" v-show="jionNode">
         <div class="entrust_add w630">
           <el-form :model="jionNodeForm" status-icon :rules="jionNodeRules" ref="jionNodeForm" @submit.native.prevent>
-            <el-form-item :label="$t('consensusInfo.consensusInfo1') + '('+agentAsset.agentAsset.symbol+')'"
+            <el-form-item :label="$t('consensusInfo.consensusInfo1') + '('+symbol+')'"
                           prop="amount">
-              <span class="balance font12 fr">{{$t('consensus.consensus2')}}：{{balanceInfo.balance/100000000}}</span>
+              <span class="balance font12 fr">{{$t('consensus.consensus2')}}：{{ $toThousands(formatBalance(balanceInfo.balance)) }}</span>
               <el-input v-model="jionNodeForm.amount">
               </el-input>
             </el-form-item>
             <div class="font14">
-              {{$t('public.fee')}}: {{fee}} <span class="fCN">{{agentAsset.agentAsset.symbol}}</span>
+              {{$t('public.fee')}}: {{ fee }} <span class="fCN">{{ symbol }}</span>
             </div>
             <el-form-item class="form-next">
               <el-button type="success" @click="jionNodeSubmitForm('jionNodeForm')">{{$t('password.password3')}}
@@ -72,8 +72,8 @@
       </div>
       <div class="entrust_list w1200" v-show="!jionNode">
         <div class="top_total font14">
-          {{$t('public.totalStake')}}：{{nodeInfo.totalDeposit}} <span
-                class="fCN">{{agentAsset.agentAsset.symbol}}</span>
+          {{$t('public.totalStake')}}：{{ $toThousands(nodeInfo.totalDeposit) }} <span
+                class="fCN">{{ symbol }}</span>
         </div>
 
         <div class="top_ico">
@@ -85,8 +85,8 @@
           </el-table-column>
           <el-table-column prop="createTime" :label="$t('consensusList.consensusList1')">
           </el-table-column>
-          <el-table-column prop="amount" :label="$t('public.amount') + '('+agentAsset.agentAsset.symbol+')'"
-                          >
+          <el-table-column prop="amount" :label="$t('public.amount') + '('+symbol+')'">
+            <template slot-scope="scope">{{ $toThousands(scope.row.amount) }}</template>
           </el-table-column>
           <el-table-column :label="$t('public.operation')">
             <template slot-scope="scope">
@@ -128,41 +128,44 @@
     divisionDecimals,
     getLocalTime,
     Minus,
-    Times,
-    connectToExplorer
+    connectToExplorer,
+    toThousands,
+    timesDecimals
   } from '@/api/util'
   import Password from '@/components/PasswordBar'
   import LedgerConfirm from '@/components/LedgerConfirm'
   import BackBar from '@/components/BackBar'
   import ledgerMixin from '@/mixins/ledgerMixin'
+  import { NSymbol, NDecimals, DEFAULT_FEE, min_deposit, max_deposit } from '@/constants/constants'
 
   export default {
     data() {
       let checkAmount = (rule, value, callback) => {
-        let usable = Number(Minus(500000, Number(this.nodeInfo.totalDeposit)));
-        let balance = Number(Minus(this.balanceInfo.balance, Number(Times(value, 100000000))));
+        let usable = Minus(max_deposit, this.nodeInfo.totalDeposit).toFixed();
+        const userBalance = this.formatBalance(this.balanceInfo.balance)
         let re = /^\d+(?=\.{0,1}\d+$|$)/;
-        let res = /^\d{1,8}(\.\d{1,8})?$/;
+        let res = /^\d{1,12}(\.\d{1,4})?$/;
         if (!value) {
           return callback(new Error(this.$t('consensusInfo.consensusInfo2')));
         } else if (!re.exec(value) || !res.exec(value)) {
           callback(new Error(this.$t('consensusInfo.consensusInfo3')))
-        } else if (value < 2000) {
-          return callback(new Error(this.$t('consensusInfo.consensusInfo43')));
-        } else if (value > usable) {
-          return callback(new Error(this.$t('consensusInfo.consensusInfo41') + usable + this.$t('consensusInfo.consensusInfo42')));
-        } else if (balance < 0.001) {
-          return callback(new Error(this.$t('transfer.transfer131') + Minus(divisionDecimals(this.balanceInfo.balance)), 0.001));
+        } else if (value - min_deposit < 0) {
+          return callback(new Error(this.$t('consensusInfo.consensusInfo43', { number: toThousands(min_deposit) })));
+        } else if (value - usable > 0) {
+          return callback(new Error(this.$t('consensusInfo.consensusInfo41') + toThousands(usable) + this.$t('consensusInfo.consensusInfo42')));
+        } else if (Minus(userBalance, value).toFixed() - DEFAULT_FEE < 0) {
+          return callback(new Error(this.$t('transfer.transfer131') + Minus(userBalance, DEFAULT_FEE).toFixed()));
         } else {
           callback()
         }
       };
 
       return {
+        symbol: NSymbol,
         balanceInfo: {},//余额信息
         agentAsset: JSON.parse(sessionStorage.getItem('info')),//pocm合约单位等信息
         nodeInfo: {},//节点详情
-        fee: 0.001,//手续费
+        fee: DEFAULT_FEE,//手续费
         outInfo: '',//退出信息
         passwordType: 0,//输入密码后的提交类型 0:加入委托 1:退出委托 2:注销节点
         jionNode: false,//是否显示加入共识
@@ -204,6 +207,10 @@
       LedgerConfirm
     },
     methods: {
+      formatBalance(balance) {
+        if (!Number(balance)) return '0'
+        return divisionDecimals(balance, NDecimals)
+      },
 
       /**
        * 根据hash获取节点详情信息
@@ -214,10 +221,10 @@
           .then((response) => {
             //console.log(response);
             if (response.hasOwnProperty("result")) {
-              response.result.agentReward = divisionDecimals(response.result.agentReward);
-              response.result.deposits = divisionDecimals(response.result.deposit);
-              response.result.totalDeposit = divisionDecimals(response.result.totalDeposit);
-              response.result.totalReward = divisionDecimals(response.result.totalReward);
+              response.result.agentReward = divisionDecimals(response.result.agentReward, NDecimals);
+              response.result.deposits = divisionDecimals(response.result.deposit, NDecimals);
+              response.result.totalDeposit = divisionDecimals(response.result.totalDeposit, NDecimals);
+              response.result.totalReward = divisionDecimals(response.result.totalReward, NDecimals);
               response.result.createTime = moment(getLocalTime(response.result.createTime * 1000)).format('YYYY-MM-DD HH:mm:ss');
               this.nodeInfo = response.result;
             }
@@ -240,8 +247,8 @@
             //console.log(response);
             if (response.hasOwnProperty("result")) {
               for (let itme of response.result.list) {
-                itme.amount = divisionDecimals(itme.amount);
-                itme.fee = divisionDecimals(itme.fee);
+                itme.amount = divisionDecimals(itme.amount, NDecimals);
+                itme.fee = divisionDecimals(itme.fee, NDecimals);
                 itme.createTime = moment(getLocalTime(itme.createTime * 1000)).format('YYYY-MM-DD HH:mm:ss');
               }
               this.nodeDepositData = response.result.list;
@@ -380,7 +387,7 @@
           fromAddress: this.addressInfo.address,
           assetsChainId: this.agentAsset.agentAsset.chainId,
           assetsId: this.agentAsset.agentAsset.assetId,
-          amount: Number(Times(this.jionNodeForm.amount, 100000000)),
+          amount: timesDecimals(this.jionNodeForm.amount, NDecimals),
           fee: 100000
         };
         let inOrOutputs = {};
@@ -391,7 +398,7 @@
           let depositInfo = {
             address: this.addressInfo.address,
             agentHash: this.$route.query.hash,
-            deposit: Number(Times(this.jionNodeForm.amount, 100000000))
+            deposit: timesDecimals(this.jionNodeForm.amount, NDecimals)
           };
           if (!inOrOutputs.success) {
             this.$message({message: this.$t('public.err1') + inOrOutputs.data, type: 'error', duration: 1000});
@@ -399,7 +406,7 @@
           }
           tAssemble = await nuls.transactionAssemble(inOrOutputs.data.inputs, inOrOutputs.data.outputs, remark, 5, depositInfo);
         } else if (this.passwordType === 1) { //退出共识
-          transferInfo.amount = Number(Times(this.outInfo.amount, 100000000));
+          transferInfo.amount = timesDecimals(this.outInfo.amount, NDecimals)
           transferInfo.depositHash = this.outInfo.txHash;
           inOrOutputs = await inputsOrOutputs(transferInfo, this.balanceInfo, 6);
           //console.log(inOrOutputs);

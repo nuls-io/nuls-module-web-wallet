@@ -23,7 +23,7 @@ export const black_address = {
 //默认节点服务列表
 export const defaultNodes = [
   {
-    name: 'NULS_MAIN',
+    name: 'NULS_AI_MAIN',
     chainId: 1,
     assetId: 1,
     decimals: 8,
@@ -34,7 +34,7 @@ export const defaultNodes = [
     delay: ''
   },
   {
-    name: 'NULS_BETA',
+    name: 'NULS_AI_BETA',
     chainId: 2,
     assetId: 1,
     decimals: 8,

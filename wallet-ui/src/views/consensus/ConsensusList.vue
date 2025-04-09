@@ -9,7 +9,7 @@
 
     <div class="w1200 mt_20">
       <div class="top_total font12">
-        {{$t('public.totalStake')}}：{{this.$route.query.consensusLock}} <span class="fCN">{{agentAsset.agentAsset.symbol}}</span>
+        {{$t('public.totalStake')}}：{{ $toThousands(this.$route.query.consensusLock) }} <span class="fCN">{{ symbol }}</span>
       </div>
       <el-table :data="consensusData" stripe border v-loading="consensusDataLoading">
         <el-table-column prop="blockHeight" :label="$t('public.height')">
@@ -22,7 +22,8 @@
                   @click="toUrl('consensusInfo',scope.row.agentHash)">{{scope.row.agendID}}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="amount" :label="$t('public.amount') + '('+agentAsset.agentAsset.symbol+')'">
+        <el-table-column prop="amount" :label="$t('public.amount') + '('+symbol+')'">
+          <template slot-scope="scope">{{ $toThousands(scope.row.amount) }}</template>
         </el-table-column>
       </el-table>
       <div class="pages">
@@ -46,10 +47,12 @@
   import moment from 'moment'
   import {divisionDecimals, getLocalTime} from '@/api/util'
   import BackBar from '@/components/BackBar'
+  import { NSymbol, NDecimals } from '@/constants/constants'
 
   export default {
     data() {
       return {
+        symbol: NSymbol,
         consensusData: [],//委托列表
         agentAsset: JSON.parse(sessionStorage.getItem('info')),//pocm合约单位等信息
         consensusDataLoading: true,//委托类别加载动画
@@ -86,7 +89,7 @@
             //console.log(response);
             if (response.hasOwnProperty("result")) {
               for (let itme of response.result.list) {
-                itme.amount = divisionDecimals(itme.amount);
+                itme.amount = divisionDecimals(itme.amount, NDecimals);
                 //itme.txHashs = superLong(itme.txHash, 20);
                 itme.agendID = itme.agentHash.substr(-8);
                 itme.createTime = moment(getLocalTime(itme.createTime * 1000)).format('YYYY-MM-DD HH:mm:ss');

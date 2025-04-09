@@ -12,10 +12,11 @@
         </el-table-column>
         <el-table-column :label="$t('tab.tab2')" align="right" width="150">
           <template slot-scope="scope">
-            <span>{{scope.row.totalBalance }}</span>
+            <span>{{ $toThousands(scope.row.totalBalance) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="balance" :label="$t('consensus.consensus2')" align="right" width="150">
+          <template slot-scope="scope">{{ $toThousands(scope.row.balance) }}</template>
         </el-table-column>
         <!-- <el-table-column prop="consensusLock" :label="$t('tab.tab3')" align="center" width="140">
          </el-table-column>-->
@@ -80,6 +81,7 @@
   import nuls from 'nuls-sdk-js'
   import Password from '@/components/PasswordBar'
   import {divisionDecimals} from '@/api/util'
+  import { NDecimals } from '@/constants/constants'
 
   export default {
     data() {
@@ -141,10 +143,10 @@
               for (let item of addressList) {
                 if (item.address === addressInfo.address) {
                   item.alias = response.result.alias;
-                  item.totalBalance = divisionDecimals(response.result.totalBalance);
-                  item.balance = divisionDecimals(response.result.balance);
-                  item.consensusLock = divisionDecimals(response.result.consensusLock);
-                  item.totalReward = divisionDecimals(response.result.totalReward);
+                  item.totalBalance = divisionDecimals(response.result.totalBalance, NDecimals);
+                  item.balance = divisionDecimals(response.result.balance, NDecimals);
+                  item.consensusLock = divisionDecimals(response.result.consensusLock, NDecimals);
+                  item.totalReward = divisionDecimals(response.result.totalReward, NDecimals);
                   item.tokens = [];
                   item.chainId = nuls.verifyAddress(item.address).chainId;
                 }

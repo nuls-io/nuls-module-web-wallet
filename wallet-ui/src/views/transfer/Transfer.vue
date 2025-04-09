@@ -26,7 +26,7 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <div class="font12 fr balance">{{$t('consensus.consensus2')}}：{{assetsInfo.balance}}
+        <div class="font12 fr balance">{{$t('consensus.consensus2')}}：{{ $toThousands(assetsInfo.balance) }}
           <span>{{assetsInfo.symbol}}</span></div>
         <el-form-item :label="$t('transfer.transfer3')" prop="amount">
           <el-input v-model="transferForm.amount" autocomplete="off">
@@ -42,7 +42,7 @@
             </el-input>
           </el-form-item>
           <el-form-item label="Price" prop="price">
-            <el-input v-model="transferForm.price" autocomplete="off">
+            <el-input v-model="transferForm.price" autocomplete="off" disabled>
             </el-input>
           </el-form-item>
         </div>
@@ -161,6 +161,7 @@
   import ledgerMixin from '@/mixins/ledgerMixin'
   import feeMixin from '@/mixins/feeMixin'
   import storage from '@/api/storage'
+  import { NSymbol, NDecimals, DEFAULT_FEE, DEFAULT_CROSS_FEE, calDecimalsAndSymbol } from '@/constants/constants'
 
   export default {
 
@@ -234,21 +235,19 @@
       let validateAmount = async (rule, value, callback) => {
         let patrn = new RegExp("^([1-9][\\d]{0,20}|0)(\\.[\\d]{1," + this.assetsInfo.decimals + "})?$");
         this.available = this.assetsInfo.balance;
-        console.log(this.feeInfo, 2342342, this.assetsInfo)
+        // console.log(this.feeInfo, 2342342, this.assetsInfo)
         const assetKey = this.assetsInfo.chainId + '-' + this.assetsInfo.assetId
         if (assetKey === this.feeInfo.assetId) {
           this.available = Minus(this.assetsInfo.balance, this.totalFeeValue).toFixed();
         } else {
           this.available = this.assetsInfo.balance
         }
-        // if (this.assetsInfo.type === 1 && this.assetsInfo.symbol === 'NULS' && this.assetsInfo.balance > 0 && this.currentFee === 'NULS') {
-        //   this.available = Minus(this.assetsInfo.balance, this.totalFeeValue).toFixed();
-        // }
+
         if (value === '') {
           callback(new Error(this.$t('transfer.transfer11')))
         } else if (!patrn.exec(value)) {
           callback(new Error(this.$t('transfer.transfer12') + ": " + this.assetsInfo.decimals))
-        } else if (Minus(value, 0.001).toFixed() < 0 && this.assetsInfo.symbol === 'NULS') {
+        } else if (Minus(value, 10).toFixed() < 0 && this.assetsInfo.symbol === NSymbol) {
           callback(new Error(this.$t('transfer.transfer13')))
         } else if (Minus(value, this.available).toFixed() > 0) {
           callback(new Error(this.$t('transfer.transfer131') + ": " + this.available))
@@ -317,7 +316,7 @@
           gas: 1,
           price: 25,
           remarks: '',
-          fee: 0.001
+          fee: DEFAULT_FEE
         },
         transferRules: {
           toAddress: [{validator: validateToAddress, trigger: ['blur']}],
@@ -389,15 +388,17 @@
           .then((response) => {
             //console.log(response.result);
             if (response.hasOwnProperty("result")) {
+              console.log(response.result, '-=-==')
               for (let item of response.result) {
+                const { symbol, decimals } = calDecimalsAndSymbol(item)
                 basicAssets.push({
                   type: 1,
-                  symbol: item.symbol,
+                  symbol,
                   chainId: item.chainId,
                   assetId: item.assetId,
-                  balance: divisionDecimals(item.balance, item.decimals),
-                  decimals: item.decimals,
-                  _id: item.chainId + '-' + item.assetId + '-' + item.symbol
+                  balance: divisionDecimals(item.balance, decimals),
+                  decimals: decimals,
+                  _id: item.chainId + '-' + item.assetId + '-' + symbol
                 });
                 chainId = item.chainId;
               }
@@ -494,52 +495,6 @@
         this.changeType(asset._id)
         console.log(this.assetsList, '3331111')
 
-        // const MAIN_INFO = { chainId: this.currentChain.chainId, assetId: this.currentChain.assetId }
-        // let newInfo = {type: 1, tokenSymbol: MAIN_INFO};
-        // if (this.$route.query.contractAddress) {
-        //   let newAssetsInfo = this.assetsList.filter(obj => obj.contractAddress === this.$route.query.contractAddress)[0];
-        //   //console.log(newAssetsInfo);
-        //   newInfo.type = newAssetsInfo.type;
-        //   newInfo.tokenSymbol = {
-        //     chainId: newAssetsInfo.chainId,
-        //     assetId: newAssetsInfo.assetId,
-        //     symbol: newAssetsInfo.symbol
-        //   };
-        //   newInfo.type = newAssetsInfo.type;
-        //   newInfo.contractAddress = newAssetsInfo.contractAddress;
-        //   //console.log(newInfo);
-        //   this.transferForm.assetType = newInfo.tokenSymbol.symbol;
-
-        //   this.assetsInfo = newAssetsInfo;
-        //   // this.assetsInfo.balance = '0.000000000321148484'
-        //   // console.log(this.assetsInfo);
-        // }
-        // if (this.$route.query.accountType === 'NULS') {
-        //   newInfo = {type: 1, tokenSymbol: MAIN_INFO};
-        //   newInfo.tokenSymbol.symbol = 'NULS';
-        // }
-        // if (!newInfo.contractAddress && !newInfo.tokenSymbol.symbol) {
-        //   newInfo.tokenSymbol.symbol = 'NULS';
-        // }
-        // //console.log(newInfo);
-        // console.log(this.assetsList, this.transferForm.assetType, '3331111')
-        // for (let item of this.assetsList) {
-        //   if (item.type === 1) {
-        //     if (item.assetId === newInfo.tokenSymbol.assetId && item.chainId === newInfo.tokenSymbol.chainId) {
-        //       if (!this.transferForm.assetType) {
-        //         this.changeType(item);
-        //       }
-        //       this.transferLoading = false;
-        //       return
-        //     }
-        //   } else {
-        //     if (item.contractAddress && item.contractAddress === newInfo.contractAddress) {
-        //       //this.changeType(item);
-        //       this.transferLoading = false;
-        //       return;
-        //     }
-        //   }
-        // }
         this.transferLoading = false;
       },
 
@@ -589,12 +544,12 @@
       async verifyToAddress() {
         if (this.toAddressInfo.chainId === this.currentChain.chainId) { // 本链交易
           this.toAddressInfo.transferType = 1;
-          this.changeNULSTxFeeValue(0.001);
+          this.changeNULSTxFeeValue(DEFAULT_FEE);
           this.disableSelectFee = false
           return {success: true}
         } else { //跨链交易
           this.toAddressInfo.transferType = 5;
-          this.changeNULSTxFeeValue(0.01);
+          this.changeNULSTxFeeValue(DEFAULT_CROSS_FEE);
           this.disableSelectFee = true
           return {success: true, isCross: true}
         }
@@ -691,7 +646,7 @@
         let methodName = '_payable';
         let methodDesc = '';
         let args = [];
-        this.validateContractCall(this.addressInfo.address, Number(Times(this.transferForm.amount, 100000000)), gasLimit, price, contractAddress, methodName, methodDesc, args);
+        this.validateContractCall(this.addressInfo.address, timesDecimals(this.transferForm.amount, NDecimals), gasLimit, price, contractAddress, methodName, methodDesc, args);
       },
 
       /**
@@ -729,7 +684,7 @@
         let contractAddress = this.assetsInfo.contractAddress;
         let methodName = 'transferCrossChain';
         let methodDesc = '';
-        let args = [this.transferForm.toAddress, this.assetsInfo.decimals <= 9 ? Number(timesDecimals(this.transferForm.amount, this.assetsInfo.decimals)) : timesDecimals(this.transferForm.amount, this.assetsInfo.decimals)];
+        let args = [this.transferForm.toAddress, timesDecimals(this.transferForm.amount, this.assetsInfo.decimals)];
         let newValue = Number(timesDecimals(0.1, 8));
         this.validateContractCall(this.addressInfo.address, newValue, gasLimit, price, contractAddress, methodName, methodDesc, args);
       },
@@ -1084,11 +1039,10 @@
               this.gasInfo.number = response.result.gasLimit;
               this.gasInfo.oldNumber = response.result.gasLimit;
               this.transferForm.gas = response.result.gasLimit;
-              console.log(234111)
-              this.changeNULSGasFeeValue(Division(Times(this.transferForm.gas, this.transferForm.price), 100000000).toFixed())
-              this.changeNULSTxFeeValue(0.001)
-              // this.transferForm.fee = Number(Plus(Number(Division(Number(Times(this.transferForm.gas, this.transferForm.price)), 100000000)), 0.001));
-              // this.contractFee = this.transferForm.fee;
+
+              this.changeNULSGasFeeValue(divisionDecimals(Times(this.transferForm.gas, this.transferForm.price), NDecimals))
+              this.changeNULSTxFeeValue(DEFAULT_FEE)
+
               let contractConstructorArgsTypes = await this.getContractMethodArgsTypes(contractAddress, methodName);
               if (!contractConstructorArgsTypes.success) {
                 console.log(JSON.stringify(contractConstructorArgsTypes.data));

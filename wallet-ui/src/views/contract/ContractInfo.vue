@@ -17,8 +17,8 @@
           </span>
         </h5>
         <ul>
-          <li>{{$t('public.usableBalance')}}<label>{{contractInfo.balance}}<span
-                  class="fCN">{{addressInfo.symbol}}</span></label></li>
+          <li>{{$t('public.usableBalance')}}<label>{{ $toThousands(contractInfo.balance) }}<span
+                  class="fCN">{{ symbol }}</span></label></li>
           <li>{{$t('contractInfo.contractInfo2')}}<label>{{contractInfo.txCount}}</label></li>
           <li>
             {{$t('contractInfo.contractInfo3')}}
@@ -125,10 +125,12 @@
   import Password from '@/components/PasswordBar'
   import LedgerConfirm from '@/components/LedgerConfirm'
   import ledgerMixin from '@/mixins/ledgerMixin'
+  import { NSymbol, NDecimals } from '@/constants/constants'
 
   export default {
     data() {
       return {
+        symbol: NSymbol,
         activeName: this.$route.query.activeName ? this.$route.query.activeName : 'first',
         contractAddress: this.$route.query.contractAddress,//合约地址
         contractInfo: {},//合约详情
@@ -203,7 +205,7 @@
             //console.log(response);
             if (response.hasOwnProperty("result")) {
               response.result.createTxHashs = superLong(response.result.createTxHash, 5);
-              response.result.balance = divisionDecimals(response.result.balance);
+              response.result.balance = divisionDecimals(response.result.balance, NDecimals);
               this.contractInfo = response.result;
               for (let item in response.result.methods) {
                 //console.log(response.result.methods[item].event);
@@ -241,7 +243,7 @@
               for (let item of response.result.list) {
                 item.time = moment(getLocalTime(item.time * 1000)).format('YYYY-MM-DD HH:mm:ss');
                 item.txHashs = superLong(item.txHash, 20);
-                item.fees = divisionDecimals(item.fee.value);
+                item.fees = divisionDecimals(item.fee.value, NDecimals);
               }
               this.contractTxData = response.result.list;
               this.pageTotal = response.result.totalCount;

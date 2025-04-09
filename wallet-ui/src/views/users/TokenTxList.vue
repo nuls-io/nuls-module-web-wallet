@@ -46,7 +46,7 @@
           <el-table-column :label="$t('public.amount')">
             <template slot-scope="scope">
               <span :class="scope.row.fromAddress === addressInfo.address ? 'fred':'fCN'">
-                {{scope.row.fromAddress === addressInfo.address === -1 ? '-' : ''}}{{scope.row.amount}} {{scope.row.symbol}}
+                {{scope.row.fromAddress === addressInfo.address === -1 ? '-' : ''}}{{ $toThousands(scope.row.amount)}} {{scope.row.symbol}}
                 <!-- {{scope.row.fromAddress === addressInfo.address ? -1*scope.row.amount:scope.row.amount}}({{scope.row.symbol}}) -->
               </span>
             </template>
@@ -54,7 +54,7 @@
           <el-table-column :label="$t('public.balance')">
             <template slot-scope="scope">
               <span>
-                {{scope.row.balance}} {{scope.row.symbol}}
+                {{ $toThousands(scope.row.balance) }} {{scope.row.symbol}}
               </span>
             </template>
           </el-table-column>

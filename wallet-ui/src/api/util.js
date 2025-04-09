@@ -109,6 +109,17 @@ export function fixNumber(str, fix = 8) {
   return Number(float) ? int + '.' + float : int;
 }
 
+export function toThousands(num = 0) {
+  if(Number(num) > 0){
+    const N = num.toString().split('.')
+    const int = N[0]
+    const float = N[1] ? '.' + N[1] : ''
+    return int.toString().replace(/(\d)(?=(?:\d{3})+$)/g, '$1,') + float;
+  } else  {
+    return '0'
+  }
+}
+
 /**
  * 数字乘以精度系数(超长数字)
  *
@@ -327,6 +338,8 @@ export function connectToExplorer(name, parameter) {
     newUrl = explorerUrl + 'transaction/info?hash=' + parameter
   } else if (name === 'nuls') {
     newUrl = parameter
+  } else if (name === 'asset') {
+    newUrl = explorerUrl + 'asset/' + parameter
   }
   openner(newUrl);
 }
@@ -345,6 +358,22 @@ export const defaultAddressInfo = {
   tokens: [],//代币列表
   contractList: [],//合约列表（收藏的合约）
 };
+
+export function getDefaultAddressInfo() {
+  return {
+    address: '', //地址
+    aesPri: '',//加密私钥
+    pub: '',//公钥
+    selection: false,//是否选中
+    alias: "",//别名
+    remark: "",//标签（备注）
+    balance: 0,//余额
+    consensusLock: 0,//锁定金额
+    totalReward: 0,//总奖励
+    tokens: [],//代币列表
+    contractList: [],//合约列表（收藏的合约）
+  };
+}
 
 //地址信息写入localStorage
 export function localStorageByAddressInfo(newAddressInfo) {

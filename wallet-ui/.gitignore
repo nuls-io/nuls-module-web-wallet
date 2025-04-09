@@ -4,3 +4,4 @@ node_modules
 /dist_electron
 /wallet_web_log
 .yarn-error.log
+.env.local

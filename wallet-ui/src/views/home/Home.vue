@@ -8,21 +8,24 @@
     </h3>
 
     <div class="w1200 overview bg-white" v-loading="overviewLoading" element-loading-spinner="el-icon-loading">
-      <div class="title">
-        <img class="logo" src="../../assets/img/logo.svg"/>
-        <span class="fr click" @click="toUrl('txList',addressNULSAssets)">{{$t('home.home2')}}</span>
+      <div class="title main-asset">
+        <div class="flex-center">
+          <img class="logo" src="../../assets/img/NAI.png"/>
+          <div class="fw">NAI</div>
+        </div>
+        <span class="click" @click="toUrl('txList',addressNULSAssets)">{{$t('home.home2')}}</span>
       </div>
       <div class="total fl">
         <p>{{$t('tab.tab2')}}</p>
         <h6>
-          {{addressNULSAssets.total}}
-          <span class="font16" v-show="symbol.toLocaleUpperCase() ==='NULS'"> ≈ $ {{NULSUsdt}}</span>
+          {{ $toThousands(addressNULSAssets.total) }}
+          <span class="font16" v-show="symbol.toLocaleUpperCase() === symbol"> ≈ $ {{ $toThousands(NULSUsdt) }}</span>
         </h6>
       </div>
       <div class="balance fl">
         <p>{{$t('public.usableBalance')}}</p>
         <h6>
-          <font>{{addressNULSAssets.balance}}</font>
+          <font>{{ $toThousands(addressNULSAssets.balance) }}</font>
           <el-button type="success" @click="toUrl('transfer', addressNULSAssets.account)">{{$t('tab.tab31')}}
           </el-button>
           <el-button @click="showCode">{{$t('tab.tab27')}}</el-button>
@@ -31,7 +34,7 @@
       <div class="locking fl">
         <p>{{$t('tab.tab3')}}</p>
         <h6>
-          <font>{{addressNULSAssets.locking}}</font>
+          <font>{{ $toThousands(addressNULSAssets.locking) }}</font>
           <span class="font14 click" @click="toUrl('frozenList',addressNULSAssets)">{{$t('tab.tab28')}}</span>
         </h6>
       </div>
@@ -39,7 +42,7 @@
     <div class="cb"></div>
     <div class="w1200 overview bg-white" style="margin: 35px auto 0; height: auto">
       <div class="title">
-        <img src="../../assets/img/across-logo.svg" style="width: 20px; margin-top:11px; "/>
+        <img src="../../assets/img/across-logo.svg" style="width: 20px;"/>
         {{$t('home.home3')}}
       </div>
       <div class="home_tabs" style="padding: 0">
@@ -59,15 +62,19 @@
             </template>
           </el-table-column>
           <el-table-column prop="totalBalance" :label="$t('tab.tab2')" width="230">
+            <template slot-scope="scope">
+              {{ $toThousands(scope.row.totalBalance) }}
+            </template>
           </el-table-column>
           <el-table-column :label="$t('tab.tab3')" width="230">
             <template slot-scope="scope">
-              <span class="click" @click="toUrl('frozenList',scope.row)"
-                    v-show="scope.row.locking !== '--' && scope.row.locking !==0 ">{{scope.row.locking}}</span>
-              <span v-show="scope.row.locking === '--' || scope.row.locking ===0">{{scope.row.locking}}</span>
+              <span>{{$toThousands(scope.row.locking)}}</span>
             </template>
           </el-table-column>
           <el-table-column prop="balance" :label="$t('tab.tab4')" width="230">
+            <template slot-scope="scope">
+              {{ $toThousands(scope.row.balance) }}
+            </template>
           </el-table-column>
           <el-table-column fixed="right" :label="$t('public.operation')" min-width="120">
             <template slot-scope="scope">
@@ -102,12 +109,18 @@
                   </template>
                 </el-table-column>
                 <el-table-column prop="total" :label="$t('tab.tab2')" width="230">
+                  <template slot-scope="scope">
+                    {{ $toThousands(scope.row.total) }}
+                  </template>
                 </el-table-column>
                 <el-table-column prop="balance" :label="$t('tab.tab4')" width="230">
+                  <template slot-scope="scope">
+                    {{ $toThousands(scope.row.balance) }}
+                  </template>
                 </el-table-column>
                 <el-table-column :label="$t('tab.tab3')" width="230">
                   <template slot-scope="scope">
-                    <span>{{scope.row.locking}}</span>
+                    {{ $toThousands(scope.row.locking) }}
                   </template>
                 </el-table-column>
                 <el-table-column fixed="right" :label="$t('public.operation')" min-width="120">
@@ -205,12 +218,13 @@
   } from '@/api/util'
   import NFTTransfer from './NFTTransfer'
   import NRC1155Transfer from './NRC1155Transfer'
+  import { NDecimals, NSymbol, NULSDecimals } from '@/constants/constants'
 
   export default {
     name: 'home',
     data() {
       return {
-        symbol: 'NULS', //symbol
+        symbol: NSymbol,
         homeActive: 'homeFirst',  //tab默认选中
         addressNULSAssets: {},//账户NULS资产信息
         overviewLoading: true,//nuls资产加载动画
@@ -230,11 +244,7 @@
         crossLinkData: [],//跨链资产
         crossLinkDataLoading: true, //资产加载动画
         qrcodeDialog: false,//二维码弹框
-        payeeForm: {
-          amount: 100,
-          currency: 'NULS',
-          decimals: 8
-        },
+
         activeContract: 'nrc20',
         token721List: [],//721数据
         nrc1155List: [],
@@ -368,9 +378,9 @@
               assetInfo.account = info.symbol
               assetInfo.chainId = info.chainId
               assetInfo.assetId = info.assetId
-              assetInfo.balance = divisionAndFix(info.balance, 8, 3)
-              assetInfo.locking = divisionAndFix(Plus(info.consensusLock, info.timeLock), 8, 3)
-              assetInfo.total = divisionAndFix(info.totalBalance, 8, 3)
+              assetInfo.balance = divisionAndFix(info.balance, NDecimals, 3)
+              assetInfo.locking = divisionAndFix(Plus(info.consensusLock, info.timeLock), NDecimals, 3)
+              assetInfo.total = divisionAndFix(info.totalBalance, NDecimals, 3)
             }
             // this.addressInfo.balance = newAssetsList.balance;
             this.addressNULSAssets = assetInfo;
@@ -386,18 +396,19 @@
        * @author: Wave
        */
       getNULSUSDT(number) {
-        let news = 0.5;
-        this.NULSUsdt = Number(Times(news, number)).toFixed(2);
+        // let news = 0.5;
+        // this.NULSUsdt = Number(Times(news, number)).toFixed(2);
         axios.defaults.baseURL = '';
-        let url = 'http://binanceapi.zhoulijun.top/api/v3/ticker/price?symbol=NULSUSDT';
-        if (process.env.NODE_ENV !== 'development') {
-          url = "/market-api/nuls-price"
-        } else {
-          url = "http://binanceapi.zhoulijun.top/api/v3/ticker/price?symbol=NULSUSDT";
-        }
+        // let url = 'http://binanceapi.zhoulijun.top/api/v3/ticker/price?symbol=NULSUSDT';
+        // if (process.env.NODE_ENV !== 'development') {
+        //   url = "/market-api/nuls-price"
+        // } else {
+        //   url = "http://binanceapi.zhoulijun.top/api/v3/ticker/price?symbol=NULSUSDT";
+        // }
+        const url = 'https://sys.nuls.io/api/price/NULS'
         axios.get(url)
           .then((response) => {
-            this.NULSUsdt = Number(Times(Number(response.data.price), number)).toFixed(3)
+            this.NULSUsdt = Number(Times(Number(response.data), divisionDecimals(number, NULSDecimals - NDecimals))).toFixed(3)
           })
           .catch((error) => {
             console.log(error);
@@ -498,7 +509,7 @@
       async getNRC1155TokenList() {
         this.$post('/', 'getAccountToken1155s', [this.pageNumber, this.pageSize, this.addressInfo.address])
           .then((response) => {
-            console.log(response);
+            // console.log(response);
             if (response.hasOwnProperty("result")) {
               this.nrc1155List = response.result.list;
               if (this.nrc1155List.length !== 0) {
@@ -712,14 +723,22 @@
         padding: 0 20px;
         border-bottom: 1px solid #dfe4ef;
         font-weight: bold;
+        display: flex;
+        align-items: center;
+        &.main-asset {
+          justify-content: space-between;
+        }
         img {
           width: 15px;
-          margin: 6px 10px 5px 10px;
-          float: left;
+          margin-right: 10px;
+          // margin: 6px 10px 5px 10px;
+          // float: left;
         }
         .logo {
-          width: 76px;
-          margin: 3px 0 0;
+          width: 30px;
+          border-radius: 100%;
+          margin-right: 4px;
+          // margin: 3px 0 0;
         }
         span {
           font-size: 14px;

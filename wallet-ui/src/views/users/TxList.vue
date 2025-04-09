@@ -46,11 +46,14 @@
           <el-table-column :label="$t('tab.tab6')">
             <template slot-scope="scope">
               <span :class="scope.row.transferType === -1 ? 'fred':'fCN'">
-                {{scope.row.transferType === -1 ? '-' : ''}}{{scope.row.amount}}
+                {{scope.row.transferType === -1 ? '-' : ''}}{{ $toThousands(scope.row.amount) }}
               </span>
             </template>
           </el-table-column>
           <el-table-column prop="balance" :label="$t('tab.tab9')">
+            <template slot-scope="scope">
+                {{ $toThousands(scope.row.balance) }}
+            </template>
           </el-table-column>
           <el-table-column :label="$t('tab.tab10')" width="120">
             <template slot-scope="scope"><span>{{ $t('transferStatus.'+scope.row.status) }}</span></template>
@@ -78,6 +81,7 @@
   import moment from 'moment'
   import {divisionDecimals, getLocalTime, superLong} from '@/api/util'
   import BackBar from '@/components/BackBar'
+  import { NDecimals, calDecimalsAndSymbol } from '@/constants/constants'
 
   export default {
     data() {
@@ -195,13 +199,15 @@
             //console.log(response);
             if (response.hasOwnProperty("result")) {
               for (let item of response.result.list) {
+                const { decimals, symbol } = calDecimalsAndSymbol(item)
                 item.createTime = moment(getLocalTime(item.createTime * 1000)).format('YYYY-MM-DD HH:mm:ss');
                 item.txid = superLong(item.txHash, 8);
-                item.balance = divisionDecimals(item.balance, item.decimals);
+                item.symbol = symbol
+                item.balance = divisionDecimals(item.balance, decimals);
                 if (item.type === 16) {
-                  item.amount = divisionDecimals(item.fee.value, item.decimals);
+                  item.amount = divisionDecimals(item.fee.value, decimals);
                 } else {
-                  item.amount = divisionDecimals(item.values, item.decimals);
+                  item.amount = divisionDecimals(item.values, decimals);
                 }
               }
               this.txListData = response.result.list;

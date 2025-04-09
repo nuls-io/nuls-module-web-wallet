@@ -55,7 +55,7 @@ function createWindow() {
       nodeIntegration: true,
       contextIsolation: false
     },
-    title: 'NULS Wallet'
+    title: 'NULS AI Wallet'
     // icon: 
   });
   if (process.env.WEBPACK_DEV_SERVER_URL) {

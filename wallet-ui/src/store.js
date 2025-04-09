@@ -72,6 +72,9 @@ export default new Vuex.Store({
     currentAccount(state) {
       const accountList = state.accountList
       return accountList.find(v => v.selection) || {}
+    },
+    NKey() {
+      return this.currentChain.chainId === 2 ? '2-1' : '1-1'
     }
   },
 })

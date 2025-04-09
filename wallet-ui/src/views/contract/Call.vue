@@ -28,7 +28,7 @@
           <el-form-item label="Price">
             <el-input v-model="callForm.price" disabled></el-input>
           </el-form-item>
-          <el-form-item label="Value(NULS)" prop="values" v-if="selectionData.payable">
+          <el-form-item :label="`Value(${symbol})`" prop="values" v-if="selectionData.payable">
             <el-input v-model="callForm.values"></el-input>
           </el-form-item>
           <div
@@ -37,7 +37,7 @@
               style="background-color: #fff;width: 500px;padding: 10px 0 15px"
           >
             <el-form-item label="Other Assets" prop="region" class="search-model">
-              <el-select v-model="callForm.assetInfo" :placeholder="$t('call.call11')" @change="changeAsset">
+              <el-select v-model="callForm.assetInfo" :placeholder="$t('call.call11')" @change="changeAsset" clearable>
                 <el-option v-for="(item,index) in multipleAsset" :key="index" :label="item.symbol"
                            :value="item">
                 </el-option>
@@ -77,6 +77,7 @@
   import LedgerConfirm from '@/components/LedgerConfirm'
   import ledgerMixin from '@/mixins/ledgerMixin'
   import {getArgs, timesDecimals, Times, Plus, chainID} from '@/api/util'
+  import { NSymbol, NDecimals } from '@/constants/constants'
 
   export default {
     data() {
@@ -103,9 +104,11 @@
         }
       };
       let validateValues = (rule, value, callback) => {
-        if (!value) {
-          callback(new Error(this.$t('deploy.deploy22')));
-        } else if (value < 0 || value === 0) {
+        if (!this.assetInfo) {
+          callback()
+        } else if (Number(value) === 0) {
+          callback()
+        } else if (value < 0) {
           this.callForm.values = 0;
           this.callForm.otherValue = 0;
           callback(new Error(this.$t('deploy.deploy22')));
@@ -115,6 +118,7 @@
       };
 
       return {
+        symbol: NSymbol,
         balanceInfo: {},//账户余额信息
         assetInfo: null, // 往合约转的其他资产资产信息
         //调用接口form
@@ -246,10 +250,11 @@
         this.newArgs = [];
         this.callForm.price = sdk.CONTRACT_MINIMUM_PRICE;
         //console.log(this.selectionData);
+        const NAIValue = timesDecimals(this.callForm.values, NDecimals)
         if (!this.selectionData.view) { //上链方法
           if (this.selectionData.params.length === 0) { //没有参数
             if (this.selectionData.payable) {
-              this.imputedContractCallGas(this.addressInfo.address, Number(Times(this.callForm.values, 100000000)), this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs)
+              this.imputedContractCallGas(this.addressInfo.address, NAIValue, this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs)
             } else {
               //
             }
@@ -257,7 +262,7 @@
             this.newArgs = getArgs(this.callForm.parameterList);
             //console.log(this.newArgs);
             if (this.newArgs.allParameter) {
-              this.imputedContractCallGas(this.addressInfo.address, Number(Times(this.callForm.values, 100000000)), this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs.args)
+              this.imputedContractCallGas(this.addressInfo.address, NAIValue, this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs.args)
             }
           }
         }
@@ -287,16 +292,16 @@
         this.$refs[formName].validate(async (valid) => {
           if (valid) {
             //console.log(this.selectionData);
+            const NAIValue = timesDecimals(this.callForm.values, NDecimals)
             if (!this.selectionData.view) { //上链方法调用
               if (this.selectionData.params.length !== 0) {
                 this.newArgs = getArgs(this.callForm.parameterList);
                 if (this.newArgs.allParameter) {
-                  this.imputedContractCallGas(this.addressInfo.address, Number(Times(this.callForm.values, 100000000)), this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs.args)
+                  this.imputedContractCallGas(this.addressInfo.address, NAIValue, this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs.args)
                 }
               } else {
 
                 if (this.selectionData.payableMultyAsset && !this.assetInfo) return false;
-                const nulsValue = Number(Times(this.callForm.values, 100000000))
                 let multyAssets = [], value;
                 if (this.assetInfo) {
                   const { chainId: assetChainId, assetId, decimals } = this.assetInfo;
@@ -305,31 +310,7 @@
                     { value, assetChainId, assetId }
                   ]
                 }
-                this.imputedContractCallGas(this.addressInfo.address, nulsValue, this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs, multyAssets);
-                /*if (this.selectionData.payable && this.selectionData.payableMultyAsset) {
-                  // 同时转nuls和其他资产
-                  if (!this.assetInfo) return false
-                  // 往合约转其他资产
-                  const { chainId: assetChainId, assetId, decimals } = this.assetInfo;
-                  const value = timesDecimals(this.callForm.otherValue, decimals);
-                  const nulsValue = Number(Times(this.callForm.values, 100000000))
-                  const multyAssets = [
-                    { value, assetChainId, assetId }
-                  ];
-                  this.imputedContractCallGas(this.addressInfo.address, nulsValue, this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs, multyAssets);
-                } else if (this.selectionData.payable) {
-                  // 往合约转nuls
-                  this.imputedContractCallGas(this.addressInfo.address, Number(Times(this.callForm.values, 100000000)), this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs);
-                } else {
-                  if (!this.assetInfo) return false
-                  // 往合约转其他资产
-                  const { chainId: assetChainId, assetId, decimals } = this.assetInfo;
-                  const value = timesDecimals(this.callForm.otherValue, decimals);
-                  const multyAssets = [
-                    { value, assetChainId, assetId }
-                  ];
-                  this.imputedContractCallGas(this.addressInfo.address, 0, this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs, multyAssets);
-                }*/
+                this.imputedContractCallGas(this.addressInfo.address, NAIValue, this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs);
               }
               this.getBalanceByAddress(chainID(), 1, this.addressInfo.address);
               if (this.addressInfo.isNULSLedger) {
@@ -374,8 +355,8 @@
         amount = Number(Plus(transferInfo.fee, amount));
         if (this.callForm.values > 0) {
           transferInfo.toAddress = this.contractAddress;
-          transferInfo.value = Number(timesDecimals(this.callForm.values));
-          transferInfo.amount = Number(Plus(transferInfo.value, amount))
+          transferInfo.value = timesDecimals(this.callForm.values, NDecimals);
+          transferInfo.amount = Plus(transferInfo.value, amount).toFixed()
         }
         let multyAssets = []
         if (this.assetInfo) {
@@ -387,8 +368,8 @@
               assetId
             }
           ];
-          transferInfo.value = Number(timesDecimals(this.callForm.values));
-          transferInfo.amount = Number(Plus(transferInfo.value, amount))
+          transferInfo.value = timesDecimals(this.callForm.values, NDecimals);
+          transferInfo.amount = Plus(transferInfo.value, amount).toFixed()
           transferInfo.assetsChainId = this.MAIN_INFO.chainId;
           transferInfo.assetsId = this.MAIN_INFO.assetId;
           transferInfo.toAddress = this.contractAddress;
@@ -444,13 +425,14 @@
       chainMethodCall() {
         let newArgs = [];
         this.callForm.price = sdk.CONTRACT_MINIMUM_PRICE;
+        const NAIValue = timesDecimals(this.callForm.values, NDecimals)
         if (this.selectionData.params.length !== 0) { //有参数
           newArgs = getArgs(this.callForm.parameterList, this.decimals);
           if (newArgs.allParameter) {
-            this.validateContractCall(this.addressInfo.address, Number(Times(this.callForm.values, 100000000)), sdk.CONTRACT_MAX_GASLIMIT, sdk.CONTRACT_MINIMUM_PRICE, this.contractAddress, this.selectionData.name, this.selectionData.desc, newArgs.args);
+            this.validateContractCall(this.addressInfo.address, NAIValue, sdk.CONTRACT_MAX_GASLIMIT, sdk.CONTRACT_MINIMUM_PRICE, this.contractAddress, this.selectionData.name, this.selectionData.desc, newArgs.args);
           }
         } else { //没参数
-          this.validateContractCall(this.addressInfo.address, Number(Times(this.callForm.values, 100000000)), sdk.CONTRACT_MAX_GASLIMIT, sdk.CONTRACT_MINIMUM_PRICE, this.contractAddress, this.selectionData.name, this.selectionData.desc, newArgs);
+          this.validateContractCall(this.addressInfo.address, NAIValue, sdk.CONTRACT_MAX_GASLIMIT, sdk.CONTRACT_MINIMUM_PRICE, this.contractAddress, this.selectionData.name, this.selectionData.desc, newArgs);
         }
       },
 
@@ -490,9 +472,17 @@
        * @param methodDesc
        * @param args
        */
-      async imputedContractCallGas(sender, value, contractAddress, methodName, methodDesc, args, multyAssets) {
+      async imputedContractCallGas(sender, value, contractAddress, methodName, methodDesc, args) {
+        let multyAssets = []
+        if (this.selectionData.payableMultyAsset && this.assetInfo && Number(this.callForm.otherValue)) {
+          const { chainId: assetChainId, assetId, decimals } = this.assetInfo;
+          const value = timesDecimals(this.callForm.otherValue, decimals);
+          multyAssets = [
+            { value, assetChainId, assetId }
+          ]
+        }
         let multyAssetArray = [];
-        if (multyAssets && multyAssets.length) {
+        if (multyAssets.length) {
           let length = multyAssets.length;
           multyAssetArray = new Array(length);
           for (let i = 0; i < length; i++) {
@@ -608,14 +598,14 @@
         }
       },
       changeAsset(asset) {
-        this.assetInfo = asset;
-        this.callForm.assetInfo = asset.symbol;
-        const { chainId: assetChainId, assetId, decimals } = this.assetInfo;
-        const value = timesDecimals(this.callForm.otherValue, decimals);
-        const multyAssets = [
-          { value, assetChainId, assetId }
-        ];
-        this.imputedContractCallGas(this.addressInfo.address, 0, this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs, multyAssets);
+        if (asset) {
+          this.assetInfo = asset;
+          this.callForm.assetInfo = asset.symbol;
+          this.imputedContractCallGas(this.addressInfo.address, 0, this.contractAddress, this.selectionData.name, this.selectionData.desc, this.newArgs);
+        } else {
+          this.assetInfo = null;
+          this.callForm.assetInfo = ''
+        }
       }
     }
   }
@@ -623,6 +613,7 @@
 
 <style lang="less">
   .call {
+    padding-bottom: 40px;
     .call-form {
       .el-form-item {
         margin: 0 0 20px 70px;

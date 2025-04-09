@@ -76,10 +76,10 @@
   import nuls from 'nuls-sdk-js'
   import {
     chainID,
-    defaultAddressInfo,
     localStorageByAddressInfo,
     passwordVerification,
-    connectToExplorer
+    connectToExplorer,
+    getDefaultAddressInfo
   } from '@/api/util'
   import Password from '@/components/PasswordBar'
   import Upload from '@/components/Upload.vue'
@@ -251,7 +251,7 @@
       async keystoreImportPassSubmit(password) {
         let isPassword = await passwordVerification(this.keystoreInfo, password, this.$store.state.prefix);
         if (isPassword.success) {
-          let keystoreAddressInfo = defaultAddressInfo;
+          let keystoreAddressInfo = getDefaultAddressInfo();
           keystoreAddressInfo.address = isPassword.address;
           keystoreAddressInfo.aesPri = isPassword.aesPri;
           keystoreAddressInfo.pub = isPassword.pub;
@@ -277,7 +277,7 @@
               this.$message({message: newAddressInfo.data, type: 'error', duration: 3000});
               return;
             }
-            let keyAddressInfo = defaultAddressInfo;
+            let keyAddressInfo = getDefaultAddressInfo();
             keyAddressInfo.address = newAddressInfo.address;
             keyAddressInfo.aesPri = newAddressInfo.aesPri;
             keyAddressInfo.pub = newAddressInfo.pub;
@@ -301,7 +301,7 @@
         this.$refs[formName].validate(async (valid) => {
           if (valid) {
             this.newAddressInfo = nuls.newAddress(chainID(), this.newAddressForm.pass, this.$store.state.prefix);
-            let newAddressInfos = defaultAddressInfo;
+            let newAddressInfos = getDefaultAddressInfo();
             newAddressInfos.address = this.newAddressInfo.address;
             newAddressInfos.aesPri = this.newAddressInfo.aesPri;
             newAddressInfos.pub = this.newAddressInfo.pub;
@@ -337,6 +337,7 @@
 </script>
 
 <style lang="less">
+@import "../../assets/css/style.less";
   .import-address {
     .bg-white {
       height: 130px;
@@ -363,12 +364,12 @@
               margin: 10px 20px 20px;
               border-radius: 4px;
               &:hover {
-                background: linear-gradient(to right, #00DB82, #00DB82);
+                background: @Ncolour;
                 color: #FFFFFF;
               }
             }
             .is-active {
-              background: linear-gradient(to right, #00DB82, #00DB82);
+              background: @Ncolour;
               color: #FFFFFF;
             }
           }
