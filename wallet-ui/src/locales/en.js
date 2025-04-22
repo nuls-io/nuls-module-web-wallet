@@ -734,7 +734,7 @@ const en = {
     "consensusInfo1": "Amount Staked",
     "consensusInfo2": "The amount staked cannot be empty",
     "consensusInfo3": "Please enter a valid amount of commission",
-    "consensusInfo4": "The amount of commission is not less than 2000 and the total amount of commission is less than 500000.",
+    "consensusInfo4": "The amount of commission is not less than 2000 and the total amount of commission is less than 2000000.",
     "consensusInfo41": "Currently up to ",
     "consensusInfo42": " can be staked to this node",
     "consensusInfo43": "The node has a minimum staking of {number}",

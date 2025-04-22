@@ -738,7 +738,7 @@ const cn = {
     "consensusInfo1": "委托金额",
     "consensusInfo2": "委托金额不能为空",
     "consensusInfo3": "请输入有效的委托金额数值",
-    "consensusInfo4": "委托金额不小于2000并且总委托额小于500000",
+    "consensusInfo4": "委托金额不小于2000并且总委托额小于2000000",
     "consensusInfo41": "当前最多可委托 ",
     "consensusInfo42": " 到该节点",
     "consensusInfo43": "节点的最低委托量为{number}",

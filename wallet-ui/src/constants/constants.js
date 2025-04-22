@@ -8,7 +8,7 @@ export const FEE_PERKB = '100000'
 export const CROSS_FEE = '1000000'
 export const SET_ALIAS_FEE = '100000000'
 export const MIN_DEPOSIT = '200000000000'
-export const MAX_DEPOSIT = '50000000000000'
+export const MAX_DEPOSIT = '200000000000000'
 export const MIN_Margin = '2000000000000'
 export const MAX_Margin = '20000000000000'
 
