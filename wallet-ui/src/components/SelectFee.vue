@@ -21,7 +21,7 @@
   </el-dropdown>
 </template>
 <script>
-import { timesDecimals, divisionDecimals } from "@/api/util";
+import { NSymbol } from "../constants/constants";
 
 export default {
   props: {
@@ -50,7 +50,7 @@ export default {
   watch: {
     disabled(val) {
       if (val) {
-        this.$emit("change", "NULS");
+        this.$emit("change", NSymbol);
       }
     },
   },
